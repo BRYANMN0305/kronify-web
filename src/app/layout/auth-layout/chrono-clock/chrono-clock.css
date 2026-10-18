@@ -1,0 +1,27 @@
+.chrono-clock {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ring {
+  transform-origin: 170px 170px;
+}
+
+.ring-outer {
+  animation: chrono-spin 30s linear infinite;
+}
+
+.ring-mid {
+  animation: chrono-spin 22s linear infinite reverse;
+}
+
+.ring-tick {
+  animation: chrono-spin 60s linear infinite;
+}
+
+@keyframes chrono-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,0 +1,124 @@
+/* ============================================================
+   forms.css — Tema oscuro global para inputs y form controls
+   ============================================================
+   Red de seguridad para el tema "Acero Petróleo": aplica a
+   CUALQUIER input/select/textarea/checkbox aunque no esté
+   dentro de un contenedor con override propio.
+   Las reglas específicas de cada vista (auth.css, settings.css,
+   services.css, schedules.css) ganan por especificidad y no se
+   ven afectadas.
+   ============================================================ */
+
+/* ---- Fallback global: .form-control / .form-select ---- */
+.form-control,
+.form-select {
+    background: #1a2632;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    box-shadow: none;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.form-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='rgba(255,255,255,0.5)' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+}
+
+.form-select option {
+    background: var(--color-surface);
+    color: #fff;
+}
+
+.form-control:hover,
+.form-select:hover {
+    border-color: var(--color-border-hover);
+    background: #1e2d3a;
+}
+
+.form-control:focus,
+.form-select:focus {
+    background: #1e2d3a;
+    border-color: var(--neon-dim);
+    box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.18);
+    color: #fff;
+    outline: none;
+}
+
+.form-control.is-invalid,
+.form-select.is-invalid {
+    border-color: var(--color-error);
+    background: var(--color-surface-alt);
+}
+
+.form-control::placeholder,
+.form-select::placeholder {
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.form-control:disabled,
+.form-select:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+textarea.form-control {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* ---- Labels y mensajes de error ---- */
+.form-label {
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    margin-bottom: 0.4rem;
+}
+
+.invalid-feedback {
+    color: var(--color-error);
+    font-size: 0.75rem;
+    margin-top: 0.2rem;
+}
+
+/* ---- Checkboxes y radios: acento del tema ---- */
+input[type='checkbox'],
+input[type='radio'] {
+    accent-color: var(--neon-dim);
+}
+
+input[type='checkbox']:disabled,
+input[type='radio']:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* ---- Pickers de fecha/hora: ícono visible en tema oscuro ---- */
+input[type='date']::-webkit-calendar-picker-indicator,
+input[type='time']::-webkit-calendar-picker-indicator,
+input[type='datetime-local']::-webkit-calendar-picker-indicator {
+    filter: invert(0.7);
+}
+
+/* ---- Autocompletado del navegador (evita fondo blanco/amarillo) ---- */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px #1e2d3a inset;
+    -webkit-text-fill-color: #fff;
+    caret-color: #fff;
+    transition: background-color 9999s ease-in-out 0s;
+}
+
+/* ---- Inputs numéricos: spinners acordes al tema ---- */
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+    opacity: 0.6;
+}
+
+/* ---- Botones: quitar sombreado blanco de Bootstrap ---- */
+.btn:hover,
+.btn:focus,
+.btn:active,
+.btn:focus-visible {
+    box-shadow: none !important;
+}

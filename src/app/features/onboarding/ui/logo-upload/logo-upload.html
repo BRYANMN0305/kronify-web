@@ -1,0 +1,32 @@
+<div class="logo-upload">
+  <label for="bizLogo" class="form-label">Logo del negocio</label>
+  <div class="logo-dropzone"
+       [class.has-preview]="previewUrl()"
+       [class.drag-over]="dragOver()"
+       (click)="triggerFileInput()"
+       (dragover)="$event.preventDefault(); dragOver.set(true)"
+       (dragleave)="$event.preventDefault(); dragOver.set(false)"
+       (drop)="handleDrop($event)"
+       role="button"
+       tabindex="0">
+    <input #fileInput id="bizLogo"
+           type="file"
+           accept="image/*"
+           class="d-none"
+           (change)="handleFileSelect($event)"/>
+
+    @if (previewUrl()) {
+      <img [src]="previewUrl()" alt="Logo preview" class="logo-preview"/>
+      <button type="button" class="logo-remove" (click)="removeLogo(); $event.stopPropagation()" aria-label="Quitar logo">
+        &times;
+      </button>
+    } @else {
+      <div class="logo-placeholder">
+        <span class="logo-placeholder-icon">
+          <img src="images/icons/image.svg" alt="" aria-hidden="true"/>
+        </span>
+        <span>Haz clic o arrastra una imagen aquí</span>
+      </div>
+    }
+  </div>
+</div>

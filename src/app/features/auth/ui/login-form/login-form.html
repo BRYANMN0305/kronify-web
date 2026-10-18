@@ -1,0 +1,52 @@
+<div>
+  <h1 class="auth-title">Bienvenido de vuelta</h1>
+  <p class="auth-subtitle">Inicia sesión en tu cuenta de Kronify</p>
+
+  <form (submit)="submit()" novalidate>
+    <div class="mb-3">
+      <label for="email" class="form-label">Correo</label>
+      <input id="email"
+             name="email"
+             type="email"
+             class="form-control"
+             [class.is-invalid]="errors().email"
+             placeholder="Correo electrónico"
+             [ngModel]="email()"
+             (ngModelChange)="email.set($event)"/>
+      <div class="invalid-feedback">{{ errors().email }}</div>
+    </div>
+
+    <div class="mb-3">
+      <label for="password" class="form-label">Contraseña</label>
+      <input id="password"
+             name="password"
+             type="password"
+             class="form-control"
+             [class.is-invalid]="errors().password"
+             placeholder="Ingresa tu contraseña"
+             [ngModel]="password()"
+             (ngModelChange)="password.set($event)"/>
+      <div class="invalid-feedback">{{ errors().password }}</div>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100" [disabled]="loading()">
+      @if (loading()) {
+        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+      }
+      {{ loading() ? 'Iniciando sesión...' : 'Iniciar Sesión' }}
+    </button>
+  </form>
+
+  @if (errorMessage()) {
+    <div class="auth-error">{{ errorMessage() }}</div>
+  }
+
+  <div class="auth-divider my-2">o</div>
+
+  <app-oauth-buttons [disabled]="oauthRedirecting()" (oauth)="oauth.emit($event)"/>
+
+  <p class="auth-footer-text text-center mt-3 mb-0">
+    ¿No tienes una cuenta?
+    <a href="#" class="auth-link" (click)="switchToRegister.emit(); $event.preventDefault()">Registrarme</a>
+  </p>
+</div>

@@ -1,0 +1,78 @@
+.logo-upload {
+  max-width: 280px;
+}
+
+.logo-dropzone {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.logo-dropzone:hover,
+.logo-dropzone.drag-over {
+  border-color: var(--neon-dim);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.logo-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-text-muted);
+  text-align: center;
+  padding: 1rem;
+}
+
+.logo-placeholder .logo-placeholder-icon {
+  display: inline-flex;
+}
+
+.logo-placeholder img {
+  width: 28px;
+  height: 28px;
+  opacity: 0.5;
+}
+
+.logo-placeholder span {
+  font-size: 0.7rem;
+  line-height: 1.3;
+}
+
+.logo-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.logo-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 1rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.logo-dropzone:hover .logo-remove {
+  opacity: 1;
+}

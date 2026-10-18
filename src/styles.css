@@ -1,1 +1,8 @@
-/* You can add global styles to this file, and also import other style files */
+/* Kronify — estilos globales.
+   El orden importa: Bootstrap primero para que los tokens/diseño de Kronify lo sobrescriban. */
+@import "bootstrap/dist/css/bootstrap.min.css";
+@import "./styles/variables.css";
+@import "./styles/forms.css";
+@import "./styles/sidebar.css";
+@import "./styles/auth.css";
+@import "./styles/schedules.css";

@@ -1,0 +1,117 @@
+.onboarding-form {
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.field-error {
+  color: var(--color-error);
+  font-size: 0.75rem;
+  margin-top: 0.3rem;
+}
+
+.field-hint {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin: 0.5rem 0 0;
+}
+
+.onboarding-error {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  border: 1px solid var(--color-error-border);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.step-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+}
+
+.btn-back-step {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  transition: color 0.2s, background 0.2s;
+}
+
+.btn-back-step:hover {
+  color: var(--color-text-label);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.slug-wrapper {
+  background: var(--color-bg-dark);
+  border: 1px solid var(--color-border);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.slug-wrapper:focus-within {
+  border-color: var(--neon-dim);
+  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.18), 0 0 14px rgba(var(--color-primary-rgb), 0.25);
+}
+
+.slug-prefix {
+  color: var(--color-text-dim);
+  font-size: 0.875rem;
+  padding: 0.7rem 0.6rem 0.7rem 0.9rem;
+}
+
+.slug-input {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding-left: 0.6rem;
+  border: none !important;
+}
+
+.slug-input:focus {
+  box-shadow: none !important;
+  outline: none;
+}
+
+/* Animación por paso — equivale al Transition mode="out-in" de Vue:
+   el nodo se recrea al cambiar de paso y entra deslizándose según la dirección */
+.step-anim {
+  animation: stepIn 0.25s ease;
+}
+
+.step-anim.slide-left {
+  --step-from: 20px;
+}
+
+.step-anim.slide-right {
+  --step-from: -20px;
+}
+
+@keyframes stepIn {
+  from {
+    opacity: 0;
+    transform: translateX(var(--step-from, 20px));
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 480px) {
+  .slug-wrapper {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .slug-prefix {
+    font-size: 0.78rem;
+    padding: 0.55rem 0.9rem 0.25rem;
+  }
+}

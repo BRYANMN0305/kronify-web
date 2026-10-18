@@ -1,0 +1,17 @@
+/* Animación de deslizamiento equivalente al Transition de AuthView.vue:
+   el panel entra deslizándose desde la dirección elegida (la salida
+   es instantánea — el @switch reemplaza el nodo). */
+.auth-slide {
+  animation: authSlideIn 0.35s ease both;
+}
+
+@keyframes authSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

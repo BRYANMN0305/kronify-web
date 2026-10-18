@@ -1,0 +1,191 @@
+<form (submit)="onSubmit($event)" novalidate class="onboarding-form">
+  <app-onboarding-progress-bar [current]="currentStep()" [total]="totalSteps"/>
+
+  <app-onboarding-step-header
+    [current]="currentStep()"
+    [total]="totalSteps"
+    [title]="stepTitle()"
+    [description]="stepDescription()"/>
+
+  @switch (currentStep()) {
+    @case (1) {
+      <div class="step-anim" [class.slide-left]="direction() === 1" [class.slide-right]="direction() === -1">
+        <div class="mb-3">
+          <label for="bizName" class="form-label">Nombre del negocio*</label>
+          <input id="bizName"
+                 type="text"
+                 class="form-control"
+                 [class.is-invalid]="errors().name"
+                 placeholder="Ej: Barbería El Clásico"
+                 [value]="name()"
+                 (input)="onNameInput($any($event.target).value)"/>
+          <div class="invalid-feedback">{{ errors().name }}</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="bizSlug" class="form-label">Slug (URL de tu negocio)*</label>
+          <div class="slug-wrapper d-flex align-items-center rounded-2 overflow-hidden">
+            <span class="slug-prefix text-nowrap user-select-none">kronifytech.vercel.app/</span>
+            <input id="bizSlug"
+                   type="text"
+                   class="form-control slug-input"
+                   [class.is-invalid]="errors().slug"
+                   placeholder="mi-barberia"
+                   [value]="slug()"
+                   (input)="slug.set($any($event.target).value)"/>
+          </div>
+          <div class="field-error">{{ errors().slug }}</div>
+        </div>
+
+        <div class="mb-3">
+          <app-category-dropdown [(category)]="category" [invalid]="!!errors().category"/>
+          <div class="invalid-feedback">{{ errors().category }}</div>
+        </div>
+      </div>
+    }
+
+    @case (2) {
+      <div class="step-anim" [class.slide-left]="direction() === 1" [class.slide-right]="direction() === -1">
+        <div class="mb-3">
+          <label for="bizEmail" class="form-label">Email*</label>
+          <input id="bizEmail"
+                 type="email"
+                 class="form-control"
+                 [class.is-invalid]="errors().email"
+                 placeholder="contacto@negocio.com"
+                 [value]="email()"
+                 (input)="email.set($any($event.target).value)"/>
+          <div class="invalid-feedback">{{ errors().email }}</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="bizPhone" class="form-label">Teléfono*</label>
+          <input id="bizPhone"
+                 type="tel"
+                 class="form-control"
+                 [class.is-invalid]="errors().phoneNumber"
+                 placeholder="+57 3006217237"
+                 [value]="phoneNumber()"
+                 (input)="phoneNumber.set($any($event.target).value)"/>
+          <div class="invalid-feedback">{{ errors().phoneNumber }}</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="bizWhatsApp" class="form-label">WhatsApp*</label>
+          <input id="bizWhatsApp"
+                 type="tel"
+                 class="form-control"
+                 [class.is-invalid]="errors().whatsApp"
+                 placeholder="+57 3006217237"
+                 [value]="whatsApp()"
+                 (input)="whatsApp.set($any($event.target).value)"/>
+          <div class="invalid-feedback">{{ errors().whatsApp }}</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="bizAddress" class="form-label">Dirección</label>
+          <input id="bizAddress"
+                 type="text"
+                 class="form-control"
+                 placeholder="Calle 123 #45-67"
+                 [value]="address()"
+                 (input)="address.set($any($event.target).value)"/>
+        </div>
+      </div>
+    }
+
+    @case (3) {
+      <div class="step-anim" [class.slide-left]="direction() === 1" [class.slide-right]="direction() === -1">
+        <div class="mb-3">
+          <app-logo-upload [(logoValue)]="logo"/>
+        </div>
+
+        <div class="mb-3">
+          <label for="bizDescription" class="form-label">Descripción</label>
+          <textarea id="bizDescription"
+                    class="form-control"
+                    placeholder="Describe brevemente tu negocio..."
+                    rows="3"
+                    [value]="description()"
+                    (input)="description.set($any($event.target).value)"></textarea>
+        </div>
+      </div>
+    }
+
+    @case (4) {
+      <div class="step-anim" [class.slide-left]="direction() === 1" [class.slide-right]="direction() === -1">
+        <p class="field-hint">Define los días y horas en que tu negocio está abierto. Los horarios de tus empleados no pueden salir de este rango.</p>
+
+        <div class="schedules-table">
+          <div class="schedules-week-row schedules-week-head">
+            <span>Día</span>
+            <span>Inicio</span>
+            <span>Fin</span>
+            <span></span>
+          </div>
+          @for (row of hoursRows(); track row.dayOfWeek) {
+            <div class="schedules-week-row">
+              <span class="schedules-week-day">{{ weekLabels[row.dayOfWeek - 1] }}</span>
+              <input type="time"
+                     class="form-control"
+                     [attr.id]="'ohstart-' + row.dayOfWeek"
+                     [value]="row.start"
+                     (input)="setHourStart(row.dayOfWeek, $any($event.target).value)"/>
+              <input type="time"
+                     class="form-control"
+                     [attr.id]="'ohend-' + row.dayOfWeek"
+                     [value]="row.end"
+                     (input)="setHourEnd(row.dayOfWeek, $any($event.target).value)"/>
+              <span></span>
+            </div>
+          }
+        </div>
+        @if (hoursError()) {
+          <div class="onboarding-error">{{ hoursError() }}</div>
+        }
+      </div>
+    }
+
+    @default {
+      <div class="step-anim" [class.slide-left]="direction() === 1" [class.slide-right]="direction() === -1">
+        <div class="mb-3">
+          <label for="bizActivationCode" class="form-label">Código de activación</label>
+          <input id="bizActivationCode"
+                 type="text"
+                 class="form-control"
+                 placeholder="Ingresa tu código"
+                 [value]="activationCode()"
+                 (input)="activationCode.set($any($event.target).value)"/>
+          <p class="field-hint">Si tienes un código de activación, ingrésalo aquí para configurar tu plan automáticamente.</p>
+        </div>
+      </div>
+    }
+  }
+
+  @if (errorMessage()) {
+    <div class="onboarding-error">{{ errorMessage() }}</div>
+  }
+
+  <div class="step-nav">
+    @if (currentStep() > 1) {
+      <button type="button" class="btn-back-step" (click)="prevStep()">
+        &lsaquo; Atrás
+      </button>
+    } @else {
+      <span></span>
+    }
+
+    @if (currentStep() < totalSteps) {
+      <button type="button" class="btn btn-primary" (click)="nextStep()">
+        Continuar &rsaquo;
+      </button>
+    } @else {
+      <button type="submit" class="btn btn-primary" [disabled]="submitting()">
+        @if (submitting()) {
+          <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+        }
+        {{ submitting() ? 'Creando...' : 'Crear negocio' }}
+      </button>
+    }
+  </div>
+</form>

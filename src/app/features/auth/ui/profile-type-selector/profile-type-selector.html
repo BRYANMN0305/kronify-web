@@ -1,0 +1,12 @@
+<div>
+  <label class="form-label">Tipo de perfil</label>
+  <div class="d-flex gap-2">
+    @for (option of options; track option.value) {
+      <label class="profile-option" [class.active]="profileType() === option.value"
+             (click)="select(option.value)">
+        <span class="profile-radio"></span>
+        <span class="profile-label">{{ option.label }}</span>
+      </label>
+    }
+  </div>
+</div>

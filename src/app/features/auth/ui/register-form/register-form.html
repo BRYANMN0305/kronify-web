@@ -1,0 +1,95 @@
+<div>
+  <h1 class="auth-title">Crear una cuenta</h1>
+  <p class="auth-subtitle">Únete a Kronify y despega tu negocio</p>
+
+  <form (submit)="submit()" novalidate>
+    <div class="row g-2 mb-2">
+      <div class="col-6">
+        <label for="name" class="form-label">Nombre</label>
+        <input id="name"
+               name="name"
+               type="text"
+               class="form-control"
+               [class.is-invalid]="errors().name"
+               placeholder="Nombre"
+               [ngModel]="name()"
+               (ngModelChange)="name.set($event)"/>
+        <div class="invalid-feedback">{{ errors().name }}</div>
+      </div>
+      <div class="col-6">
+        <label for="lastName" class="form-label">Apellido</label>
+        <input id="lastName"
+               name="lastName"
+               type="text"
+               class="form-control"
+               [class.is-invalid]="errors().lastName"
+               placeholder="Apellido"
+               [ngModel]="lastName()"
+               (ngModelChange)="lastName.set($event)"/>
+        <div class="invalid-feedback">{{ errors().lastName }}</div>
+      </div>
+    </div>
+
+    <div class="mb-2">
+      <label for="phoneNumber" class="form-label">Teléfono</label>
+      <input id="phoneNumber"
+             name="phoneNumber"
+             type="tel"
+             class="form-control"
+             placeholder="+57 3006217237"
+             [ngModel]="phoneNumber()"
+             (ngModelChange)="phoneNumber.set($event)"/>
+      <div class="invalid-feedback"></div>
+    </div>
+
+    <div class="mb-2">
+      <label for="regEmail" class="form-label">Correo</label>
+      <input id="regEmail"
+             name="email"
+             type="email"
+             class="form-control"
+             [class.is-invalid]="errors().email"
+             placeholder="Correo electrónico"
+             [ngModel]="email()"
+             (ngModelChange)="email.set($event)"/>
+      <div class="invalid-feedback">{{ errors().email }}</div>
+    </div>
+
+    <div class="mb-2">
+      <label for="regPassword" class="form-label">Contraseña</label>
+      <input id="regPassword"
+             name="passwordHash"
+             type="password"
+             class="form-control"
+             [class.is-invalid]="errors().passwordHash"
+             placeholder="Crea una contraseña segura"
+             [ngModel]="passwordHash()"
+             (ngModelChange)="passwordHash.set($event)"/>
+      <div class="invalid-feedback">{{ errors().passwordHash }}</div>
+    </div>
+
+    <div class="mb-3">
+      <app-profile-type-selector [(profileType)]="profileTypeSignal"/>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100" [disabled]="loading()">
+      @if (loading()) {
+        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+      }
+      {{ loading() ? 'Creando cuenta...' : 'Crear Cuenta' }}
+    </button>
+  </form>
+
+  @if (errorMessage()) {
+    <div class="auth-error">{{ errorMessage() }}</div>
+  }
+
+  <div class="auth-divider my-2">o</div>
+
+  <app-oauth-buttons [disabled]="oauthRedirecting()" (oauth)="oauth.emit($event)"/>
+
+  <p class="auth-footer-text text-center mt-3 mb-0">
+    ¿Ya tienes una cuenta?
+    <a href="#" class="auth-link" (click)="switchToLogin.emit(); $event.preventDefault()">Iniciar sesión</a>
+  </p>
+</div>

@@ -1,0 +1,32 @@
+<div class="category-dropdown" #categoryRef>
+  <label for="bizCategory" class="form-label">Categoría</label>
+  <div class="category-trigger"
+       [class.is-invalid]="invalid()"
+       [class.is-open]="open()">
+    <input id="bizCategory"
+           type="text"
+           class="form-control category-input"
+           placeholder="Ej: Barbería, Spa, Entrenador personal"
+           [value]="category()"
+           (focus)="open.set(true)"
+           (input)="onInput($any($event.target))"/>
+    <span class="category-chevron" (click)="toggle()">
+      <img src="images/icons/chevron-down.svg" alt="" aria-hidden="true"/>
+    </span>
+  </div>
+
+  @if (open()) {
+    <div class="category-panel" [class.panel-above]="panelAbove()" role="listbox">
+      @for (cat of filtered(); track cat) {
+        <button type="button"
+                class="category-option"
+                [class.is-selected]="category() === cat"
+                (click)="select(cat)">
+          {{ cat }}
+        </button>
+      } @empty {
+        <div class="category-empty">Presiona Enter para usar "{{ category() }}"</div>
+      }
+    </div>
+  }
+</div>

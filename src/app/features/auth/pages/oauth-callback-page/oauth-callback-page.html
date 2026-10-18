@@ -1,0 +1,38 @@
+<app-auth-layout>
+  @if (error()) {
+    <div>
+      <h1 class="auth-title">Algo salió mal</h1>
+      <p class="auth-subtitle">{{ error() }}</p>
+      <button type="button" class="btn btn-primary w-100" (click)="goLogin()">
+        Volver al inicio de sesión
+      </button>
+    </div>
+  } @else if (processing()) {
+    <div class="text-center py-4">
+      <div class="spinner-border text-primary" role="status"></div>
+      <p class="auth-subtitle mt-3">Procesando tu inicio de sesión...</p>
+    </div>
+  } @else {
+    <div>
+      <h1 class="auth-title">Casi listo</h1>
+      <p class="auth-subtitle">¿Cómo querés usar Kronify?</p>
+
+      <form (submit)="submitProfile()" novalidate>
+        <div class="mb-3">
+          <app-profile-type-selector [(profileType)]="profileType"/>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100" [disabled]="savingProfile()">
+          @if (savingProfile()) {
+            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+          }
+          {{ savingProfile() ? 'Guardando...' : 'Continuar' }}
+        </button>
+
+        @if (profileError()) {
+          <div class="auth-error">{{ profileError() }}</div>
+        }
+      </form>
+    </div>
+  }
+</app-auth-layout>

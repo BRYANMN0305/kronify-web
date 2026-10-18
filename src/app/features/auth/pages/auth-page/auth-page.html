@@ -1,0 +1,26 @@
+<app-auth-layout>
+  @switch (mode()) {
+    @case ('register') {
+      <div class="auth-slide" [class.slide-right]="slide() === 'right'" [class.slide-left]="slide() === 'left'">
+        <app-register-form
+          [loading]="auth.loading()"
+          [errorMessage]="auth.error()"
+          [oauthRedirecting]="auth.oauthRedirecting()"
+          (register)="onRegister($event)"
+          (switchToLogin)="switchToLogin()"
+          (oauth)="onOauth($event)"/>
+      </div>
+    }
+    @default {
+      <div class="auth-slide" [class.slide-right]="slide() === 'right'" [class.slide-left]="slide() === 'left'">
+        <app-login-form
+          [loading]="auth.loading()"
+          [errorMessage]="auth.error()"
+          [oauthRedirecting]="auth.oauthRedirecting()"
+          (login)="onLogin($event)"
+          (switchToRegister)="switchToRegister()"
+          (oauth)="onOauth($event)"/>
+      </div>
+    }
+  }
+</app-auth-layout>

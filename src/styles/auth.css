@@ -1,0 +1,236 @@
+/* ============================================================
+   ESTILOS PERSONALIZADOS PARA FORMULARIOS OSCUROS
+   ============================================================
+   Aplican a .auth-card (login/register) y .onboarding-form.
+   ============================================================ */
+
+body {
+    background: var(--color-bg);
+}
+
+/* ---- Fondo principal de la página ---- */
+.auth-page {
+    background: var(--color-bg);
+}
+
+/* ---- Texto decorativo bajo el reloj ---- */
+.chrono-eyebrow {
+    font-size: 0.7rem;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--neon);
+    opacity: 0.85;
+    margin-top: 1.2rem;
+    margin-bottom: 0;
+    text-align: center;
+}
+
+/* ---- Panel izquierdo: degradado oscuro con grid ---- */
+.auth-panel-left {
+    background:
+        radial-gradient(ellipse 120% 80% at 30% 20%, rgba(var(--color-primary-rgb), 0.25), transparent 60%),
+        linear-gradient(160deg, var(--acero-1) 0%, var(--acero-2) 55%, #071216 100%);
+}
+
+/* ---- Overlay de cuadrícula decorativa ---- */
+.auth-grid-overlay {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(63,225,255,0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(63,225,255,0.045) 1px, transparent 1px);
+    background-size: 42px 42px;
+    mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, black 20%, transparent 75%);
+    -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, black 20%, transparent 75%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ---- Título del formulario ---- */
+.auth-title {
+    color: var(--color-text-label);
+    font-size: 2.1rem;
+    font-weight: 700;
+    margin-bottom: 0.35rem;
+    text-align: center;
+    letter-spacing: -0.01em;
+}
+
+/* ---- Subtítulo del formulario ---- */
+.auth-subtitle {
+    color: var(--color-text-muted);
+    font-size: 1rem;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+/* ---- Inputs: tema oscuro ---- */
+.auth-card .form-control,
+.onboarding-form .form-control {
+    background: #1a2632;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--color-text);
+    font-size: 0.875rem;
+    padding: 0.7rem 0.9rem;
+    border-radius: 8px;
+    box-shadow: none;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.auth-card .form-control:hover,
+.onboarding-form .form-control:hover {
+    border-color: var(--color-border-hover);
+    background: #1e2d3a;
+}
+
+.auth-card .form-control:focus,
+.onboarding-form .form-control:focus {
+    background: #1e2d3a;
+    border-color: var(--neon-dim);
+    box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.18), 0 0 14px rgba(var(--color-primary-rgb), 0.25);
+    color: var(--color-text);
+    outline: none;
+}
+
+/* Estado de error en inputs */
+.auth-card .form-control.is-invalid,
+.onboarding-form .form-control.is-invalid {
+    border-color: var(--color-error);
+    background: var(--color-surface-alt);
+}
+
+.auth-card .form-control::placeholder,
+.onboarding-form .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.35);
+}
+
+/* ---- Labels del formulario ---- */
+.auth-card .form-label,
+.onboarding-form .form-label {
+    color: var(--color-text-label);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    margin-bottom: 0.4rem;
+}
+
+/* ---- Botón primario ---- */
+.auth-card .btn-primary,
+.onboarding-form .btn-primary {
+    background: var(--color-primary);
+    border: 1px solid var(--neon-dim);
+    border-radius: 10px;
+    padding: 0.7rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--color-text);
+    letter-spacing: 0.01em;
+    box-shadow: 0 0 10px rgba(var(--color-primary-rgb), 0.2);
+    transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+}
+
+.auth-card .btn-primary:hover,
+.onboarding-form .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 18px rgba(var(--color-primary-rgb), 0.45);
+}
+
+.auth-card .btn-primary:active,
+.onboarding-form .btn-primary:active {
+    background: var(--color-primary) !important;
+    border-color: var(--neon-dim) !important;
+    transform: scale(0.98);
+    box-shadow: 0 0 10px rgba(var(--color-primary-rgb), 0.2);
+}
+
+.auth-card .btn-primary:focus-visible,
+.onboarding-form .btn-primary:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.25);
+}
+
+.auth-card .btn-primary:disabled,
+.onboarding-form .btn-primary:disabled {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* ---- Enlace de registro/login ---- */
+.auth-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.auth-link:hover {
+    color: var(--color-primary-hover);
+    text-decoration: underline;
+}
+
+/* ---- Checkbox personalizado ---- */
+.auth-card .form-check-input {
+    background: var(--color-surface-alt);
+    border: 1.5px solid var(--color-border);
+}
+
+.auth-card .form-check-input:checked {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.auth-card .form-check-label {
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
+}
+
+/* ---- Divisor "o" ---- */
+.auth-divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: var(--color-text-dim);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--color-border);
+    opacity: 0.6;
+}
+
+/* ---- Error del servidor ---- */
+.auth-error {
+    background: var(--color-error-bg);
+    color: var(--color-error);
+    border: 1px solid var(--color-error-border);
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+    margin-top: 0.75rem;
+}
+
+/* ---- Texto del footer ---- */
+.auth-footer-text {
+    color: var(--color-text);
+    font-size: 0.8rem;
+}
+
+/* ---- Feedback de error de validación ---- */
+.auth-card .invalid-feedback,
+.onboarding-form .invalid-feedback {
+    color: var(--color-error);
+    font-size: 0.75rem;
+    margin-top: 0.2rem;
+}
+
+/* ---- Textarea ---- */
+.onboarding-form textarea.form-control {
+    resize: vertical;
+    min-height: 80px;
+}

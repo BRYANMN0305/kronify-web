@@ -1,0 +1,15 @@
+.onboarding-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--color-bg);
+  overflow-x: hidden;
+}
+
+.btn-back {
+  --bs-btn-color: var(--color-text-muted);
+  --bs-btn-border-color: var(--color-border);
+  --bs-btn-hover-color: var(--color-text);
+  --bs-btn-hover-border-color: var(--color-border-hover);
+  --bs-btn-bg: transparent;
+  --bs-btn-hover-bg: transparent;
+}

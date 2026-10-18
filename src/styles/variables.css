@@ -1,0 +1,53 @@
+/* ============================================================
+   variables.css — Variables de color globales
+   ============================================================
+   Paleta: Acero Petróleo (5 tonos)
+   Importar ANTES de cualquier otro CSS.
+   ============================================================ */
+
+:root {
+    /* ---- Paleta base ---- */
+    --acero-1: #060d10;
+    --acero-2: #10252C;
+    --acero-3: #1E3D49;
+    --acero-4: rgb(89 116 128 / 0.55);
+    --acero-5: #D5F0F7;
+
+    --neon: #3FE1FF;
+    --neon-dim: #1AA8C9;
+    --neon-soft: rgba(63, 225, 255, 0.35);
+
+    /* ---- Fondo ---- */
+    --color-bg: var(--acero-1);
+    --color-bg-dark: var(--acero-1);
+    --color-surface: var(--acero-2);
+    --color-surface-alt: var(--acero-3);
+
+    /* ---- Borde ---- */
+    --color-border-gray: var(--acero-2);
+    --color-border: var(--acero-3);
+    --color-border-hover: var(--acero-4);
+    --color-border-focus: var(--acero-4);
+
+    /* ---- Primario ---- */
+    --color-primary: var(--acero-4);
+    --color-primary-rgb: 63, 106, 120;
+    --color-primary-hover: var(--acero-5);
+
+    /* ---- Texto ---- */
+    --color-text: #FFFFFF;
+    --color-text-label: #d5f0f7;
+    --color-text-placeholder: #747577;
+    --color-text-muted: var(--acero-4);
+    --color-text-dim: var(--acero-3);
+
+    /* ---- Estado ---- */
+    --color-error: #ff6b6b;
+    --color-error-bg: rgba(255, 107, 107, 0.12);
+    --color-error-border: rgba(255, 107, 107, 0.25);
+
+    /* ---- Sombras ---- */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
+}

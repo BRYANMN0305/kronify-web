@@ -1,0 +1,15 @@
+<div class="auth-branding position-absolute bottom-0 start-0 end-0 z-1 p-4">
+  <div class="auth-tagline">
+    @for (tagline of taglines; track tagline) {
+      @if (current() === $index) {
+        <span style="animation: fadeSlideIn 0.8s ease-out both;">{{ tagline }}</span>
+      }
+    }
+  </div>
+
+  <div class="auth-bars">
+    @for (bar of bars; track bar) {
+      <div class="auth-bar" [class.active]="current() % 3 === bar - 1"></div>
+    }
+  </div>
+</div>
