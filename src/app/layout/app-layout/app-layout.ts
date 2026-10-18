@@ -1,10 +1,26 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
-/** Shell de rutas autenticadas — owned A; los children reales los agrega B en app.routes. */
+import { BottomNav } from './bottom-nav/bottom-nav';
+import { Sidebar } from './sidebar/sidebar';
+
+/**
+ * AppLayout — Layout principal de las vistas autenticadas (equivalente de AppLayout.vue):
+ * Sidebar fijo a la izquierda (desktop) + contenido a la derecha + BottomNav en mobile.
+ * Owned por A; B agrega sus children en app.routes.ts.
+ */
 @Component({
   selector: 'app-app-layout',
-  imports: [RouterOutlet],
-  template: '<router-outlet />',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [RouterOutlet, Sidebar, BottomNav],
+  template: `
+    <div class="app-shell">
+      <app-sidebar/>
+      <main class="app-main">
+        <router-outlet/>
+      </main>
+      <app-bottom-nav/>
+    </div>
+  `,
 })
 export class AppLayout {}

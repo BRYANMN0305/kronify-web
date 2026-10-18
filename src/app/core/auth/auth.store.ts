@@ -17,7 +17,10 @@ export interface JwtClaims {
   sub?: string;
   email?: string;
   name?: string;
+  lastName?: string;
   profileType?: 'BUSINESS' | 'CLIENT';
+  /** slug público del negocio (claim del JWT cuando ya existe el negocio) */
+  slug?: string;
   [key: string]: unknown;
 }
 
