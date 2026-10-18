@@ -1,0 +1,113 @@
+<aside class="app-sidebar">
+  <div class="sidebar-header">
+    <span class="sidebar-logo">
+      <img class="sidebar-logo-mark" src="images/icons/kronify_logo.png" alt="Kronify"/>
+      <span class="sidebar-logo-text">Kronify</span>
+    </span>
+  </div>
+
+  <hr class="sidebar-divider"/>
+
+  <nav class="sidebar-nav" aria-label="Navegación principal">
+    @for (item of navItems(); track item.path) {
+      <button type="button"
+              class="sidebar-nav-item"
+              [class.is-active]="isActive(item)"
+              (click)="navigate(item)">
+        <span class="sidebar-nav-icon">
+          <img [src]="item.icon" alt="" aria-hidden="true"/>
+        </span>
+        <span class="sidebar-nav-label">{{ item.label }}</span>
+      </button>
+    }
+  </nav>
+
+  <div class="sidebar-footer">
+    @if (sidebarBusiness(); as business) {
+      <div class="sidebar-business">
+        <a class="sidebar-business-card"
+           [attr.href]="publicUrl() || null"
+           target="_blank"
+           rel="noopener noreferrer"
+           [attr.title]="publicUrl() || 'Página pública no disponible'">
+          <span class="sidebar-business-avatar">
+            @if (business.logoUrl) {
+              <img [src]="business.logoUrl" alt="Logo del negocio"/>
+            } @else {
+              {{ businessInitial() }}
+            }
+          </span>
+          <span class="sidebar-business-info">
+            <span class="sidebar-business-name">{{ business.name }}</span>
+            <span class="sidebar-business-category">{{ business.category }}</span>
+          </span>
+          @if (publicUrl()) {
+            <span class="sidebar-business-external">
+              <img src="images/icons/external-link.svg" alt="" aria-hidden="true"/>
+            </span>
+          }
+        </a>
+      </div>
+    }
+
+    @if (showUpgradeCard()) {
+      <div class="sidebar-upgrade">
+        <div class="sidebar-upgrade-head">
+          <span class="sidebar-upgrade-icon">
+            <img src="images/icons/sparkles.svg" alt="" aria-hidden="true"/>
+          </span>
+          <span class="sidebar-upgrade-title">Mejora tu plan</span>
+        </div>
+        <p class="sidebar-upgrade-text">¿Tu negocio va en serio? Kronify también. Sin límites de servicios, citas ni empleados.</p>
+
+        @if (planUsage().length) {
+          <div class="sidebar-usage">
+            @for (item of planUsage(); track item.label) {
+              <div class="usage-row">
+                <div class="usage-row-head">
+                  <span>{{ item.label }}</span>
+                  <span>{{ item.text }}</span>
+                </div>
+                <div class="usage-bar">
+                  <span class="usage-bar-fill" [class]="item.cls" [style.width.%]="item.pct"></span>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <button type="button" class="btn btn-primary" (click)="goPlan()">
+          Actualizar plan
+        </button>
+      </div>
+    }
+
+    <div class="sidebar-user-section">
+      <div class="sidebar-user-card">
+        <span class="sidebar-avatar">{{ initials() }}</span>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name">{{ displayName() }}</div>
+          <div class="sidebar-user-email">{{ displayEmail() }}</div>
+        </div>
+        <button type="button"
+                class="sidebar-user-toggle"
+                [class.is-open]="userMenuOpen()"
+                aria-label="Expandir perfil"
+                (click)="userMenuOpen.set(!userMenuOpen())">
+          <span><img src="images/icons/chevron-up.svg" alt="" aria-hidden="true"/></span>
+        </button>
+      </div>
+
+      @if (userMenuOpen()) {
+        <div class="sidebar-user-menu">
+          <button type="button" class="sidebar-menu-item sidebar-menu-logout" (click)="handleLogout()">
+            <span class="sidebar-menu-icon">
+              <img src="images/icons/log-out.svg" alt="" aria-hidden="true"/>
+            </span>
+            Cerrar sesión
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+</aside>
