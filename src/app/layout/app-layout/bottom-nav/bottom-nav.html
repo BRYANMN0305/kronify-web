@@ -1,0 +1,13 @@
+<nav class="app-bottom-nav" aria-label="Navegación inferior">
+  @for (item of navItems(); track item.path) {
+    <button type="button"
+            class="bottom-nav-item"
+            [class.is-active]="isActive(item)"
+            (click)="navigate(item)">
+      <span class="bottom-nav-icon">
+        <img [src]="item.icon" alt="" aria-hidden="true"/>
+      </span>
+      <span class="bottom-nav-label">{{ item.label }}</span>
+    </button>
+  }
+</nav>
