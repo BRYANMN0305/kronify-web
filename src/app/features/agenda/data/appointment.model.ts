@@ -1,12 +1,1 @@
-export type AppointmentStatus = 'Confirmada' | 'Pendiente' | 'Completada' | 'Cancelada';
-
-export interface Appointment {
-  readonly id: number;
-  readonly client: string;
-  readonly service: string;
-  readonly employee: string;
-  readonly time: string;
-  readonly durationMinutes: number;
-  readonly price?: number;
-  readonly status: AppointmentStatus;
-}
+export type { Appointment, AppointmentStatus } from '../modelos/appointment.model';

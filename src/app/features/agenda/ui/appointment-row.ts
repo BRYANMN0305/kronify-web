@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
-import type { Appointment, AppointmentStatus } from '../data/appointment.model';
+import type { Appointment, AppointmentStatus } from '../modelos/appointment.model';
 import { AppointmentStatusClassPipe } from './appointment-status.pipe';
 
 @Component({

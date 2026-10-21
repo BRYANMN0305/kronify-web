@@ -6,18 +6,8 @@ import type { AppointmentResponse } from '../../../core/api/openapi/model/appoin
 import type { AppointmentStatusUpdateRequest } from '../../../core/api/openapi/model/appointmentStatusUpdateRequest';
 import { AuthStore } from '../../../core/auth/auth.store';
 import { DatetimeService } from '../../../core/datetime/datetime.service';
-import type { Appointment, AppointmentStatus } from './appointment.model';
-
-const SAMPLE_APPOINTMENTS: Appointment[] = [
-  { id: 1, client: 'Valentina Rojas', service: 'Corte y peinado', employee: 'Camila Torres', time: '08:30', durationMinutes: 60, price: 65000, status: 'Confirmada' },
-  { id: 2, client: 'Mariana Pérez', service: 'Manicure semipermanente', employee: 'Laura Gómez', time: '09:00', durationMinutes: 75, price: 55000, status: 'Confirmada' },
-  { id: 3, client: 'Sofía Martínez', service: 'Coloración', employee: 'Camila Torres', time: '10:00', durationMinutes: 120, price: 180000, status: 'Pendiente' },
-  { id: 4, client: 'Isabella Castro', service: 'Diseño de cejas', employee: 'Laura Gómez', time: '11:30', durationMinutes: 30, price: 35000, status: 'Completada' },
-  { id: 5, client: 'Luciana Herrera', service: 'Pedicure spa', employee: 'Daniela Ruiz', time: '12:00', durationMinutes: 60, price: 70000, status: 'Confirmada' },
-  { id: 6, client: 'Gabriela Díaz', service: 'Limpieza facial', employee: 'Daniela Ruiz', time: '14:00', durationMinutes: 90, price: 95000, status: 'Pendiente' },
-  { id: 7, client: 'Paula Mendoza', service: 'Corte de puntas', employee: 'Camila Torres', time: '15:30', durationMinutes: 45, price: 45000, status: 'Cancelada' },
-  { id: 8, client: 'Manuela Silva', service: 'Manicure tradicional', employee: 'Laura Gómez', time: '16:30', durationMinutes: 45, price: 40000, status: 'Confirmada' },
-];
+import type { Appointment, AppointmentStatus } from '../modelos/appointment.model';
+import { SAMPLE_APPOINTMENTS } from '../datos/appointments.data';
 
 @Injectable({ providedIn: 'root' })
 export class AgendaStore {
@@ -42,6 +32,38 @@ export class AgendaStore {
       .filter(({ status, price }) => status !== 'Cancelada' && price !== undefined)
       .reduce((total, appointment) => total + (appointment.price ?? 0), 0),
   );
+
+  loadDemo(): void {
+    this.appointmentsState.set(SAMPLE_APPOINTMENTS);
+    this.loadingState.set(false);
+    this.errorState.set(null);
+    this.demoState.set(true);
+  }
+
+  async loadRange(startDate: string, endDate: string): Promise<void> {
+    if (!this.auth.isAuthenticated()) {
+      this.loadDemo();
+      return;
+    }
+
+    this.loadingState.set(true);
+    this.errorState.set(null);
+    try {
+      const [appointments, services] = await Promise.all([
+        firstValueFrom(this.api.getAgenda(startDate, endDate)),
+        firstValueFrom(this.servicesApi.listServices()).catch(() => []),
+      ]);
+      const prices = new Map(services.map((service) => [service.id, service.price]));
+      this.appointmentsState.set(appointments.map((appointment) => this.fromApi(appointment, prices)));
+      this.demoState.set(false);
+    } catch {
+      this.errorState.set('No se pudo cargar la agenda del servidor. Se muestran datos de demostración.');
+      this.loadDemo();
+      this.errorState.set('No se pudo cargar la agenda del servidor. Se muestran datos de demostración.');
+    } finally {
+      this.loadingState.set(false);
+    }
+  }
 
   async loadToday(): Promise<void> {
     if (!this.auth.isAuthenticated()) {
@@ -76,7 +98,7 @@ export class AgendaStore {
     if (!this.demoState()) {
       const apiStatus: AppointmentStatusUpdateRequest['status'] = {
         Confirmada: 'CONFIRMED', Pendiente: 'PENDING', Completada: 'COMPLETED', Cancelada: 'CANCELLED',
-      }[status];
+      }[status] as AppointmentStatusUpdateRequest['status'];
       try {
         await firstValueFrom(this.api.updateAppointmentStatus(id, { status: apiStatus }));
       } catch {
@@ -94,15 +116,17 @@ export class AgendaStore {
 
   private fromApi(appointment: AppointmentResponse, prices: ReadonlyMap<number | undefined, number | undefined>): Appointment {
     const startsAt = appointment.startAt ? this.datetime.fromUtc(appointment.startAt) : this.datetime.now();
-    const status: AppointmentStatus = {
+    const statusByApi: Record<NonNullable<AppointmentResponse['status']>, AppointmentStatus> = {
       PENDING: 'Pendiente', CONFIRMED: 'Confirmada', COMPLETED: 'Completada', CANCELLED: 'Cancelada', NO_SHOW: 'Cancelada',
-    }[appointment.status ?? 'PENDING'];
+    };
+    const status = statusByApi[appointment.status ?? 'PENDING'];
     return {
       id: appointment.appointmentId ?? 0,
       client: appointment.customerName ?? 'Cliente',
       service: appointment.serviceName ?? 'Servicio',
       employee: appointment.employeeName ?? 'Por asignar',
       time: startsAt.format('HH:mm'),
+      dateKey: startsAt.format('YYYY-MM-DD'),
       durationMinutes: appointment.serviceDurationMinutes ?? 0,
       price: prices.get(appointment.serviceId),
       status,

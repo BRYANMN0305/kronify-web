@@ -1,32 +1,55 @@
 <section class="agenda-page">
-  <header class="agenda-header">
-    <div><p class="eyebrow">Tu negocio, en orden</p><h1>Agenda</h1><p class="header-date">{{ today | date:'EEEE, d MMMM':'':'es-CO' }}</p></div>
-    <button class="primary-action" type="button"><span aria-hidden="true">＋</span> Nueva cita</button>
+  <div class="agenda-kicker">CALENDARIO OPERATIVO</div>
+  <header class="agenda-toolbar">
+    <div class="agenda-title-group">
+      <h1>Calendario</h1>
+      <div class="month-switcher">
+        <button type="button" class="month-arrow" (click)="previousMonth()" aria-label="Mes anterior">‹</button>
+        <h2>{{ monthLabel() | titlecase }}</h2>
+        <button type="button" class="month-arrow" (click)="nextMonth()" aria-label="Mes siguiente">›</button>
+      </div>
+    </div>
+    <div class="agenda-controls">
+      <label class="agenda-select-wrap"><span class="visually-hidden">Filtrar por empleado</span>
+        <select class="agenda-select" [value]="selectedEmployee()" (change)="setEmployee($any($event.target).value)">
+          @for (employee of employees(); track employee) { <option [value]="employee">{{ employee === 'TODOS' ? 'Todos los empleados' : employee }}</option> }
+        </select>
+      </label>
+      <label class="agenda-select-wrap"><span class="visually-hidden">Filtrar por servicio</span>
+        <select class="agenda-select" [value]="selectedService()" (change)="setService($any($event.target).value)">
+          @for (service of services(); track service) { <option [value]="service">{{ service === 'TODOS' ? 'Todos los servicios' : service }}</option> }
+        </select>
+      </label>
+      <label class="agenda-select-wrap"><span class="visually-hidden">Filtrar por estado</span>
+        <select class="agenda-select" [value]="selectedStatus()" (change)="setStatus($any($event.target).value)">
+          @for (filter of statusFilters; track filter.value) { <option [value]="filter.value">{{ filter.label }}</option> }
+        </select>
+      </label>
+      <button class="agenda-new-button" type="button"><span>＋</span> Nueva cita</button>
+    </div>
   </header>
 
-  <app-agenda-summary [confirmed]="confirmedCount()" [total]="appointmentCount()" [revenue]="revenueLabel()" />
+  <app-agenda-summary [confirmed]="store.confirmedCount()" [total]="store.appointmentCount()" [revenue]="revenueLabel()" />
 
   @if (storeError()) {
-    <p class="agenda-notice" role="status">{{ storeError() }}</p>
+    <div class="agenda-api-alert" role="status"><span class="alert-icon">!</span><div><strong>No se pudo conectar con la agenda</strong><p>{{ storeError() }}</p></div></div>
   } @else if (isDemo()) {
-    <p class="agenda-notice" role="status">Vista de demostración con datos de ejemplo.</p>
+    <div class="agenda-demo-alert" role="status">Vista de demostración · datos de ejemplo</div>
   }
 
-  <section class="appointments-panel" aria-labelledby="appointments-title">
-    <div class="panel-heading"><div><h2 id="appointments-title">Citas de hoy</h2><span>{{ visibleAppointments().length }} resultados</span></div><button class="date-selector" type="button">Hoy <span aria-hidden="true">⌄</span></button></div>
-    <nav class="filter-tabs" aria-label="Filtrar citas">
-      @for (filter of filters; track filter) {
-        <button type="button" class="filter-tab" [class.active]="activeFilter() === filter" (click)="setFilter(filter)">{{ filter }}</button>
-      }
-    </nav>
-    <div class="appointments-list" [attr.aria-busy]="loading()">
-      @if (loading()) { <p class="loading-state">Cargando agenda…</p> }
+  <app-calendar-grid [weeks]="calendarWeeks()" [selectedKey]="selectedDayKey()" (daySelected)="selectDay($event)" />
+
+  <section class="selected-day-panel" aria-live="polite">
+    <div class="selected-day-heading">
+      <div><span class="agenda-kicker">DÍA SELECCIONADO</span><h3>{{ selectedDate().toDate() | date:'EEEE, d MMMM':'':'es-CO' | titlecase }}</h3></div>
+      <span class="selected-day-count">{{ visibleAppointments().length }} citas</span>
+    </div>
+    <div class="selected-day-list">
       @for (appointment of visibleAppointments(); track appointment.id) {
-        <app-appointment-row [appointment]="appointment" (statusChange)="updateStatus(appointment, $event)" />
+          <app-appointment-row [appointment]="appointment" (statusChange)="updateStatus(appointment, $event)" />
       } @empty {
-        <div class="empty-state"><span>⌕</span><strong>No hay citas en este filtro</strong><p>Prueba con otro estado para ver tus citas.</p></div>
+        <p class="selected-day-empty">No hay citas para este día con los filtros seleccionados.</p>
       }
     </div>
-    <footer class="panel-footer">Mostrando {{ visibleAppointments().length }} de {{ appointmentCount() }} citas <span>Actualizado hace un momento</span></footer>
   </section>
 </section>

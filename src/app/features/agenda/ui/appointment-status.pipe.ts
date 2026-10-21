@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import type { AppointmentStatus } from '../data/appointment.model';
+import type { AppointmentStatus } from '../modelos/appointment.model';
 
 @Pipe({ name: 'appointmentStatusClass', standalone: true })
 export class AppointmentStatusClassPipe implements PipeTransform {
