@@ -1,0 +1,32 @@
+<section class="agenda-page">
+  <header class="agenda-header">
+    <div><p class="eyebrow">Tu negocio, en orden</p><h1>Agenda</h1><p class="header-date">{{ today | date:'EEEE, d MMMM':'':'es-CO' }}</p></div>
+    <button class="primary-action" type="button"><span aria-hidden="true">＋</span> Nueva cita</button>
+  </header>
+
+  <app-agenda-summary [confirmed]="confirmedCount()" [total]="appointmentCount()" [revenue]="revenueLabel()" />
+
+  @if (storeError()) {
+    <p class="agenda-notice" role="status">{{ storeError() }}</p>
+  } @else if (isDemo()) {
+    <p class="agenda-notice" role="status">Vista de demostración con datos de ejemplo.</p>
+  }
+
+  <section class="appointments-panel" aria-labelledby="appointments-title">
+    <div class="panel-heading"><div><h2 id="appointments-title">Citas de hoy</h2><span>{{ visibleAppointments().length }} resultados</span></div><button class="date-selector" type="button">Hoy <span aria-hidden="true">⌄</span></button></div>
+    <nav class="filter-tabs" aria-label="Filtrar citas">
+      @for (filter of filters; track filter) {
+        <button type="button" class="filter-tab" [class.active]="activeFilter() === filter" (click)="setFilter(filter)">{{ filter }}</button>
+      }
+    </nav>
+    <div class="appointments-list" [attr.aria-busy]="loading()">
+      @if (loading()) { <p class="loading-state">Cargando agenda…</p> }
+      @for (appointment of visibleAppointments(); track appointment.id) {
+        <app-appointment-row [appointment]="appointment" (statusChange)="updateStatus(appointment, $event)" />
+      } @empty {
+        <div class="empty-state"><span>⌕</span><strong>No hay citas en este filtro</strong><p>Prueba con otro estado para ver tus citas.</p></div>
+      }
+    </div>
+    <footer class="panel-footer">Mostrando {{ visibleAppointments().length }} de {{ appointmentCount() }} citas <span>Actualizado hace un momento</span></footer>
+  </section>
+</section>

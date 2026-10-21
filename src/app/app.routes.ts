@@ -32,8 +32,8 @@ export const routes: Routes = [
     data: { requiresAuth: true },
     children: [
       { path: 'calendario',
-        data: { title: 'Calendario — ventana provisional de la migración' },
-        loadComponent: () => import('./layout/app-layout/pending-page/pending-page').then(m => m.PendingPage) },
+        data: { title: 'Agenda' },
+        loadComponent: () => import('./features/agenda/pages/agenda-page/agenda-page').then(m => m.AgendaPage) },
 
       // TODO(B): 'mis-citas' · 'resenas' · 'servicios' · 'horarios'
       // TODO(B): { path: 'negocio/:slug', ... } pública, fuera de este layout

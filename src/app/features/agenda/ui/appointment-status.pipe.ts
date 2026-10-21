@@ -1,0 +1,14 @@
+import { Pipe, PipeTransform } from '@angular/core';
+import type { AppointmentStatus } from '../data/appointment.model';
+
+@Pipe({ name: 'appointmentStatusClass', standalone: true })
+export class AppointmentStatusClassPipe implements PipeTransform {
+  transform(status: AppointmentStatus): string {
+    switch (status) {
+      case 'Confirmada': return 'status-confirmed';
+      case 'Pendiente': return 'status-pending';
+      case 'Completada': return 'status-completed';
+      case 'Cancelada': return 'status-cancelled';
+    }
+  }
+}
