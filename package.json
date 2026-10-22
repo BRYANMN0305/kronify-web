@@ -6,8 +6,8 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test",
-    "generate:api": "npx @openapitools/openapi-generator-cli@2 generate -i https://kronify-apis.duckdns.org/v3/api-docs -g typescript-angular -o src/app/core/api/openapi --additional-properties=providedInRoot=true"
+    "generate:api": "npx @openapitools/openapi-generator-cli@2 generate -i https://kronify-apis.duckdns.org/v3/api-docs -g typescript-angular -o src/app/core/api/openapi --additional-properties=providedInRoot=true",
+    "lint": "ng lint"
   },
   "private": true,
   "packageManager": "npm@11.19.1",
@@ -27,10 +27,12 @@
     "@angular/build": "^22.1.8",
     "@angular/cli": "^22.1.8",
     "@angular/compiler-cli": "^22.1.0",
+    "@eslint/js": "^10.0.1",
     "@types/node": "^20.17.19",
-    "jsdom": "^28.0.0",
+    "angular-eslint": "22.6.0",
+    "eslint": "^10.12.0",
     "prettier": "^3.8.1",
     "typescript": "~6.0.2",
-    "vitest": "^4.0.8"
+    "typescript-eslint": "8.71.0"
   }
 }

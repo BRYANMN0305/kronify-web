@@ -17,9 +17,11 @@
       <h1 class="auth-title">Casi listo</h1>
       <p class="auth-subtitle">¿Cómo querés usar Kronify?</p>
 
-      <form (submit)="submitProfile()" novalidate>
+      <form (ngSubmit)="submitProfile($event)" novalidate>
         <div class="mb-3">
-          <app-profile-type-selector [(profileType)]="profileType"/>
+          <app-profile-type-selector
+            [profileType]="profileType()"
+            (profileTypeChange)="profileType.set($event)"/>
         </div>
 
         <button type="submit" class="btn btn-primary w-100" [disabled]="savingProfile()">
@@ -30,7 +32,7 @@
         </button>
 
         @if (profileError()) {
-          <div class="auth-error">{{ profileError() }}</div>
+          <div class="auth-error alert alert-danger py-2 px-3 small mb-0" role="alert">{{ profileError() }}</div>
         }
       </form>
     </div>

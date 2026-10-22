@@ -24,8 +24,8 @@
 
         <div class="mb-3">
           <label for="bizSlug" class="form-label">Slug (URL de tu negocio)*</label>
-          <div class="slug-wrapper d-flex align-items-center rounded-2 overflow-hidden">
-            <span class="slug-prefix text-nowrap user-select-none">kronifytech.vercel.app/</span>
+          <div class="input-group slug-wrapper rounded-2 overflow-hidden">
+            <span class="input-group-text slug-prefix text-nowrap user-select-none">kronifytech.vercel.app/</span>
             <input id="bizSlug"
                    type="text"
                    class="form-control slug-input"
@@ -34,7 +34,7 @@
                    [value]="slug()"
                    (input)="slug.set($any($event.target).value)"/>
           </div>
-          <div class="field-error">{{ errors().slug }}</div>
+          <div class="text-danger small mt-1">{{ errors().slug }}</div>
         </div>
 
         <div class="mb-3">
@@ -114,7 +114,7 @@
 
     @case (4) {
       <div class="step-anim" [class.slide-left]="direction() === 1" [class.slide-right]="direction() === -1">
-        <p class="field-hint">Define los días y horas en que tu negocio está abierto. Los horarios de tus empleados no pueden salir de este rango.</p>
+        <p class="small text-secondary mt-2 mb-0">Define los días y horas en que tu negocio está abierto. Los horarios de tus empleados no pueden salir de este rango.</p>
 
         <div class="schedules-table">
           <div class="schedules-week-row schedules-week-head">
@@ -141,7 +141,7 @@
           }
         </div>
         @if (hoursError()) {
-          <div class="onboarding-error">{{ hoursError() }}</div>
+          <div class="alert alert-danger py-2 px-3 small mb-3">{{ hoursError() }}</div>
         }
       </div>
     }
@@ -156,19 +156,19 @@
                  placeholder="Ingresa tu código"
                  [value]="activationCode()"
                  (input)="activationCode.set($any($event.target).value)"/>
-          <p class="field-hint">Si tienes un código de activación, ingrésalo aquí para configurar tu plan automáticamente.</p>
+          <p class="small text-secondary mt-2 mb-0">Si tienes un código de activación, ingrésalo aquí para configurar tu plan automáticamente.</p>
         </div>
       </div>
     }
   }
 
   @if (errorMessage()) {
-    <div class="onboarding-error">{{ errorMessage() }}</div>
+    <div class="alert alert-danger py-2 px-3 small mb-3">{{ errorMessage() }}</div>
   }
 
-  <div class="step-nav">
+  <div class="d-flex justify-content-between align-items-center mt-4 pt-3">
     @if (currentStep() > 1) {
-      <button type="button" class="btn-back-step" (click)="prevStep()">
+      <button type="button" class="btn btn-link text-secondary text-decoration-none px-2 py-1" (click)="prevStep()">
         &lsaquo; Atrás
       </button>
     } @else {

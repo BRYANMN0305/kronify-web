@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { AuthStore } from '../../../core/auth/auth.store';
 import { Permissions } from '../../../core/auth/permissions';
 import { SettingsStore } from '../../../core/settings/settings.store';
+import { Icon } from '../../../shared/ui/icon/icon';
 import { NavItem } from '../nav-item';
 
 interface PlanUsageBar {
@@ -14,17 +15,18 @@ interface PlanUsageBar {
 }
 
 const ICONS = {
-  home: 'images/icons/home.svg',
-  wrench: 'images/icons/wrench.svg',
-  clock: 'images/icons/clock.svg',
-  settings: 'images/icons/settings.svg',
-  users: 'images/icons/users.svg',
+  home: 'home',
+  wrench: 'wrench',
+  clock: 'clock',
+  settings: 'settings',
+  users: 'users',
 } as const;
 
 /** Equivalente de Sidebar.vue — barra lateral fija (mobile oculta por CSS) */
 @Component({
   selector: 'app-sidebar',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [Icon],
   host: { '(document:click)': 'closeMenu($event)' },
   templateUrl: './sidebar.html',
 })
@@ -130,7 +132,7 @@ export class Sidebar {
 
   constructor() {
     if (!this.settings.profileLoaded()) {
-      void this.settings.fetchAll(this.permissions.isOwner()).catch(() => {});
+      void this.settings.fetchAll(this.permissions.isOwner()).catch(() => undefined);
     }
   }
 

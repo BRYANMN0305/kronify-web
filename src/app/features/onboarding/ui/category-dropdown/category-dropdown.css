@@ -44,6 +44,9 @@
 .category-chevron {
   color: var(--color-text-muted);
   margin-right: 0.7rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
   transition: transform 0.2s;
   flex-shrink: 0;
   display: inline-flex;

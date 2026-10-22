@@ -1,25 +1,12 @@
 .pending-page {
-  align-items: center;
   background: var(--color-bg);
   color: var(--color-text);
-  display: flex;
-  justify-content: center;
-  min-height: 100vh;
-  padding: 2rem;
 }
 
 .pending-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
-  padding: 2rem 2.5rem;
-  text-align: center;
-}
-
-.pending-title {
-  font-size: 1.4rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
+  --bs-card-bg: var(--color-surface);
+  --bs-card-border-color: var(--color-border);
+  --bs-card-border-radius: 12px;
 }
 
 .pending-note {

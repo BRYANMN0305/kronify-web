@@ -77,10 +77,13 @@ export class AuthStore {
 
   private readonly tokenSignal = signal<string | null>(this.storage.getToken());
   private readonly userSignal = signal<JwtClaims | null>(decodeJwt(this.storage.getToken()));
+  private readonly loadingSignal = signal(false);
+  private readonly errorSignal = signal<string | null>(null);
+  private readonly oauthRedirectingSignal = signal(false);
 
-  readonly loading = signal(false);
-  readonly error = signal<string | null>(null);
-  readonly oauthRedirecting = signal(false);
+  readonly loading = this.loadingSignal.asReadonly();
+  readonly error = this.errorSignal.asReadonly();
+  readonly oauthRedirecting = this.oauthRedirectingSignal.asReadonly();
 
   readonly token = this.tokenSignal.asReadonly();
   readonly user = this.userSignal.asReadonly();
@@ -90,54 +93,61 @@ export class AuthStore {
 
   /** setAuth — Guarda el token y deriva el usuario de sus claims */
   private setAuth(accessToken: string): void {
-    this.tokenSignal.set(accessToken);
-    this.userSignal.set(decodeJwt(accessToken));
-    this.storage.setToken(accessToken);
+    const token = accessToken?.trim();
+    if (!token) {
+      throw new Error('La respuesta de autenticación no incluyó un token válido.');
+    }
+    this.tokenSignal.set(token);
+    this.userSignal.set(decodeJwt(token));
+    this.storage.setToken(token);
     this.storage.setUser(this.userSignal());
   }
 
   logout(): void {
     this.tokenSignal.set(null);
     this.userSignal.set(null);
+    this.loadingSignal.set(false);
+    this.errorSignal.set(null);
+    this.oauthRedirectingSignal.set(false);
     this.storage.clear();
   }
 
   /** login — Credenciales email/contraseña → sesión activa */
   async login(credentials: LoginRequest): Promise<TokenResponse> {
-    this.loading.set(true);
-    this.error.set(null);
+    this.loadingSignal.set(true);
+    this.errorSignal.set(null);
     try {
       const token = await firstValueFrom(this.authApi.login(credentials));
       this.setAuth(token.accessToken ?? '');
       return token;
     } catch (error) {
-      this.error.set(apiErrorMessage(error));
+      this.errorSignal.set(apiErrorMessage(error));
       throw error;
     } finally {
-      this.loading.set(false);
+      this.loadingSignal.set(false);
     }
   }
 
   /** register — Registro con UserRegisterRequest (equ enums: CLIENT | BUSINESS) */
   async register(payload: UserRegisterRequest): Promise<TokenResponse> {
-    this.loading.set(true);
-    this.error.set(null);
+    this.loadingSignal.set(true);
+    this.errorSignal.set(null);
     try {
       const token = await firstValueFrom(this.authApi.register(payload));
       this.setAuth(token.accessToken ?? '');
       return token;
     } catch (error) {
-      this.error.set(apiErrorMessage(error));
+      this.errorSignal.set(apiErrorMessage(error));
       throw error;
     } finally {
-      this.loading.set(false);
+      this.loadingSignal.set(false);
     }
   }
 
   /** oauthLoginUrl — URL completa de redirección al proveedor; la page hace window.location.href */
   oauthLoginUrl(provider: OAuthProvider): string {
     const registrationId = OAUTH_REGISTRATION_IDS[provider] ?? provider;
-    this.oauthRedirecting.set(true);
+    this.oauthRedirectingSignal.set(true);
     return `${this.basePath}/oauth2/authorization/${registrationId}`;
   }
 

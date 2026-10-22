@@ -23,8 +23,6 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./features/onboarding/pages/onboarding-business-page/onboarding-business-page').then(m => m.OnboardingBusinessPage) },
 
-  // TODO(A): { path: 'configuracion', loadChildren: ... } — feature settings
-
   // Vista previa académica de la agenda, disponible sin autenticación.
   { path: 'demo-calendario',
     component: AppLayout,
@@ -33,19 +31,20 @@ export const routes: Routes = [
       data: { demoMode: true, title: 'Vista previa de agenda' },
       loadComponent: () => import('./features/agenda/pages/agenda-page/agenda-page').then(m => m.AgendaPage) }] },
 
-  // Vista de agenda disponible para evaluación; usa API con sesión y datos locales de respaldo sin sesión.
-  { path: 'calendario',
-    component: AppLayout,
-    data: { title: 'Calendario' },
-    children: [{ path: '',
-      loadComponent: () => import('./features/agenda/pages/agenda-page/agenda-page').then(m => m.AgendaPage) }] },
-
   // ── 🅱 PERSONA B: operación de citas (children del layout autenticado) ──
   { path: '',
     component: AppLayout,
     canActivate: [authGuard],
     data: { requiresAuth: true },
     children: [
+      { path: 'calendario',
+        data: { title: 'Calendario' },
+        loadComponent: () => import('./features/agenda/pages/agenda-page/agenda-page').then(m => m.AgendaPage) },
+
+      { path: 'configuracion',
+        data: { title: 'Configuración' },
+        loadComponent: () => import('./features/settings/pages/settings-page/settings-page').then(m => m.SettingsPage) },
+
       // TODO(B): 'mis-citas' · 'resenas' · 'servicios' · 'horarios'
       // TODO(B): { path: 'negocio/:slug', ... } pública, fuera de este layout
     ] },

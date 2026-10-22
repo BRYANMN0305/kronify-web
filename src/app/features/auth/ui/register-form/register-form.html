@@ -2,7 +2,7 @@
   <h1 class="auth-title">Crear una cuenta</h1>
   <p class="auth-subtitle">Únete a Kronify y despega tu negocio</p>
 
-  <form (submit)="submit()" novalidate>
+  <form (ngSubmit)="submit($event)" novalidate>
     <div class="row g-2 mb-2">
       <div class="col-6">
         <label for="name" class="form-label">Nombre</label>
@@ -69,7 +69,9 @@
     </div>
 
     <div class="mb-3">
-      <app-profile-type-selector [(profileType)]="profileTypeSignal"/>
+      <app-profile-type-selector
+        [profileType]="profileTypeSignal()"
+        (profileTypeChange)="profileTypeSignal.set($event)"/>
     </div>
 
     <button type="submit" class="btn btn-primary w-100" [disabled]="loading()">
@@ -81,7 +83,7 @@
   </form>
 
   @if (errorMessage()) {
-    <div class="auth-error">{{ errorMessage() }}</div>
+    <div class="auth-error alert alert-danger py-2 px-3 small mb-0" role="alert">{{ errorMessage() }}</div>
   }
 
   <div class="auth-divider my-2">o</div>
