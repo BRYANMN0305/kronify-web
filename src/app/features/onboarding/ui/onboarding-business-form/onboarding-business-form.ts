@@ -23,7 +23,7 @@ export interface OnboardingSubmitPayload {
   readonly email: string;
   readonly phoneNumber: string;
   readonly whatsApp: string;
-  readonly openingHours: ReadonlyArray<{ dayOfWeek: number; startTime: string; endTime: string }>;
+  readonly openingHours: readonly { dayOfWeek: number; startTime: string; endTime: string }[];
   readonly activationCode: string | null;
 }
 

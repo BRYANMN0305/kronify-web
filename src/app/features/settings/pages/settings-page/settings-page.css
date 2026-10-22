@@ -1,0 +1,41 @@
+.settings-logout-mobile {
+  display: none;
+}
+
+.settings-logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+  color: rgba(255, 138, 138, 0.85);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+
+.settings-logout-btn:hover {
+  color: #ff8a8a;
+  background: rgba(255, 107, 107, 0.08);
+  border-color: rgba(255, 107, 107, 0.35);
+}
+
+.settings-logout-icon {
+  display: inline-flex;
+}
+
+.settings-logout-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+@media (max-width: 768px) {
+  .settings-logout-mobile {
+    display: block;
+  }
+}

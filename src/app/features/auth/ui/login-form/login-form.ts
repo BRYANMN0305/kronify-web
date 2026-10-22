@@ -1,4 +1,4 @@
-import { Component, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { OAuthButtons, OAuthProvider } from '../oauth-buttons/oauth-buttons';
@@ -14,13 +14,14 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 /** Formulario de inicio de sesión (port de LoginForm.vue, contrato por inputs/outputs). */
 @Component({
   selector: 'app-login-form',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FormsModule, OAuthButtons],
   templateUrl: './login-form.html',
 })
 export class LoginForm {
-  readonly loading = input(false);
-  readonly errorMessage = input<string | null>(null);
-  readonly oauthRedirecting = input(false);
+  readonly loading = input.required<boolean>();
+  readonly errorMessage = input.required<string | null>();
+  readonly oauthRedirecting = input.required<boolean>();
 
   readonly login = output<LoginRequest>();
   readonly switchToRegister = output<void>();
@@ -44,7 +45,8 @@ export class LoginForm {
     return !next.email && !next.password;
   }
 
-  submit(): void {
+  submit(event: Event): void {
+    event.preventDefault();
     if (!this.validate()) return;
     this.login.emit({ email: this.email(), password: this.password() });
   }

@@ -3,20 +3,22 @@ import { Router } from '@angular/router';
 
 import { AuthStore } from '../../../core/auth/auth.store';
 import { Permissions } from '../../../core/auth/permissions';
+import { Icon } from '../../../shared/ui/icon/icon';
 import { NavItem } from '../nav-item';
 
 const ICONS = {
-  home: 'images/icons/home.svg',
-  wrench: 'images/icons/wrench.svg',
-  clock: 'images/icons/clock.svg',
-  settings: 'images/icons/settings.svg',
-  users: 'images/icons/users.svg',
+  home: 'home',
+  wrench: 'wrench',
+  clock: 'clock',
+  settings: 'settings',
+  users: 'users',
 } as const;
 
 /** Equivalente de BottomNav.vue — barra inferior para mobile (<= 768px por CSS) */
 @Component({
   selector: 'app-bottom-nav',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [Icon],
   templateUrl: './bottom-nav.html',
 })
 export class BottomNav {

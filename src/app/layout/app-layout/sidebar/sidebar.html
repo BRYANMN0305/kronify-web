@@ -15,7 +15,7 @@
               [class.is-active]="isActive(item)"
               (click)="navigate(item)">
         <span class="sidebar-nav-icon">
-          <img [src]="item.icon" alt="" aria-hidden="true"/>
+          <app-icon [name]="item.icon" aria-hidden="true"/>
         </span>
         <span class="sidebar-nav-label">{{ item.label }}</span>
       </button>
@@ -43,7 +43,7 @@
           </span>
           @if (publicUrl()) {
             <span class="sidebar-business-external">
-              <img src="images/icons/external-link.svg" alt="" aria-hidden="true"/>
+              <app-icon name="external-link" aria-hidden="true"/>
             </span>
           }
         </a>
@@ -54,7 +54,7 @@
       <div class="sidebar-upgrade">
         <div class="sidebar-upgrade-head">
           <span class="sidebar-upgrade-icon">
-            <img src="images/icons/sparkles.svg" alt="" aria-hidden="true"/>
+            <app-icon name="sparkles" aria-hidden="true"/>
           </span>
           <span class="sidebar-upgrade-title">Mejora tu plan</span>
         </div>
@@ -94,15 +94,15 @@
                 [class.is-open]="userMenuOpen()"
                 aria-label="Expandir perfil"
                 (click)="userMenuOpen.set(!userMenuOpen())">
-          <span><img src="images/icons/chevron-up.svg" alt="" aria-hidden="true"/></span>
+          <app-icon name="chevron-up" aria-hidden="true"/>
         </button>
       </div>
 
       @if (userMenuOpen()) {
         <div class="sidebar-user-menu">
           <button type="button" class="sidebar-menu-item sidebar-menu-logout" (click)="handleLogout()">
-            <span class="sidebar-menu-icon">
-              <img src="images/icons/log-out.svg" alt="" aria-hidden="true"/>
+            <span class="sidebar-menu-icon" aria-hidden="true">
+              <app-icon name="log-out"/>
             </span>
             Cerrar sesión
           </button>
