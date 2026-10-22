@@ -72,12 +72,12 @@ export class AgendaStore {
     }
 
     const start = this.datetime.now().startOf('day');
-    const end = start.add(1, 'day');
+    // The API accepts inclusive LocalDate values, not UTC timestamps.
     this.loadingState.set(true);
     this.errorState.set(null);
     try {
       const [appointments, services] = await Promise.all([
-        firstValueFrom(this.api.getAgenda(start.toISOString(), end.toISOString())),
+        firstValueFrom(this.api.getAgenda(start.format('YYYY-MM-DD'), start.format('YYYY-MM-DD'))),
         firstValueFrom(this.servicesApi.listServices()).catch(() => []),
       ]);
       const prices = new Map(services.map((service) => [service.id, service.price]));
