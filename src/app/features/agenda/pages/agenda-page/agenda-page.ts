@@ -81,8 +81,10 @@ export class AgendaPage implements OnInit {
 
   private loadMonth(): void {
     const start = this.month().startOf('month');
-    const end = start.add(1, 'month');
-    void this.store.loadRange(start.toISOString(), end.toISOString());
+    // AppointmentController binds both query params as LocalDate (YYYY-MM-DD).
+    // Its range is inclusive, so send the final day of this month as endDate.
+    const end = start.add(1, 'month').subtract(1, 'day');
+    void this.store.loadRange(start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD'));
   }
 
   private makeCalendar(month: Dayjs, appointments: readonly Appointment[]): readonly (readonly CalendarDay[])[] {
