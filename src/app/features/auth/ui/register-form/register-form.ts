@@ -1,8 +1,8 @@
-import { Component, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { OAuthButtons, OAuthProvider } from '../oauth-buttons/oauth-buttons';
-import { ProfileTypeSelector } from '../profile-type-selector/profile-type-selector';
+import { ProfileType, ProfileTypeSelector } from '../profile-type-selector/profile-type-selector';
 import { UserRegisterRequest } from '../../../../core/api/openapi/model/userRegisterRequest';
 
 interface RegisterValidationErrors {
@@ -18,13 +18,14 @@ const MIN_PASSWORD_LENGTH = 6;
 /** Formulario de registro (port de RegisterForm.vue, contrato por inputs/outputs). */
 @Component({
   selector: 'app-register-form',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FormsModule, OAuthButtons, ProfileTypeSelector],
   templateUrl: './register-form.html',
 })
 export class RegisterForm {
-  readonly loading = input(false);
-  readonly errorMessage = input<string | null>(null);
-  readonly oauthRedirecting = input(false);
+  readonly loading = input.required<boolean>();
+  readonly errorMessage = input.required<string | null>();
+  readonly oauthRedirecting = input.required<boolean>();
 
   readonly register = output<UserRegisterRequest>();
   readonly switchToLogin = output<void>();
@@ -35,7 +36,7 @@ export class RegisterForm {
   readonly phoneNumber = signal('');
   readonly email = signal('');
   readonly passwordHash = signal('');
-  readonly profileTypeSignal = signal('CLIENT');
+  readonly profileTypeSignal = signal<ProfileType | ''>('CLIENT');
   readonly errors = signal<RegisterValidationErrors>({ name: '', lastName: '', email: '', passwordHash: '' });
 
   protected validate(): boolean {
@@ -56,7 +57,8 @@ export class RegisterForm {
     return !next.name && !next.lastName && !next.email && !next.passwordHash;
   }
 
-  submit(): void {
+  submit(event: Event): void {
+    event.preventDefault();
     if (!this.validate()) return;
     if (!this.profileTypeSignal()) return; // igual que en Vue: perfil sin seleccionar no envía
     this.register.emit({

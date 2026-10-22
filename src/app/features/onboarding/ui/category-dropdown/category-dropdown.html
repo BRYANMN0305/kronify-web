@@ -10,9 +10,12 @@
            [value]="category()"
            (focus)="open.set(true)"
            (input)="onInput($any($event.target))"/>
-    <span class="category-chevron" (click)="toggle()">
+    <button type="button"
+            class="category-chevron"
+            aria-label="Mostrar categorías"
+            (click)="toggle()">
       <img src="images/icons/chevron-down.svg" alt="" aria-hidden="true"/>
-    </span>
+    </button>
   </div>
 
   @if (open()) {

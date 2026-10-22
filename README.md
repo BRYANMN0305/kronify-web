@@ -1,64 +1,156 @@
-# Kronify · Entrega 1 (Grupo 4)
+# Kronify Web
 
-## Integrantes y dominio
+Migración del frontend de Kronify a Angular 22 con componentes standalone, signals y
+`ChangeDetectionStrategy.OnPush`. La interfaz usa Bootstrap 5 (solo CSS: grid, utilidades,
+formularios y botones); el CSS propio queda para tokens, temas y animaciones. La aplicación
+cubre autenticación, onboarding, el shell de la zona autenticada y la agenda de citas.
 
-- Iglesias Movilla Iryuris
-- Muñoz Zambrano Bryan Manuel
+## Enlaces
 
-Kronify es una SPA para negocios de belleza. El flujo de producto incluye autenticación y registro de cuentas, acceso mediante correo y contraseña o proveedores OAuth (Google/Microsoft), y la gestión de agenda. La vista principal de esta entrega es el calendario de citas. Su entidad central es `Appointment` (cita), con cliente, servicio, empleado, fecha/hora, duración, precio y estado.
+- Repositorio: <https://github.com/BRYANMN0305/kronify-web>
+- Sitio principal: <https://kronify.page.gd/>
+- API: <https://kronify-apis.duckdns.org>
+- OpenAPI: <https://kronify-apis.duckdns.org/v3/api-docs>
 
-## Ejecutar
+## Integrantes
 
-Requiere Node.js compatible con Angular CLI del proyecto y npm.
+| Persona | Integrante | Alcance |
+| --- | --- | --- |
+| Persona A | Bryan Muñoz | Autenticación, core, layouts, shared y documentación |
+| Persona B | Iglesias Movilla Iryuris | Agenda, citas, servicios, horarios, reseñas y negocio público |
+
+## Requisitos
+
+- Node.js 20 o superior
+- npm 11.19.1 (`packageManager` del proyecto)
+
+## Puesta en marcha
 
 ```bash
 npm install
 npm start
 ```
 
-Abra `http://localhost:4200/calendario`. La vista intenta consultar la API cuando hay sesión y muestra registros locales claramente marcados si no hay sesión o falla la carga. `http://localhost:4200/demo-calendario` fuerza los datos locales para revisar el prototipo.
+La aplicación queda disponible en `http://localhost:4200/`.
 
-Compilación requerida para entrega: `npx ng build`.
+La URL del backend se configura en `src/environments/environment.ts`.
 
-## Árbol de componentes de agenda
+### Scripts
+
+| Comando | Descripción |
+| --- | --- |
+| `npm start` | Servidor de desarrollo |
+| `npm run build` | Build de producción |
+| `npm run lint` | Análisis estático con ESLint |
+| `npm run generate:api` | Regenera los clientes desde OpenAPI |
+
+## Rutas
+
+| Ruta | Acceso | Descripción |
+| --- | --- | --- |
+| `/iniciar-sesion` | Público | Login con credenciales u OAuth |
+| `/registro` | Público | Registro de cliente o negocio |
+| `/oauth/callback` | Público | Finalización del login OAuth |
+| `/onboarding-negocio` | Autenticado | Wizard de creación del negocio |
+| `/calendario` | Autenticado | Agenda de citas; destino posterior al login |
+| `/demo-calendario` | Público | Vista previa de la agenda con datos locales |
+| `/configuracion` | Autenticado | Configuración de cuenta (placeholder de settings) |
+| `**` | — | Redirección a `/calendario` |
+
+## Flujo de autenticación
+
+1. `AuthPage` recibe el modo desde la ruta (`withComponentInputBinding`).
+2. `LoginForm` o `RegisterForm` validan y emiten el payload.
+3. `AuthStore` llama al backend y persiste el token.
+4. `navigateAfterAuth()` resuelve invitación pendiente, onboarding o `/calendario`.
+5. El `authGuard` protege las rutas autenticadas y redirige a login si no hay sesión.
+6. `AgendaPage` carga el rango visible desde la API usando el token de la sesión.
+
+## Árbol de componentes
 
 ```text
-Rutas públicas
-├── /iniciar-sesion ─┐
-├── /registro ───────┴── AuthLayout > AuthPage > LoginForm | RegisterForm > OAuthButtons
-└── /oauth/callback ─── OAuthCallbackPage > AuthLayout
-
-AppLayout (shell de áreas autenticadas y modo de evaluación)
-├── AgendaStateHeader (lector externo del estado compartido)
-└── AgendaPage (vista calendario y coordinación de filtros/selección)
-    ├── AgendaSummary (indicadores derivados de la agenda)
-    ├── CalendarGrid (mes y selección del día)
-    └── AppointmentRow (repetido por cita y acción de confirmar)
+App
+└── RouterOutlet
+    ├── AuthPage
+    │   └── AuthLayout
+    │       ├── AnimatedBars
+    │       ├── BackToWebsiteButton
+    │       ├── ChronoClock
+    │       ├── LoginForm
+    │       │   └── OAuthButtons
+    │       │       └── OAuthProviderButton
+    │       └── RegisterForm
+    │           ├── ProfileTypeSelector
+    │           └── OAuthButtons
+    │               └── OAuthProviderButton
+    ├── OAuthCallbackPage
+    │   └── AuthLayout
+    │       └── ProfileTypeSelector
+    ├── OnboardingBusinessPage
+    │   └── OnboardingBusinessForm
+    │       ├── OnboardingProgressBar
+    │       ├── OnboardingStepHeader
+    │       ├── CategoryDropdown
+    │       └── LogoUpload
+    └── AppLayout
+        ├── Sidebar
+        ├── AgendaStateHeader
+        ├── RouterOutlet
+        │   ├── AgendaPage
+        │   │   ├── AgendaSummary
+        │   │   ├── CalendarGrid
+        │   │   └── AppointmentRow
+        │   └── SettingsPage
+        └── BottomNav
 ```
 
-## Contratos
+## Contratos de componentes
 
-| Componente | Inputs | Outputs | Estado que usa |
+| Componente | Inputs | Outputs | Responsabilidad |
 | --- | --- | --- | --- |
-| `AgendaPage` | `demoMode` (opcional) | — | `AgendaStore`; coordina carga, filtros, día y mes |
-| `AgendaStateHeader` | — | — | Lee `confirmedCount`, `appointmentCount` e `isDemo` de `AgendaStore` desde el shell |
-| `CalendarGrid` | `weeks` requerido; `selectedKey` requerido | `daySelected: Date` | No posee estado; recibe datos del padre |
-| `AppointmentRow` | `appointment` requerido | `statusChange: AppointmentStatus` | No posee estado; comunica la intención al padre |
-| `AgendaSummary` | `confirmed`, `total`, `revenue` requeridos | — | Presentacional; recibe valores derivados del padre |
-| `LoginForm` | `loading`, `errorMessage`, `oauthRedirecting` | `login`, `switchToRegister`, `oauth` | Presentacional; `AuthPage` coordina con `AuthStore` |
-| `RegisterForm` | `loading`, `errorMessage`, `oauthRedirecting` | `register`, `switchToLogin`, `oauth` | Presentacional; `AuthPage` coordina registro y selección de perfil |
-| `OAuthButtons` | `disabled` | `oauth` | Emite proveedor; `AuthStore` prepara la URL de autorización |
+| `AuthPage` | `mode` (requerido) | — | Alterna login/registro y ejecuta la navegación post-login |
+| `LoginForm` | `loading`, `errorMessage`, `oauthRedirecting` (requeridos) | `login`, `switchToRegister`, `oauth` | Valida credenciales y emite el payload |
+| `RegisterForm` | `loading`, `errorMessage`, `oauthRedirecting` (requeridos) | `register`, `switchToLogin`, `oauth` | Valida el registro y emite el payload |
+| `OAuthButtons` | `disabled` (requerido) | `oauth` | Recorre los proveedores disponibles |
+| `OAuthProviderButton` | `provider`, `disabled` (requeridos) | `selected` | Presenta un proveedor OAuth |
+| `ProfileTypeSelector` | `profileType` (requerido) | `profileTypeChange` | Selección CLIENT/BUSINESS |
+| `AgendaPage` | `demoMode` (opcional) | — | Coordina carga, filtros, día y mes de la agenda |
+| `AgendaStateHeader` | — | — | Lee el estado compartido de `AgendaStore` desde el shell |
+| `CalendarGrid` | `weeks`, `selectedKey` (requeridos) | `daySelected: Date` | Presenta el mes y emite el día seleccionado |
+| `AppointmentRow` | `appointment` (requerido) | `statusChange: AppointmentStatus` | Presenta una cita y emite el cambio de estado |
+| `AgendaSummary` | `confirmed`, `total`, `revenue` (requeridos) | — | Presenta indicadores derivados de la agenda |
+| `PendingPage` | `title` (requerido) | — | Placeholder de rutas aún no migradas |
 
-## Servicio y propiedad del estado
+## Estado y ownership
 
-`AgendaStore` (`@Injectable({ providedIn: 'root' })`) es dueño del listado de citas, carga, error y modo demo porque calendario, resumen y filas necesitan una única fuente coherente. Mantiene signals privadas, expone lectores `asReadonly()`, y cambia datos mediante `loadDemo`, `loadRange` y `updateStatus`. `appointmentCount`, `confirmedCount` e `todayRevenue` son `computed` y la página los muestra en `AgendaSummary`. La fila hija no muta el estado: emite `statusChange` y el padre delega al servicio.
+| Store / estado | Ubicación | Dueño | Motivo |
+| --- | --- | --- | --- |
+| `AuthStore` | `core/auth/auth.store.ts` | Persona A | La sesión es global: la consumen guards, interceptor y shell |
+| `BusinessStore` | `core/business/business.store.ts` | Persona A | Contexto del negocio compartido entre auth, onboarding y shell |
+| `SettingsStore` | `core/settings/settings.store.ts` | Persona A | Datos y plan del negocio usados por el shell |
+| `AgendaStore` | `features/agenda/data/agenda.store.ts` | Persona B | Fuente única de citas, carga, error y modo demo |
+| Señales locales de formularios | `features/auth/ui/*` | Persona A | Solo el formulario necesita sus campos y errores |
 
-`AuthStore` es dueño de la sesión, usuario derivado de los claims, carga y error de autenticación. `LoginForm` y `RegisterForm` emiten sus datos a `AuthPage`; el store llama los endpoints de autenticación, conserva el token por medio de `TokenStorage` y actualiza estado de sesión. El callback procesa el retorno OAuth y luego la navegación posterior resuelve el destino según el perfil.
+Reglas del estado:
 
-## Modelo y datos
+- Los stores exponen señales de solo lectura (`asReadonly()`) y `computed()`.
+- Solo los métodos del store modifican su estado.
+- `AuthStore` valida que la respuesta incluya un token antes de crear la sesión.
+- `logout()` limpia token, usuario, errores y flags de carga/redirección.
+- `navigateAfterAuth()` espera la navegación del `Router`.
 
-La interfaz está en `src/app/features/agenda/modelos/appointment.model.ts`; los ocho registros locales de respaldo están en `src/app/features/agenda/datos/appointments.data.ts`. Son datos sintéticos para evaluación, no citas reales. La API documentada por el equipo está en <https://kronify-apis.duckdns.org/swagger-ui/index.html#/>.
+## Agenda
 
-## Pendiente de validar en el equipo
+`AgendaStore` es dueño del listado de citas, carga, error y modo demo. Mantiene signals
+privadas y cambia datos mediante `loadDemo`, `loadRange` y `updateStatus`. La agenda consulta
+`AppointmentControllerService` y `ServiceControllerService` usando el token de la sesión.
+`/demo-calendario` fuerza los datos locales; `/calendario` requiere autenticación y es el
+destino posterior al login.
 
-Verificar los autores de Git (`BRYANMN0305` y `Bryan Muñoz` aparecen como identidades distintas en el historial) antes de transcribir el shortlog definitivo.
+La interfaz `Appointment` está en
+`src/app/features/agenda/modelos/appointment.model.ts`; los ocho registros locales de respaldo
+están en `src/app/features/agenda/datos/appointments.data.ts`. Son datos sintéticos para
+evaluación, no citas reales.
+
+La API documentada por el equipo está en
+<https://kronify-apis.duckdns.org/swagger-ui/index.html#/>.

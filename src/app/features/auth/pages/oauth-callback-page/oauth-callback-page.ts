@@ -1,16 +1,18 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { apiErrorMessage, AuthStore } from '../../../../core/auth/auth.store';
 import { BusinessStore } from '../../../../core/business/business.store';
 import { navigateAfterAuth } from '../../../../core/auth/post-auth-navigation';
 import { AuthLayout } from '../../../../layout/auth-layout/auth-layout';
-import { ProfileTypeSelector } from '../../ui/profile-type-selector/profile-type-selector';
+import { ProfileType, ProfileTypeSelector } from '../../ui/profile-type-selector/profile-type-selector';
 
 /** Callback del login OAuth (port de OAuthCallbackView.vue). */
 @Component({
   selector: 'app-oauth-callback-page',
-  imports: [AuthLayout, ProfileTypeSelector],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [FormsModule, AuthLayout, ProfileTypeSelector],
   templateUrl: './oauth-callback-page.html',
 })
 export class OAuthCallbackPage {
@@ -21,7 +23,7 @@ export class OAuthCallbackPage {
 
   readonly error = signal('');
   readonly processing = signal(true);
-  readonly profileType = signal('CLIENT');
+  readonly profileType = signal<ProfileType | ''>('CLIENT');
   readonly savingProfile = signal(false);
   readonly profileError = signal('');
 
@@ -59,7 +61,8 @@ export class OAuthCallbackPage {
     this.router.navigate(['/iniciar-sesion']);
   }
 
-  async submitProfile(): Promise<void> {
+  async submitProfile(event: Event): Promise<void> {
+    event.preventDefault();
     if (!this.profileType()) return;
     this.savingProfile.set(true);
     this.profileError.set('');

@@ -12,7 +12,7 @@ import { BusinessStore } from '../business/business.store';
 export async function navigateAfterAuth(router: Router, auth: AuthStore, business: BusinessStore): Promise<void> {
   const inviteToken = consumePendingInvitation();
   if (inviteToken) {
-    router.navigate(['/invitacion/aceptar'], { queryParams: { token: inviteToken } });
+    await router.navigate(['/invitacion/aceptar'], { queryParams: { token: inviteToken } });
     return;
   }
 
@@ -23,10 +23,10 @@ export async function navigateAfterAuth(router: Router, auth: AuthStore, busines
       /* el authGuard hará el mismo check al navegar */
     }
     if (business.needsOnboarding()) {
-      router.navigate(['/onboarding-negocio']);
+      await router.navigate(['/onboarding-negocio']);
       return;
     }
   }
 
-  router.navigate(['/calendario']);
+  await router.navigate(['/calendario']);
 }

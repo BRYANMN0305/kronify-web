@@ -1,8 +1,9 @@
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 
 /** Tagline rotativo + 3 barritas indicadoras del panel izquierdo de auth. */
 @Component({
   selector: 'app-animated-bars',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [],
   templateUrl: './animated-bars.html',
   styleUrl: './animated-bars.css',

@@ -1,12 +1,15 @@
 <div>
-  <label class="form-label">Tipo de perfil</label>
+  <span class="form-label">Tipo de perfil</span>
   <div class="d-flex gap-2">
     @for (option of options; track option.value) {
-      <label class="profile-option" [class.active]="profileType() === option.value"
-             (click)="select(option.value)">
+      <button type="button"
+              class="profile-option"
+              [class.active]="profileType() === option.value"
+              [attr.aria-pressed]="profileType() === option.value"
+              (click)="select(option.value)">
         <span class="profile-radio"></span>
         <span class="profile-label">{{ option.label }}</span>
-      </label>
+      </button>
     }
   </div>
 </div>

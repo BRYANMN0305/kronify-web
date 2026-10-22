@@ -5,38 +5,27 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   selector: 'app-onboarding-step-header',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="step-header">
-      <span class="step-counter">Paso {{ current() }} de {{ total() }}</span>
-      <h2 class="step-title">{{ title() }}</h2>
-      <p class="step-description">{{ description() }}</p>
+    <div class="mb-4">
+      <span class="step-counter d-block small fw-semibold text-uppercase mb-1">
+        Paso {{ current() }} de {{ total() }}
+      </span>
+      <h2 class="step-title fs-2 fw-bold mb-1">{{ title() }}</h2>
+      <p class="step-description mb-0">{{ description() }}</p>
     </div>
   `,
   styles: `
-    .step-header {
-      margin-bottom: 1.5rem;
-    }
-
     .step-counter {
-      display: block;
-      font-size: 0.7rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
       color: var(--neon-dim);
-      margin-bottom: 0.35rem;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
     }
 
     .step-title {
-      font-size: 1.8rem;
-      font-weight: 700;
       color: var(--color-text-label);
-      margin: 0 0 0.25rem;
     }
 
     .step-description {
-      font-size: 1rem;
       color: var(--color-text-muted);
-      margin: 0;
     }
   `,
 })

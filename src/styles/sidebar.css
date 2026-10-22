@@ -465,6 +465,18 @@
 /* ---- User dropdown menu ---- */
 .sidebar-user-menu {
     padding: 0.2rem 0 0.25rem;
+    animation: menuSlideIn 0.15s ease;
+}
+
+@keyframes menuSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .sidebar-menu-item {

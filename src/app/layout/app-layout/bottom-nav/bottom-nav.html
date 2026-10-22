@@ -5,7 +5,7 @@
             [class.is-active]="isActive(item)"
             (click)="navigate(item)">
       <span class="bottom-nav-icon">
-        <img [src]="item.icon" alt="" aria-hidden="true"/>
+        <app-icon [name]="item.icon" aria-hidden="true"/>
       </span>
       <span class="bottom-nav-label">{{ item.label }}</span>
     </button>

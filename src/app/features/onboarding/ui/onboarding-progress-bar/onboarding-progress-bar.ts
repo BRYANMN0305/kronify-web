@@ -5,22 +5,25 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   selector: 'app-onboarding-progress-bar',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="progress-bar">
-      <div class="progress-fill" [style.width.%]="(current() / total()) * 100"></div>
+    <div
+      class="progress onboarding-progress mb-4"
+      role="progressbar"
+      [attr.aria-valuenow]="current()"
+      aria-valuemin="0"
+      [attr.aria-valuemax]="total()"
+      [attr.aria-label]="'Progreso del onboarding: paso ' + current() + ' de ' + total()">
+      <div class="progress-bar" [style.width.%]="(current() / total()) * 100"></div>
     </div>
   `,
   styles: `
-    .progress-bar {
-      height: 4px;
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 2px;
-      margin-bottom: 1.5rem;
-      overflow: hidden;
+    .onboarding-progress {
+      --bs-progress-height: 4px;
+      --bs-progress-bg: rgba(255, 255, 255, 0.08);
+      --bs-progress-border-radius: 2px;
     }
 
-    .progress-fill {
-      height: 100%;
-      background: var(--neon);
+    .onboarding-progress .progress-bar {
+      --bs-progress-bar-bg: var(--neon);
       border-radius: 2px;
       transition: width 0.4s ease;
     }
