@@ -3,7 +3,8 @@
 Migración del frontend de Kronify a Angular 22 con componentes standalone, signals y
 `ChangeDetectionStrategy.OnPush`. La interfaz usa Bootstrap 5 (solo CSS: grid, utilidades,
 formularios y botones); el CSS propio queda para tokens, temas y animaciones. La aplicación
-cubre autenticación, onboarding, el shell de la zona autenticada y la agenda de citas.
+cubre autenticación, onboarding, el shell de la zona autenticada, la agenda de citas y la
+configuración de cuenta.
 
 ## Enlaces
 
@@ -54,7 +55,7 @@ La URL del backend se configura en `src/environments/environment.ts`.
 | `/onboarding-negocio` | Autenticado | Wizard de creación del negocio |
 | `/calendario` | Autenticado | Agenda de citas; destino posterior al login |
 | `/demo-calendario` | Público | Vista previa de la agenda con datos locales |
-| `/configuracion` | Autenticado | Configuración de cuenta (placeholder de settings) |
+| `/configuracion` | Autenticado | Configuración de cuenta y negocio con pestaña Mis datos funcional |
 | `**` | — | Redirección a `/calendario` |
 
 ## Flujo de autenticación
@@ -94,13 +95,13 @@ App
     │       └── LogoUpload
     └── AppLayout
         ├── Sidebar
-        ├── AgendaStateHeader
         ├── RouterOutlet
         │   ├── AgendaPage
         │   │   ├── AgendaSummary
         │   │   ├── CalendarGrid
         │   │   └── AppointmentRow
         │   └── SettingsPage
+        │       └── MyDetailsTab
         └── BottomNav
 ```
 
@@ -115,10 +116,11 @@ App
 | `OAuthProviderButton` | `provider`, `disabled` (requeridos) | `selected` | Presenta un proveedor OAuth |
 | `ProfileTypeSelector` | `profileType` (requerido) | `profileTypeChange` | Selección CLIENT/BUSINESS |
 | `AgendaPage` | `demoMode` (opcional) | — | Coordina carga, filtros, día y mes de la agenda |
-| `AgendaStateHeader` | — | — | Lee el estado compartido de `AgendaStore` desde el shell |
 | `CalendarGrid` | `weeks`, `selectedKey` (requeridos) | `daySelected: Date` | Presenta el mes y emite el día seleccionado |
 | `AppointmentRow` | `appointment` (requerido) | `statusChange: AppointmentStatus` | Presenta una cita y emite el cambio de estado |
 | `AgendaSummary` | `confirmed`, `total`, `revenue` (requeridos) | — | Presenta indicadores derivados de la agenda |
+| `SettingsPage` | — | — | Coordina las pestañas, los datos de `SettingsStore`, el guardado y el logout |
+| `MyDetailsTab` | `profile`, `authMethods`, `role`, `saving`, `errorMessage`, `saveCompleted` | `editStarted`, `saveProfile: UserUpdateRequest`, `logout` | Perfil, edición de datos personales y métodos de autenticación |
 | `PendingPage` | `title` (requerido) | — | Placeholder de rutas aún no migradas |
 
 ## Estado y ownership
@@ -138,6 +140,15 @@ Reglas del estado:
 - `AuthStore` valida que la respuesta incluya un token antes de crear la sesión.
 - `logout()` limpia token, usuario, errores y flags de carga/redirección.
 - `navigateAfterAuth()` espera la navegación del `Router`.
+
+## Configuración
+
+`SettingsPage` compone el sidebar de secciones y el contenido. La pestaña **Mis datos** está
+migrada para todos los roles; las pestañas de negocio (Perfil del negocio, Plan y Equipo) solo
+aparecen para el dueño y muestran un placeholder hasta su migración. `MyDetailsTab` es
+presentacional: recibe perfil, métodos de autenticación, rol y estado de guardado, y emite
+`saveProfile`/`logout`. `SettingsStore.updateProfile()` persiste los cambios y fusiona la
+respuesta en el perfil cacheado; las fechas se presentan con el pipe `dateFmt`.
 
 ## Agenda
 

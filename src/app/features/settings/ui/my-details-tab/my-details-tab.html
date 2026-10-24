@@ -1,0 +1,179 @@
+<div class="settings-tab">
+  <section class="settings-section">
+    <div class="settings-section-header">
+      <div>
+        <h3 class="settings-section-title">Mi perfil</h3>
+        <p class="settings-section-subtitle">Resumen de tu cuenta</p>
+      </div>
+    </div>
+
+    <div class="settings-profile-header">
+      <span class="settings-profile-avatar">{{ initials() }}</span>
+      <div>
+        <p class="settings-profile-name">{{ fullName() }}</p>
+        <p class="settings-profile-meta">{{ role() }} &middot; {{ email() }}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="settings-section">
+    <div class="settings-section-header">
+      <div>
+        <h3 class="settings-section-title">Información personal</h3>
+        <p class="settings-section-subtitle">Tus datos de identificación</p>
+      </div>
+      @if (!editing()) {
+        <button type="button" class="btn-edit" (click)="startEdit()">
+          <app-icon name="pencil" aria-hidden="true"/>
+          Editar
+        </button>
+      } @else {
+        <button type="button" class="btn-ghost" (click)="cancelEdit()">
+          Cancelar
+        </button>
+      }
+    </div>
+
+    @if (!editing()) {
+      <div class="settings-data-grid">
+        <div>
+          <div class="settings-data-label">Nombre</div>
+          <div class="settings-data-value">{{ profile()?.name || '—' }}</div>
+        </div>
+        <div>
+          <div class="settings-data-label">Apellido</div>
+          <div class="settings-data-value">{{ profile()?.lastName || '—' }}</div>
+        </div>
+        <div>
+          <div class="settings-data-label">Teléfono</div>
+          <div class="settings-data-value">{{ profile()?.phoneNumber || '—' }}</div>
+        </div>
+        <div>
+          <div class="settings-data-label">Correo electrónico</div>
+          <div class="settings-data-value">{{ profile()?.email || '—' }}</div>
+        </div>
+        <div>
+          <div class="settings-data-label">Miembro desde</div>
+          <div class="settings-data-value">{{ profile()?.createdAt | dateFmt }}</div>
+        </div>
+        <div>
+          <div class="settings-data-label">Última actualización</div>
+          <div class="settings-data-value">{{ profile()?.updatedAt | dateFmt }}</div>
+        </div>
+      </div>
+    } @else {
+      <form class="settings-form" (ngSubmit)="submit()" novalidate>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label" for="mdName">Nombre</label>
+            <input id="mdName"
+                   name="mdName"
+                   type="text"
+                   class="form-control"
+                   placeholder="Nombre"
+                   [class.is-invalid]="errors().name"
+                   [ngModel]="name()"
+                   (ngModelChange)="name.set($event)"/>
+            <div class="invalid-feedback">{{ errors().name }}</div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label" for="mdLastName">Apellido</label>
+            <input id="mdLastName"
+                   name="mdLastName"
+                   type="text"
+                   class="form-control"
+                   placeholder="Apellido"
+                   [class.is-invalid]="errors().lastName"
+                   [ngModel]="lastName()"
+                   (ngModelChange)="lastName.set($event)"/>
+            <div class="invalid-feedback">{{ errors().lastName }}</div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label" for="mdPhone">Teléfono</label>
+            <input id="mdPhone"
+                   name="mdPhone"
+                   type="tel"
+                   class="form-control"
+                   placeholder="+57 3006217237"
+                   [ngModel]="phoneNumber()"
+                   (ngModelChange)="phoneNumber.set($event)"/>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label" for="mdEmail">Correo electrónico</label>
+            <input id="mdEmail"
+                   name="mdEmail"
+                   type="email"
+                   class="form-control"
+                   [value]="email()"
+                   disabled/>
+            <div class="field-hint">El correo no se puede cambiar.</div>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-4 settings-form-actions">
+          <button type="submit" class="btn btn-primary" [disabled]="saving()">
+            @if (saving()) {
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            }
+            {{ saving() ? 'Guardando...' : 'Guardar cambios' }}
+          </button>
+          <button type="button" class="btn-ghost" (click)="cancelEdit()">
+            Cancelar
+          </button>
+        </div>
+
+        @if (errorMessage()) {
+          <div class="settings-alert settings-alert-error">
+            <app-icon name="alert-circle" aria-hidden="true"/>
+            <span>{{ errorMessage() }}</span>
+          </div>
+        }
+      </form>
+    }
+  </section>
+
+  <section class="settings-section">
+    <div class="settings-section-header">
+      <div>
+        <h3 class="settings-section-title">Métodos de autenticación</h3>
+        <p class="settings-section-subtitle">Formas en las que inicias sesión en tu cuenta</p>
+      </div>
+    </div>
+
+    @if (authMethods().length === 0) {
+      <div class="settings-empty">No hay métodos de autenticación registrados.</div>
+    } @else {
+      <ul class="auth-methods-list">
+        @for (method of authMethods(); track $index) {
+          <li class="auth-method-item">
+            <span class="auth-method-icon">
+              @if (methodIcon(method) === 'google') {
+                <img src="/images/auth/google.svg" alt="Google"/>
+              } @else if (methodIcon(method) === 'microsoft') {
+                <img src="/images/auth/microsoft.svg" alt="Microsoft"/>
+              } @else {
+                <app-icon name="mail" aria-hidden="true"/>
+              }
+            </span>
+            <span class="auth-method-provider">{{ method.provider || method.type || 'Cuenta' }}</span>
+            <span class="auth-method-type">{{ method.type || '—' }}</span>
+            <span class="auth-method-email">{{ method.email || '—' }}</span>
+            <span class="auth-method-date">{{ method.linkedAt | dateFmt }}</span>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
+  <section class="settings-section settings-logout-mobile">
+    <button type="button" class="settings-logout-btn" (click)="logout.emit()">
+      <span class="settings-logout-icon" aria-hidden="true">
+        <app-icon name="log-out"/>
+      </span>
+      Cerrar sesión
+    </button>
+  </section>
+</div>

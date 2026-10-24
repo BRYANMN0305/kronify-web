@@ -11,6 +11,7 @@ import { BusinessPlanUsageResponse } from '../api/openapi/model/businessPlanUsag
 import { BusinessSettingsResponse } from '../api/openapi/model/businessSettingsResponse';
 import { LinkedAuthMethodResponse } from '../api/openapi/model/linkedAuthMethodResponse';
 import { UserProfileResponse } from '../api/openapi/model/userProfileResponse';
+import { UserUpdateRequest } from '../api/openapi/model/userUpdateRequest';
 
 /**
  * SettingsStore — Equivalente de stores/settings.js (kernel de A).
@@ -64,6 +65,12 @@ export class SettingsStore {
     this.profile.set(profile);
     this.authMethods.set(authMethods ?? []);
     this.profileLoaded.set(true);
+  }
+
+  /** updateProfile — Guarda datos personales y fusiona la respuesta en el perfil */
+  async updateProfile(payload: UserUpdateRequest): Promise<void> {
+    const updated = await firstValueFrom(this.userApi.updateUser(payload));
+    this.profile.update((profile) => (profile ? { ...profile, ...updated } : profile));
   }
 
   /** fetchBusiness — Negocio del dueño (404 → null igual que BusinessStore) */

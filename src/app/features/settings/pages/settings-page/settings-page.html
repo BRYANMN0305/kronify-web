@@ -1,25 +1,80 @@
-<div class="settings-page p-3 p-md-4">
-  <header class="mb-4">
-    <h1 class="h3 mb-1">Configuración</h1>
-    <p class="text-secondary mb-0">Administra tu cuenta y tu negocio.</p>
+<div class="settings-page">
+  <header class="settings-header">
+    <h1 class="settings-title">Configuración</h1>
+    <button type="button" class="btn-back" (click)="goBack()">
+      <span class="btn-back-icon" aria-hidden="true">
+        <app-icon name="chevron-left"/>
+      </span>
+      Volver
+    </button>
   </header>
 
-  <section class="settings-section">
-    <h2 class="h5 mb-2">Mis datos</h2>
-    <p class="text-secondary small mb-0">La edición de datos personales se migrará próximamente.</p>
-  </section>
+  <div class="settings-layout">
+    <aside class="settings-sidebar">
+      <div class="settings-user-card">
+        <span class="settings-avatar">{{ initials() }}</span>
+        <div class="settings-user-info">
+          <div class="settings-user-name">{{ displayName() }}</div>
+          <div class="settings-user-email">{{ displayEmail() }}</div>
+        </div>
+      </div>
 
-  <section class="settings-logout-mobile mt-4">
-    <button type="button" class="settings-logout-btn" (click)="handleLogout()">
-      <span class="settings-logout-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-             stroke-linecap="round" stroke-linejoin="round">
-          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-          <polyline points="16 17 21 12 16 7"/>
-          <line x1="21" y1="12" x2="9" y2="12"/>
-        </svg>
-      </span>
-      Cerrar sesión
-    </button>
-  </section>
+      <nav aria-label="Secciones de configuración">
+        @for (group of navGroups(); track group.label) {
+          <span class="settings-nav-group">{{ group.label }}</span>
+          @for (item of group.items; track item.key) {
+            <button type="button"
+                    class="settings-nav-item"
+                    [class.is-active]="effectiveTab() === item.key"
+                    [attr.aria-current]="effectiveTab() === item.key ? 'page' : null"
+                    (click)="selectTab(item.key)">
+              <span class="settings-nav-icon" aria-hidden="true">
+                <app-icon [name]="item.icon"/>
+              </span>
+              {{ item.label }}
+            </button>
+          }
+        }
+      </nav>
+    </aside>
+
+    <main class="settings-content">
+      @if (loading()) {
+        <div class="settings-loading">
+          <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          Cargando configuración...
+        </div>
+      } @else if (error()) {
+        <div class="settings-alert settings-alert-error">
+          <app-icon name="alert-circle" aria-hidden="true"/>
+          <span>{{ error() }}</span>
+        </div>
+      } @else {
+        <h2 class="settings-content-title">{{ contentMeta[effectiveTab()].title }}</h2>
+        <p class="settings-content-subtitle">{{ contentMeta[effectiveTab()].subtitle }}</p>
+
+        @switch (effectiveTab()) {
+          @case ('details') {
+            <app-my-details-tab
+              [profile]="profile()"
+              [authMethods]="authMethods()"
+              [role]="profileRole()"
+              [saving]="saving()"
+              [errorMessage]="saveError()"
+              [saveCompleted]="saveCompleted()"
+              (editStarted)="handleEditStarted()"
+              (saveProfile)="handleSaveProfile($event)"
+              (logout)="handleLogout()"/>
+          }
+          @default {
+            <section class="settings-section">
+              <div class="settings-empty">
+                La sección «{{ contentMeta[effectiveTab()].title }}» se migrará próximamente.
+              </div>
+            </section>
+          }
+        }
+      }
+    </main>
+  </div>
 </div>
