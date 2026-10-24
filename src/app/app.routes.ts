@@ -3,6 +3,7 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
 import { AppLayout } from './layout/app-layout/app-layout';
 import { AUTH_ROUTES } from './features/auth/auth.routes';
+import { SETTINGS_ROUTES } from './features/settings/settings.routes';
 
 /**
  * Shell de rutas — owned por 🅰 Persona A. Reglas del equipo:
@@ -41,9 +42,7 @@ export const routes: Routes = [
         data: { title: 'Calendario' },
         loadComponent: () => import('./features/agenda/pages/agenda-page/agenda-page').then(m => m.AgendaPage) },
 
-      { path: 'configuracion',
-        data: { title: 'Configuración' },
-        loadComponent: () => import('./features/settings/pages/settings-page/settings-page').then(m => m.SettingsPage) },
+      ...SETTINGS_ROUTES,
 
       // TODO(B): 'mis-citas' · 'resenas' · 'servicios' · 'horarios'
       // TODO(B): { path: 'negocio/:slug', ... } pública, fuera de este layout
