@@ -1,4 +1,4 @@
-/* Animación de deslizamiento equivalente al Transition de AuthView.vue:
+/* Animación de deslizamiento entre inicio de sesión y registro:
    el panel entra deslizándose desde la dirección elegida (la salida
    es instantánea — el @switch reemplaza el nodo). */
 .auth-slide {

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
-/** Port de OnboardingProgressBar.vue */
+/** Barra de progreso que indica el paso actual del onboarding. */
 @Component({
   selector: 'app-onboarding-progress-bar',
   changeDetection: ChangeDetectionStrategy.OnPush,

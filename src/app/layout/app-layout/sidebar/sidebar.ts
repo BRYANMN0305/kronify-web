@@ -22,7 +22,7 @@ const ICONS = {
   users: 'users',
 } as const;
 
-/** Equivalente de Sidebar.vue — barra lateral fija (mobile oculta por CSS) */
+/** Barra lateral fija; se oculta en móvil mediante CSS. */
 @Component({
   selector: 'app-sidebar',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -118,7 +118,7 @@ export class Sidebar {
   readonly displayEmail = computed(() => this.settings.profile()?.email || '—');
 
   readonly showUpgradeCard = computed(() => {
-    // isFreePlan de Vue — nombre free/… o estado trial/expird/cancelado
+    // Un plan se considera gratuito por nombre o por estado de prueba, vencido o cancelado.
     if (!this.permissions.isOwner()) return false;
     const plan = this.settings.plan();
     if (!plan?.plan) return false;

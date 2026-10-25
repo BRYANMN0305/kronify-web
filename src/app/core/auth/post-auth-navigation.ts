@@ -4,7 +4,7 @@ import { consumePendingInvitation, AuthStore } from './auth.store';
 import { BusinessStore } from '../business/business.store';
 
 /**
- * Port de la navegación final de useAuth.js (aplicable tras login, registro y OAuth callback):
+ * Navegación común tras iniciar sesión, registrarse o finalizar OAuth:
  *   1. invitación pendiente → /invitacion/aceptar?token=...
  *   2. BUSINESS → fetchStatus y, si corresponde, /onboarding-negocio
  *   3. destino por defecto → /calendario

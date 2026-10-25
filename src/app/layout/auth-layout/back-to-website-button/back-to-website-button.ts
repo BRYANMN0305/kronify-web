@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 const MAIN_WEBSITE_URL = 'https://kronify.page.gd/';
 
-/** Botón "volver al sitio principal" (fix del typo BackToWebsiteButtom del proyecto Vue). */
+/** Botón que devuelve a la página pública principal. */
 @Component({
   selector: 'app-back-to-website-button',
   changeDetection: ChangeDetectionStrategy.OnPush,

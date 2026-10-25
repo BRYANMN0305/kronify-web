@@ -1,6 +1,7 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import type { AppointmentStatus } from '../modelos/appointment.model';
 
+/** Convierte el estado de una cita en la clase visual correspondiente. */
 @Pipe({ name: 'appointmentStatusClass', standalone: true })
 export class AppointmentStatusClassPipe implements PipeTransform {
   transform(status: AppointmentStatus): string {

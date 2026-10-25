@@ -37,7 +37,7 @@
   outline: none;
 }
 
-/* Animación por paso — equivale al Transition mode="out-in" de Vue:
+/* Animación al cambiar de paso: primero sale el contenido actual y luego entra el siguiente.
    el nodo se recrea al cambiar de paso y entra deslizándose según la dirección */
 .step-anim {
   animation: stepIn 0.25s ease;
