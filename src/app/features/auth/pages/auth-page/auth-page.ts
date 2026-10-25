@@ -15,7 +15,7 @@ type AuthMode = 'login' | 'register';
 
 export type { AuthMode };
 
-/** Vista única de autenticación con slide animado (port de AuthView.vue); la ruta decide el modo. */
+/** Vista de autenticación con transición; la ruta decide si muestra login o registro. */
 @Component({
   selector: 'app-auth-page',
   changeDetection: ChangeDetectionStrategy.OnPush,

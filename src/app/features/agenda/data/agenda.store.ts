@@ -9,6 +9,10 @@ import { DatetimeService } from '../../../core/datetime/datetime.service';
 import type { Appointment, AppointmentStatus } from '../modelos/appointment.model';
 import { SAMPLE_APPOINTMENTS } from '../datos/appointments.data';
 
+/**
+ * Fuente única de la agenda. Traduce las respuestas del API al modelo que consume la vista
+ * y conserva el modo demo para que la ruta pública nunca dependa de una sesión.
+ */
 @Injectable({ providedIn: 'root' })
 export class AgendaStore {
   private readonly api = inject(AppointmentControllerService);

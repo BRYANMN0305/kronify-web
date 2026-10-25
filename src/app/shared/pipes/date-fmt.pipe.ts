@@ -2,6 +2,7 @@ import { Pipe, PipeTransform, inject } from '@angular/core';
 
 import { DatetimeService } from '../../core/datetime/datetime.service';
 
+/** Formatea fechas de la API con una salida consistente para toda la interfaz. */
 @Pipe({ name: 'dateFmt' })
 export class DateFmtPipe implements PipeTransform {
   private readonly datetime = inject(DatetimeService);

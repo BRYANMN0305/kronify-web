@@ -3,6 +3,7 @@ import { CurrencyPipe } from '@angular/common';
 import type { Appointment, AppointmentStatus } from '../modelos/appointment.model';
 import { AppointmentStatusClassPipe } from './appointment-status.pipe';
 
+/** Fila de una cita: muestra sus datos y comunica cambios de estado a su contenedor. */
 @Component({
   selector: 'app-appointment-row',
   standalone: true,

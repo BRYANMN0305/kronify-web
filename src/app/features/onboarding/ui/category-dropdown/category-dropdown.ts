@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, ElementRef, effect, input, model, signal, viewChild } from '@angular/core';
 
-/** Port de onboarding/CategoryDropdown.vue — combobox de categorías con filtrado libre */
+/** Selector de categorías con filtro libre y opción de escribir una categoría propia. */
 @Component({
   selector: 'app-category-dropdown',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -38,7 +38,7 @@ export class CategoryDropdown {
   };
 
   constructor() {
-    // Igual que el watch(open) de Vue: reubicar el panel cuando se abre
+    // Al abrirse, calcula si el panel cabe debajo del campo o debe mostrarse encima.
     effect(() => {
       if (this.open()) {
         requestAnimationFrame(() => this.positionPanel());

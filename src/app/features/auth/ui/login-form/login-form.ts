@@ -11,7 +11,7 @@ interface LoginValidationErrors {
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-/** Formulario de inicio de sesión (port de LoginForm.vue, contrato por inputs/outputs). */
+/** Formulario de inicio de sesión; expone su resultado mediante inputs y outputs. */
 @Component({
   selector: 'app-login-form',
   changeDetection: ChangeDetectionStrategy.OnPush,

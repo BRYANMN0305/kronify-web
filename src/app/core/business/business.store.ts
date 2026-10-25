@@ -15,7 +15,7 @@ import { Business } from '../types/business';
 /**
  * BusinessStore — Equivalente de stores/business.js (kernel de A).
  * El estado se limpia solo cuando cambia el token de sesión (effect sobre AuthStore.token),
- * reemplazando el lastToken de la versión Vue: cada store observa la sesión para su propio reset.
+ * Cada store observa la sesión y descarta datos que pertenezcan a la cuenta anterior.
  */
 @Injectable({ providedIn: 'root' })
 export class BusinessStore {

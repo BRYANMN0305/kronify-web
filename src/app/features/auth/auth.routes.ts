@@ -2,9 +2,9 @@ import { Routes } from '@angular/router';
 import { authGuard } from '../../core/auth/auth.guard';
 
 /**
- * Rutas de autenticación — 🅰 Persona A.
+ * Rutas de autenticación.
  /iniciar-sesion y /registro comparten el MISMO componente (AuthPage) para que
- el slide se sienta como el AuthView.vue (sin recargar la feature).
+ la transición de la pantalla se conserva sin recargar la feature.
  */
 export const AUTH_ROUTES: Routes = [
   {

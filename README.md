@@ -15,10 +15,10 @@ configuración de cuenta.
 
 ## Integrantes
 
-| Persona | Integrante | Alcance |
-| --- | --- | --- |
-| Persona A | Bryan Muñoz | Autenticación, core, layouts, shared y documentación |
-| Persona B | Iglesias Movilla Iryuris | Agenda, citas, servicios, horarios, reseñas y negocio público |
+| Integrante | Alcance |
+| --- | --- |
+| Bryan Muñoz | Autenticación, core, layouts, shared y documentación |
+| Iglesias Movilla Iryuris | Agenda, citas, servicios, horarios, reseñas y negocio público |
 
 ## Requisitos
 
@@ -121,17 +121,16 @@ App
 | `AgendaSummary` | `confirmed`, `total`, `revenue` (requeridos) | — | Presenta indicadores derivados de la agenda |
 | `SettingsPage` | — | — | Coordina las pestañas, los datos de `SettingsStore`, el guardado y el logout |
 | `MyDetailsTab` | `profile`, `authMethods`, `role`, `saving`, `errorMessage`, `saveCompleted` | `editStarted`, `saveProfile: UserUpdateRequest`, `logout` | Perfil, edición de datos personales y métodos de autenticación |
-| `PendingPage` | `title` (requerido) | — | Placeholder de rutas aún no migradas |
 
 ## Estado y ownership
 
-| Store / estado | Ubicación | Dueño | Motivo |
-| --- | --- | --- | --- |
-| `AuthStore` | `core/auth/auth.store.ts` | Persona A | La sesión es global: la consumen guards, interceptor y shell |
-| `BusinessStore` | `core/business/business.store.ts` | Persona A | Contexto del negocio compartido entre auth, onboarding y shell |
-| `SettingsStore` | `core/settings/settings.store.ts` | Persona A | Datos y plan del negocio usados por el shell |
-| `AgendaStore` | `features/agenda/data/agenda.store.ts` | Persona B | Fuente única de citas, carga, error y modo demo |
-| Señales locales de formularios | `features/auth/ui/*` | Persona A | Solo el formulario necesita sus campos y errores |
+| Store / estado | Ubicación | Motivo |
+| --- | --- | --- |
+| `AuthStore` | `core/auth/auth.store.ts` | La sesión es global: la consumen guards, interceptor y shell |
+| `BusinessStore` | `core/business/business.store.ts` | Contexto del negocio compartido entre auth, onboarding y shell |
+| `SettingsStore` | `core/settings/settings.store.ts` | Datos y plan del negocio usados por el shell |
+| `AgendaStore` | `features/agenda/data/agenda.store.ts` | Fuente única de citas, carga, error y modo demo |
+| Señales locales de formularios | `features/auth/ui/*` | Solo el formulario necesita sus campos y errores |
 
 Reglas del estado:
 
@@ -140,6 +139,31 @@ Reglas del estado:
 - `AuthStore` valida que la respuesta incluya un token antes de crear la sesión.
 - `logout()` limpia token, usuario, errores y flags de carga/redirección.
 - `navigateAfterAuth()` espera la navegación del `Router`.
+
+## Cómo leer y mantener el código
+
+La documentación vive junto a la pieza que explica. Cada componente, store, pipe, ruta o
+tipo propio empieza con un comentario corto que responde qué resuelve y qué parte del flujo
+le corresponde. Los comentarios dentro de un método solo se usan cuando hay una regla de
+negocio, una compatibilidad temporal o una decisión que no sea evidente por el
+nombre del código.
+
+- **Páginas** coordinan la pantalla, las rutas y los stores; no hacen peticiones HTTP
+  directamente.
+- **Componentes de `ui/`** reciben datos por `input`, emiten acciones por `output` y no son
+  dueños del estado remoto.
+- **Stores** son dueños del estado compartido y de las llamadas al API. Exponen señales de
+  solo lectura cuando la vista no debe modificarlas.
+- **`core/`** contiene reglas transversales: sesión, permisos, fecha, configuración HTTP y
+  contexto del negocio. No debe importar elementos visuales de `features/`.
+- **`features/`** agrupa una capacidad completa. Un tipo temporal de compatibilidad debe
+  indicar cuál es su archivo canónico para evitar contratos duplicados.
+- **`core/api/openapi/`** es código generado. No se edita a mano ni se documenta localmente:
+  cualquier cambio duradero se hace en el contrato OpenAPI o en la configuración del generador.
+
+Al agregar una pieza nueva, documenta la responsabilidad y el límite de esa pieza, no una
+traducción literal de cada línea. Por ejemplo, explica por qué un guard consulta un store o
+por qué un formulario emite un evento, pero no que `set(true)` cambia una señal a `true`.
 
 ## Configuración
 

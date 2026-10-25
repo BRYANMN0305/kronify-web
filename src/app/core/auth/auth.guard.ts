@@ -5,7 +5,7 @@ import { AuthStore } from './auth.store';
 import { BusinessStore } from '../business/business.store';
 
 /**
- * authGuard — Equivalente del authGuard global de vue-router (guards.js).
+ * authGuard — Decide si la persona puede entrar a una ruta según su sesión y negocio.
  * Se declara en TODAS las rutas que quiera proteger; cada ruta declara su meta en `data`:
  *   data: { guest: true }               → si hay sesión, manda a /calendario
  *   data: { requiresAuth: true }        → sin sesión, manda a /iniciar-sesion

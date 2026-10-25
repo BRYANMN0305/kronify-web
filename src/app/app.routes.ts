@@ -6,14 +6,12 @@ import { AUTH_ROUTES } from './features/auth/auth.routes';
 import { SETTINGS_ROUTES } from './features/settings/settings.routes';
 
 /**
- * Shell de rutas — owned por 🅰 Persona A. Reglas del equipo:
- * Cada persona SOLO agrega/sustituye sus `loadChildren`/`loadComponent` en su sección
- * (comentario TODO en el archivo = marca del owner pendiente).
+ * Shell de rutas. Cada feature registra aquí su carga diferida o componente de entrada.
  */
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'iniciar-sesion' },
 
-  // ── 🅰 PERSONA A: públicas / shell / cuenta ─────────────────────────────
+  // ── Públicas, shell y cuenta ────────────────────────────────────────────
   ...AUTH_ROUTES,
 
   // TODO(A): { path: 'invitacion/aceptar', loadChildren: ... } — feature invitation
@@ -32,7 +30,7 @@ export const routes: Routes = [
       data: { demoMode: true, title: 'Vista previa de agenda' },
       loadComponent: () => import('./features/agenda/pages/agenda-page/agenda-page').then(m => m.AgendaPage) }] },
 
-  // ── 🅱 PERSONA B: operación de citas (children del layout autenticado) ──
+  // ── Operación de citas (children del layout autenticado) ─────────────────
   { path: '',
     component: AppLayout,
     canActivate: [authGuard],
