@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
+/** Encabezado puramente visual con los indicadores calculados por la página. */
 @Component({
   selector: 'app-agenda-summary',
   standalone: true,

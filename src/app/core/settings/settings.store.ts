@@ -18,7 +18,7 @@ import { UserUpdateRequest } from '../api/openapi/model/userUpdateRequest';
  * Centraliza datos de la cuenta (perfil, métodos de auth), del negocio
  * (dueño), y del plan con su uso — con caché por sección: la primera
  * carga usa spinner y las siguientes revalidan en silencio.
- * Subport del shell: la página de configuración extenderá con
+ * La página de configuración puede ampliarse con
  * invitaciones / historial / catálogo de planes (TODO(A)).
  */
 @Injectable({ providedIn: 'root' })

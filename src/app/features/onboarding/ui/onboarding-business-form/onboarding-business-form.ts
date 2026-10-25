@@ -67,7 +67,7 @@ function optionalText(value: string): string | null {
 }
 
 /**
- * Port de onboarding/OnboardingBusinessForm.vue — wizard de 5 pasos, validación por paso.
+ * Wizard de cinco pasos para crear un negocio, con validación independiente por paso.
  * Contrato: el form emite el payload validado; la página confirma (inputs submitting/errorMessage).
  */
 @Component({
@@ -91,7 +91,7 @@ export class OnboardingBusinessForm {
   readonly stepDescription = computed(() => STEP_DESCRIPTIONS[this.currentStep() - 1]);
   readonly slideDirection = computed(() => (this.direction() === 1 ? 'slide-left' : 'slide-right'));
 
-  // Campos del formulario (port de reactive form, uno por señal como exige el equipo)
+  // Cada campo tiene su propia señal para mantener actualizada la interfaz.
   readonly name = signal('');
   readonly slug = signal('');
   readonly category = signal('');
@@ -112,7 +112,7 @@ export class OnboardingBusinessForm {
 
   readonly weekLabels = WEEK_LABELS;
 
-  /** autoSlug — slug sugerido mientras el usuario escribe el nombre (port de la heurística de Vue) */
+  /** Sugiere un slug mientras se escribe el nombre, sin pisar una edición manual. */
   onNameInput(value: string): void {
     this.name.set(value);
     const auto = generarSlug(value);

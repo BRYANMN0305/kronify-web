@@ -5,7 +5,7 @@ import type { OAuthProvider } from '../oauth-provider-button/oauth-provider-butt
 
 export type { OAuthProvider } from '../oauth-provider-button/oauth-provider-button';
 
-/** Botones de autenticación con Google/Microsoft (port de OAuthButtons.vue). */
+/** Agrupa los accesos de autenticación con Google y Microsoft. */
 @Component({
   selector: 'app-oauth-buttons',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -8,7 +8,7 @@ import { navigateAfterAuth } from '../../../../core/auth/post-auth-navigation';
 import { AuthLayout } from '../../../../layout/auth-layout/auth-layout';
 import { ProfileType, ProfileTypeSelector } from '../../ui/profile-type-selector/profile-type-selector';
 
-/** Callback del login OAuth (port de OAuthCallbackView.vue). */
+/** Recibe el resultado de OAuth, crea la sesión y resuelve el siguiente destino. */
 @Component({
   selector: 'app-oauth-callback-page',
   changeDetection: ChangeDetectionStrategy.OnPush,

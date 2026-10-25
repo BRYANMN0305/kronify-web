@@ -14,7 +14,7 @@ const ICONS = {
   users: 'users',
 } as const;
 
-/** Equivalente de BottomNav.vue — barra inferior para mobile (<= 768px por CSS) */
+/** Barra de navegación inferior para pantallas móviles (hasta 768 px por CSS). */
 @Component({
   selector: 'app-bottom-nav',
   changeDetection: ChangeDetectionStrategy.OnPush,
