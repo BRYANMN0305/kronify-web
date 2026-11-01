@@ -27,10 +27,8 @@ import { UserUpdateRequest } from '../api/openapi/model/userUpdateRequest';
 /**
  * SettingsStore — Equivalente de stores/settings.js (kernel de A).
  * Centraliza datos de la cuenta (perfil, métodos de auth), del negocio
- * (dueño), y del plan con su uso — con caché por sección: la primera
- * carga usa spinner y las siguientes revalidan en silencio.
- * La página de configuración puede ampliarse con
- * invitaciones / historial / catálogo de planes (TODO(A)).
+ * (dueño), invitaciones y plan con su uso — con caché por sección: la
+ * primera carga usa spinner y las siguientes revalidan en silencio.
  */
 @Injectable({ providedIn: 'root' })
 export class SettingsStore {
