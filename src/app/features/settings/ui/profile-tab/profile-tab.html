@@ -5,7 +5,8 @@
       <div class="owner-toggle-hint">Aparecerás como parte de tu equipo de trabajo</div>
     </div>
     <label class="switch">
-      <input type="checkbox"
+      <input #ownerToggle
+             type="checkbox"
              [checked]="ownerAsEmployee()"
              [disabled]="toggling()"
              (change)="toggleOwnerAsEmployee($any($event.target).checked)"/>

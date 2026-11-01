@@ -1,11 +1,13 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   computed,
   effect,
   input,
   output,
   signal,
+  viewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
@@ -68,6 +70,8 @@ export class ProfileTab {
     return initial.toUpperCase() || 'N';
   });
 
+  private readonly ownerToggleRef = viewChild<ElementRef<HTMLInputElement>>('ownerToggle');
+
   private lastSaveCompleted = 0;
 
   constructor() {
@@ -85,6 +89,13 @@ export class ProfileTab {
         this.editing.set(false);
         this.fillForm(this.business());
       }
+    });
+
+    // Si el toggle falla, devuelve el checkbox al estado confirmado por el backend.
+    effect(() => {
+      const error = this.toggleError();
+      const checkbox = this.ownerToggleRef()?.nativeElement;
+      if (error && checkbox) checkbox.checked = this.ownerAsEmployee();
     });
   }
 
