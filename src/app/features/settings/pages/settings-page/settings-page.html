@@ -66,6 +66,13 @@
               (saveProfile)="handleSaveProfile($event)"
               (logout)="handleLogout()"/>
           }
+          @case ('password') {
+            <app-password-tab
+              [saving]="passwordSaving()"
+              [errorMessage]="passwordError()"
+              [saveCompleted]="passwordCompleted()"
+              (savePassword)="handleSavePassword($event)"/>
+          }
           @default {
             <section class="settings-section">
               <div class="settings-empty">
