@@ -5,10 +5,12 @@ import { firstValueFrom } from 'rxjs';
 import { AuthStore } from '../auth/auth.store';
 import { BusinessControllerService } from '../api/openapi/api/businessController.service';
 import { EmployeeControllerService } from '../api/openapi/api/employeeController.service';
+import { EmployeeInvitationControllerService } from '../api/openapi/api/employeeInvitationController.service';
 import { PlanControllerService } from '../api/openapi/api/planController.service';
 import { UserControllerService } from '../api/openapi/api/userController.service';
 import { BusinessPlanUsageResponse } from '../api/openapi/model/businessPlanUsageResponse';
 import { BusinessSettingsResponse } from '../api/openapi/model/businessSettingsResponse';
+import { InvitationResponse } from '../api/openapi/model/invitationResponse';
 import { LinkedAuthMethodResponse } from '../api/openapi/model/linkedAuthMethodResponse';
 import { UserChangePasswordRequest } from '../api/openapi/model/userChangePasswordRequest';
 import { UserChangePasswordResponse } from '../api/openapi/model/userChangePasswordResponse';
@@ -29,11 +31,13 @@ export class SettingsStore {
   private readonly businessApi = inject(BusinessControllerService);
   private readonly planApi = inject(PlanControllerService);
   private readonly employeeApi = inject(EmployeeControllerService);
+  private readonly invitationApi = inject(EmployeeInvitationControllerService);
   private readonly authStore = inject(AuthStore);
 
   readonly profile = signal<UserProfileResponse | null>(null);
   readonly authMethods = signal<LinkedAuthMethodResponse[]>([]);
   readonly businessData = signal<BusinessSettingsResponse | null>(null);
+  readonly invitations = signal<InvitationResponse[]>([]);
   readonly plan = signal<BusinessPlanUsageResponse | null>(null);
   readonly ownerAsEmployee = signal(false);
   readonly loading = signal(false);
@@ -42,6 +46,7 @@ export class SettingsStore {
   /** Marca qué secciones ya fueron cargadas al menos una vez */
   readonly profileLoaded = signal(false);
   readonly businessLoaded = signal(false);
+  readonly invitationsLoaded = signal(false);
   readonly planLoaded = signal(false);
   readonly ownerAsEmployeeLoaded = signal(false);
 
@@ -94,6 +99,31 @@ export class SettingsStore {
     this.businessLoaded.set(true);
   }
 
+  /** fetchInvitations — Invitaciones del negocio (solo dueño) */
+  async fetchInvitations(): Promise<void> {
+    this.invitations.set(await firstValueFrom(this.invitationApi.listInvitations()));
+    this.invitationsLoaded.set(true);
+  }
+
+  /** createInvitation — Envía una invitación y refresca la lista */
+  async createInvitation(email: string): Promise<InvitationResponse> {
+    const created = await firstValueFrom(this.invitationApi.createInvitation({ email }));
+    await this.fetchInvitations();
+    return created;
+  }
+
+  /** resendInvitation — Reenvía una invitación pendiente y refresca la lista */
+  async resendInvitation(invitationId: number): Promise<void> {
+    await firstValueFrom(this.invitationApi.resendInvitation(invitationId));
+    await this.fetchInvitations();
+  }
+
+  /** cancelInvitation — Cancela una invitación pendiente y refresca la lista */
+  async cancelInvitation(invitationId: number): Promise<void> {
+    await firstValueFrom(this.invitationApi.cancelInvitation(invitationId));
+    await this.fetchInvitations();
+  }
+
   /** fetchPlan — Plan vigente con métricas de uso */
   async fetchPlan(): Promise<void> {
     this.plan.set(await firstValueFrom(this.planApi.getCurrentPlan()));
@@ -121,7 +151,12 @@ export class SettingsStore {
     try {
       const tasks: Promise<void>[] = [this.fetchProfile()];
       if (isOwner) {
-        tasks.push(this.fetchBusiness(), this.fetchPlan(), this.fetchOwnerAsEmployee());
+        tasks.push(
+          this.fetchBusiness(),
+          this.fetchInvitations(),
+          this.fetchPlan(),
+          this.fetchOwnerAsEmployee(),
+        );
       }
       await Promise.all(tasks);
     } catch (error) {
@@ -138,12 +173,14 @@ export class SettingsStore {
     this.profile.set(null);
     this.authMethods.set([]);
     this.businessData.set(null);
+    this.invitations.set([]);
     this.plan.set(null);
     this.ownerAsEmployee.set(false);
     this.loading.set(false);
     this.error.set('');
     this.profileLoaded.set(false);
     this.businessLoaded.set(false);
+    this.invitationsLoaded.set(false);
     this.planLoaded.set(false);
     this.ownerAsEmployeeLoaded.set(false);
   }

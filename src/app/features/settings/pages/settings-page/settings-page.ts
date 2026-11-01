@@ -19,6 +19,7 @@ import { UserUpdateRequest } from '../../../../core/api/openapi/model/userUpdate
 import { Icon, IconName } from '../../../../shared/ui/icon/icon';
 import { MyDetailsTab } from '../../ui/my-details-tab/my-details-tab';
 import { PasswordTab } from '../../ui/password-tab/password-tab';
+import { TeamTab } from '../../ui/team-tab/team-tab';
 
 type SettingsTab = 'details' | 'profile' | 'plan' | 'password' | 'team';
 
@@ -59,7 +60,7 @@ function isSettingsTab(value: string | null): value is SettingsTab {
 @Component({
   selector: 'app-settings-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Icon, MyDetailsTab, PasswordTab],
+  imports: [Icon, MyDetailsTab, PasswordTab, TeamTab],
   templateUrl: './settings-page.html',
   styleUrl: '../../styles/settings.css',
   encapsulation: ViewEncapsulation.None,
@@ -84,6 +85,11 @@ export class SettingsPage implements OnInit {
   protected readonly passwordSaving = signal(false);
   protected readonly passwordError = signal<string | null>(null);
   protected readonly passwordCompleted = signal(0);
+  protected readonly invitations = this.settings.invitations;
+  protected readonly teamSending = signal(false);
+  protected readonly teamBusyId = signal<number | null>(null);
+  protected readonly teamSuccess = signal<string | null>(null);
+  protected readonly teamError = signal<string | null>(null);
 
   protected readonly navGroups = computed<SettingsNavGroup[]>(() => {
     const groups: SettingsNavGroup[] = [
@@ -150,6 +156,10 @@ export class SettingsPage implements OnInit {
 
   protected selectTab(tab: SettingsTab): void {
     if (tab !== 'password') this.passwordError.set(null);
+    if (tab !== 'team') this.teamError.set(null);
+    if (tab === 'team' && this.settings.invitationsLoaded()) {
+      void this.settings.fetchInvitations().catch(() => undefined);
+    }
     this.activeTab.set(tab);
   }
 
@@ -184,6 +194,48 @@ export class SettingsPage implements OnInit {
       this.passwordError.set(apiErrorMessage(error));
     } finally {
       this.passwordSaving.set(false);
+    }
+  }
+
+  protected async handleCreateInvitation(email: string): Promise<void> {
+    this.teamSending.set(true);
+    this.teamSuccess.set(null);
+    this.teamError.set(null);
+    try {
+      await this.settings.createInvitation(email);
+      this.teamSuccess.set('Invitación enviada correctamente');
+    } catch (error) {
+      this.teamError.set(apiErrorMessage(error) || 'Error al enviar la invitación');
+    } finally {
+      this.teamSending.set(false);
+    }
+  }
+
+  protected async handleResendInvitation(invitationId: number): Promise<void> {
+    this.teamBusyId.set(invitationId);
+    this.teamSuccess.set(null);
+    this.teamError.set(null);
+    try {
+      await this.settings.resendInvitation(invitationId);
+      this.teamSuccess.set('Invitación reenviada correctamente');
+    } catch (error) {
+      this.teamError.set(apiErrorMessage(error) || 'Error al reenviar la invitación');
+    } finally {
+      this.teamBusyId.set(null);
+    }
+  }
+
+  protected async handleCancelInvitation(invitationId: number): Promise<void> {
+    this.teamBusyId.set(invitationId);
+    this.teamSuccess.set(null);
+    this.teamError.set(null);
+    try {
+      await this.settings.cancelInvitation(invitationId);
+      this.teamSuccess.set('Invitación cancelada');
+    } catch (error) {
+      this.teamError.set(apiErrorMessage(error) || 'Error al cancelar la invitación');
+    } finally {
+      this.teamBusyId.set(null);
     }
   }
 

@@ -73,6 +73,17 @@
               [saveCompleted]="passwordCompleted()"
               (savePassword)="handleSavePassword($event)"/>
           }
+          @case ('team') {
+            <app-team-tab
+              [invitations]="invitations()"
+              [sending]="teamSending()"
+              [busyId]="teamBusyId()"
+              [successMessage]="teamSuccess()"
+              [errorMessage]="teamError()"
+              (createInvitation)="handleCreateInvitation($event)"
+              (resendInvitation)="handleResendInvitation($event)"
+              (cancelInvitation)="handleCancelInvitation($event)"/>
+          }
           @default {
             <section class="settings-section">
               <div class="settings-empty">
