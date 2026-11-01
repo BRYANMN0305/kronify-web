@@ -84,6 +84,20 @@
               (resendInvitation)="handleResendInvitation($event)"
               (cancelInvitation)="handleCancelInvitation($event)"/>
           }
+          @case ('profile') {
+            <app-profile-tab
+              [business]="business()"
+              [publicUrl]="publicBusinessUrl()"
+              [ownerAsEmployee]="ownerAsEmployee()"
+              [toggling]="ownerToggling()"
+              [toggleError]="ownerToggleError()"
+              [saving]="businessSaving()"
+              [errorMessage]="businessError()"
+              [saveCompleted]="businessCompleted()"
+              (editStarted)="handleBusinessEditStarted()"
+              (updateBusiness)="handleUpdateBusiness($event)"
+              (toggleOwner)="handleToggleOwner($event)"/>
+          }
           @default {
             <section class="settings-section">
               <div class="settings-empty">
