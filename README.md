@@ -3,8 +3,8 @@
 Migración del frontend de Kronify a Angular 22 con componentes standalone, signals y
 `ChangeDetectionStrategy.OnPush`. La interfaz usa Bootstrap 5 (solo CSS: grid, utilidades,
 formularios y botones); el CSS propio queda para tokens, temas y animaciones. La aplicación
-cubre autenticación, onboarding, el shell de la zona autenticada, la agenda de citas y la
-configuración de cuenta.
+cubre autenticación, invitaciones de equipo, onboarding, el shell de la zona autenticada, la
+agenda de citas y la configuración de cuenta.
 
 ## Enlaces
 
@@ -52,6 +52,7 @@ La URL del backend se configura en `src/environments/environment.ts`.
 | `/iniciar-sesion` | Público | Login con credenciales u OAuth |
 | `/registro` | Público | Registro de cliente o negocio |
 | `/oauth/callback` | Público | Finalización del login OAuth |
+| `/invitacion/aceptar` | Público | Aceptación de invitaciones de empleado, con o sin sesión |
 | `/onboarding-negocio` | Autenticado | Wizard de creación del negocio |
 | `/calendario` | Autenticado | Agenda de citas; destino posterior al login |
 | `/demo-calendario` | Público | Vista previa de la agenda con datos locales |

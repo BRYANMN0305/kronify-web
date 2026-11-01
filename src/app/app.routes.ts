@@ -3,6 +3,7 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
 import { AppLayout } from './layout/app-layout/app-layout';
 import { AUTH_ROUTES } from './features/auth/auth.routes';
+import { INVITATION_ROUTES } from './features/invitation/invitation.routes';
 import { SETTINGS_ROUTES } from './features/settings/settings.routes';
 
 /**
@@ -13,8 +14,7 @@ export const routes: Routes = [
 
   // ── Públicas, shell y cuenta ────────────────────────────────────────────
   ...AUTH_ROUTES,
-
-  // TODO(A): { path: 'invitacion/aceptar', loadChildren: ... } — feature invitation
+  ...INVITATION_ROUTES,
 
   // Onboarding fullscreen (feature onboarding)
   { path: 'onboarding-negocio',
