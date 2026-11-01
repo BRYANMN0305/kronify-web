@@ -10,6 +10,8 @@ import { UserControllerService } from '../api/openapi/api/userController.service
 import { BusinessPlanUsageResponse } from '../api/openapi/model/businessPlanUsageResponse';
 import { BusinessSettingsResponse } from '../api/openapi/model/businessSettingsResponse';
 import { LinkedAuthMethodResponse } from '../api/openapi/model/linkedAuthMethodResponse';
+import { UserChangePasswordRequest } from '../api/openapi/model/userChangePasswordRequest';
+import { UserChangePasswordResponse } from '../api/openapi/model/userChangePasswordResponse';
 import { UserProfileResponse } from '../api/openapi/model/userProfileResponse';
 import { UserUpdateRequest } from '../api/openapi/model/userUpdateRequest';
 
@@ -71,6 +73,11 @@ export class SettingsStore {
   async updateProfile(payload: UserUpdateRequest): Promise<void> {
     const updated = await firstValueFrom(this.userApi.updateUser(payload));
     this.profile.update((profile) => (profile ? { ...profile, ...updated } : profile));
+  }
+
+  /** updatePassword — Cambia la contraseña del usuario autenticado */
+  async updatePassword(payload: UserChangePasswordRequest): Promise<UserChangePasswordResponse> {
+    return firstValueFrom(this.userApi.updatePassword(payload));
   }
 
   /** fetchBusiness — Negocio del dueño (404 → null igual que BusinessStore) */
