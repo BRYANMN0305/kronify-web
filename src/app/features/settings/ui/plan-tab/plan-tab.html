@@ -1,0 +1,204 @@
+<div class="settings-tab" id="plan-tab">
+  <section class="settings-section">
+    <div class="settings-section-header">
+      <div>
+        <h3 class="settings-section-title">Plan actual</h3>
+        <p class="settings-section-subtitle">Tu suscripción y límites</p>
+      </div>
+      @if (plan()) {
+        <span [class]="'status-badge ' + statusClass(subscriptionStatus())">
+          {{ statusLabel(subscriptionStatus()) }}
+        </span>
+      }
+    </div>
+
+    @if (plan()) {
+      <div class="settings-data-grid">
+        <div>
+          <div class="settings-data-label">Plan</div>
+          <div class="settings-data-value">{{ planName() }}</div>
+        </div>
+        <div>
+          <div class="settings-data-label">Precio</div>
+          <div class="settings-data-value">
+            {{ planPrice() / 100 | currency:'COP':'symbol-narrow':'1.0-0':'es-CO' }}
+            @if (subscriptionStatus() === 'TRIAL') {
+              <span class="plan-trial-tag">prueba</span>
+            }
+          </div>
+        </div>
+        <div>
+          <div class="settings-data-label">Inicio</div>
+          <div class="settings-data-value">{{ plan()?.startAt | dateFmt }}</div>
+        </div>
+        <div>
+          <div class="settings-data-label">Fin</div>
+          <div class="settings-data-value">{{ plan()?.endAt | dateFmt }}</div>
+        </div>
+      </div>
+    }
+
+    @if (plan()?.plan?.description) {
+      <p class="plan-description">{{ plan()?.plan?.description }}</p>
+    }
+  </section>
+
+  <section class="settings-section">
+    <div class="settings-section-header">
+      <div>
+        <h3 class="settings-section-title">Uso del plan</h3>
+        <p class="settings-section-subtitle">Consumo de los límites de tu plan</p>
+      </div>
+    </div>
+
+    @if (usageItems().length) {
+      <div class="plan-charts-grid">
+        @for (item of usageItems(); track item.label) {
+          <div class="plan-chart-item">
+            @if (item.unlimited) {
+              <div class="plan-chart plan-chart-unlimited">
+                <span class="plan-unlimited-symbol">&infin;</span>
+              </div>
+              <div class="plan-chart-label">{{ item.label }}</div>
+              <div class="plan-chart-status plan-status-ok">Sin límite</div>
+            } @else {
+              <div class="plan-chart">
+                <app-usage-chart [label]="item.label" [data]="item.data" [options]="item.options"/>
+                <div class="plan-chart-center">
+                  <strong>{{ item.used }}</strong>
+                  <span>de {{ item.limit }}</span>
+                </div>
+              </div>
+              <div class="plan-chart-label">{{ item.label }}</div>
+              <div class="plan-chart-status" [class]="item.statusCls">{{ item.statusText }}</div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </section>
+
+  <section class="settings-section">
+    <div class="settings-section-header">
+      <div>
+        <h3 class="settings-section-title">Cambiar plan</h3>
+        <p class="settings-section-subtitle">Selecciona un nuevo plan para tu negocio</p>
+      </div>
+    </div>
+
+    @if (availablePlans().length === 0) {
+      <div class="settings-empty">No hay planes disponibles.</div>
+    } @else {
+      <div class="plan-cards-grid">
+        @for (available of availablePlans(); track available.planId) {
+          <div class="plan-card" [class.is-current]="available.planId === currentPlanId()">
+            <div class="plan-card-head">
+              <div>
+                <h4 class="plan-card-name">{{ available.displayName || available.name }}</h4>
+                <p class="plan-card-price">
+                  {{ (available.monthlyPriceCents ?? 0) / 100 | currency:'COP':'symbol-narrow':'1.0-0':'es-CO' }}<span>/mes</span>
+                </p>
+              </div>
+              @if (available.planId === currentPlanId()) {
+                <span class="status-badge status-accepted">Tu plan</span>
+              }
+            </div>
+
+            @if (available.description) {
+              <p class="plan-card-desc">{{ available.description }}</p>
+            }
+
+            <ul class="plan-card-features">
+              @if ((available.serviceLimit ?? 0) > 0) {
+                <li>Hasta {{ available.serviceLimit }} servicios</li>
+              } @else {
+                <li>Servicios ilimitados</li>
+              }
+              @if ((available.monthlyAppointmentLimit ?? 0) > 0) {
+                <li>Hasta {{ available.monthlyAppointmentLimit }} citas al mes</li>
+              } @else {
+                <li>Citas mensuales ilimitadas</li>
+              }
+              @if ((available.employeeLimit ?? 0) > 0) {
+                <li>Hasta {{ available.employeeLimit }} empleados</li>
+              } @else {
+                <li>Empleados ilimitados</li>
+              }
+            </ul>
+
+            @if (available.planId !== currentPlanId() && available.requiresActivationCode) {
+              <div class="plan-card-code">
+                <label class="form-label" [for]="'code-' + available.planId">Código de activación</label>
+                <input [id]="'code-' + available.planId"
+                       type="text"
+                       class="form-control"
+                       placeholder="Ingresa tu código"
+                       [ngModel]="codes()[available.planId!] || ''"
+                       (ngModelChange)="setCode(available.planId, $event)"/>
+                <div class="field-hint">Este plan requiere un código de activación.</div>
+              </div>
+            }
+
+            @if (available.planId !== currentPlanId()) {
+              <button type="button"
+                      class="btn btn-primary plan-card-btn"
+                      [disabled]="changingPlanId() === available.planId"
+                      (click)="requestPlanChange(available)">
+                @if (changingPlanId() === available.planId) {
+                  <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                }
+                {{ changingPlanId() === available.planId ? 'Cambiando...' : 'Cambiar a este plan' }}
+              </button>
+            } @else {
+              <div class="plan-card-current">Estás en este plan</div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    @if (errorMessage()) {
+      <div class="settings-alert settings-alert-error mt-3">
+        <app-icon name="alert-circle" aria-hidden="true"/>
+        <span>{{ errorMessage() }}</span>
+      </div>
+    }
+  </section>
+
+  <section class="settings-section">
+    <div class="settings-section-header">
+      <div>
+        <h3 class="settings-section-title">Historial de planes</h3>
+        <p class="settings-section-subtitle">Cambios de plan anteriores</p>
+      </div>
+    </div>
+
+    @if (planHistory().length === 0) {
+      <div class="settings-empty">Sin cambios de plan registrados.</div>
+    } @else {
+      <div class="invitations-table">
+        <div class="invitations-row invitations-head">
+          <span>Plan</span>
+          <span>Estado</span>
+          <span>Inicio</span>
+          <span>Fin</span>
+          <span></span>
+        </div>
+
+        @for (entry of planHistory(); track $index) {
+          <div class="invitations-row">
+            <span class="inv-email">{{ entry.plan?.displayName || entry.plan?.name || '—' }}</span>
+            <span>
+              <span [class]="'status-badge ' + statusClass(entry.subscriptionStatus)">
+                {{ statusLabel(entry.subscriptionStatus) }}
+              </span>
+            </span>
+            <span class="inv-date">{{ entry.startAt | dateFmt }}</span>
+            <span class="inv-date">{{ entry.endAt | dateFmt }}</span>
+            <span></span>
+          </div>
+        }
+      </div>
+    }
+  </section>
+</div>

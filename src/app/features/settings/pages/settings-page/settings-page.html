@@ -98,6 +98,16 @@
               (updateBusiness)="handleUpdateBusiness($event)"
               (toggleOwner)="handleToggleOwner($event)"/>
           }
+          @case ('plan') {
+            <app-plan-tab
+              [plan]="plan()"
+              [availablePlans]="availablePlans()"
+              [planHistory]="planHistory()"
+              [changingPlanId]="planChangingId()"
+              [errorMessage]="planError()"
+              [changeCompleted]="planCompleted()"
+              (changePlan)="handleChangePlan($event)"/>
+          }
           @default {
             <section class="settings-section">
               <div class="settings-empty">
