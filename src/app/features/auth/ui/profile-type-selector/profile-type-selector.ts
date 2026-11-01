@@ -5,7 +5,7 @@ const BUSINESS = 'BUSINESS';
 
 export type ProfileType = typeof CLIENT | typeof BUSINESS;
 
-/** Selector de tipo de perfil (CLIENT | BUSINESS) con estilo de tarjeta; port de ProfileTypeSelector.vue. */
+/** Selector de tipo de perfil, cliente o negocio, con presentación en tarjetas. */
 @Component({
   selector: 'app-profile-type-selector',
   changeDetection: ChangeDetectionStrategy.OnPush,

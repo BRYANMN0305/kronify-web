@@ -10,7 +10,7 @@ import { UploadFileRequest } from '../../../../core/api/openapi/model/uploadFile
 import { OnboardingBusinessForm, OnboardingSubmitPayload } from '../../ui/onboarding-business-form/onboarding-business-form';
 
 /**
- * Port de OnboardingBusinessView.vue — /onboarding-negocio
+ * Pantalla de `/onboarding-negocio`.
  * El formulario emite el payload validado; aquí se resuelve el logo (upload),
  * el createBusiness y el destino final.
  */
@@ -39,7 +39,7 @@ export class OnboardingBusinessPage {
     this.errorMessage.set(null);
     this.submitting.set(true);
     try {
-      // Igual que handleSubmit de Vue: File → /upload y URL; string ya subido → se reutiliza
+      // Un archivo nuevo se sube primero; una URL existente ya puede reutilizarse.
       let logoUrl: string | null = null;
       if (typeof payload.logo === 'string') {
         logoUrl = payload.logo;

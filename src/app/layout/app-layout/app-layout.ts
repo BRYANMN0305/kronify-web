@@ -5,7 +5,7 @@ import { BottomNav } from './bottom-nav/bottom-nav';
 import { Sidebar } from './sidebar/sidebar';
 
 /**
- * AppLayout — Layout principal de las vistas autenticadas (equivalente de AppLayout.vue):
+ * AppLayout — Marco principal de las vistas autenticadas:
  * Sidebar fijo a la izquierda (desktop) + contenido a la derecha + BottomNav en mobile.
  * Owned por A; B agrega sus children en app.routes.ts.
  */

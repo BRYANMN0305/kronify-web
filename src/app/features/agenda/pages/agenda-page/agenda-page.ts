@@ -10,8 +10,10 @@ import { AppointmentRow } from '../../ui/appointment-row';
 import { CalendarGrid } from '../../ui/calendar-grid';
 import type { CalendarDay } from '../../ui/calendar-grid';
 
+// La agenda siempre presenta fechas y moneda con convenciones colombianas.
 registerLocaleData(localeEsCo);
 
+/** Coordina filtros y navegación mensual; el acceso a datos permanece en AgendaStore. */
 @Component({
   selector: 'app-agenda-page',
   standalone: true,

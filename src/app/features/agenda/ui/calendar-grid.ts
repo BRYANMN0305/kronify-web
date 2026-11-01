@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import type { Appointment } from '../modelos/appointment.model';
 
+/** Día enriquecido con las citas que le corresponden, listo para dibujar en el calendario. */
 export interface CalendarDay {
   readonly date: Date;
   readonly key: string;
@@ -10,6 +11,7 @@ export interface CalendarDay {
   readonly appointments: readonly Appointment[];
 }
 
+/** Cuadrícula reutilizable del mes; no consulta datos ni decide qué día está seleccionado. */
 @Component({
   selector: 'app-calendar-grid',
   standalone: true,

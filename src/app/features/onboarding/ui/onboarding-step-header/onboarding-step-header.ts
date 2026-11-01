@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
-/** Port de OnboardingStepHeader.vue */
+/** Encabezado reutilizable para los pasos del onboarding. */
 @Component({
   selector: 'app-onboarding-step-header',
   changeDetection: ChangeDetectionStrategy.OnPush,

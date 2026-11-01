@@ -50,6 +50,10 @@ function isSettingsTab(value: string | null): value is SettingsTab {
   return value !== null && (VALID_TABS as readonly string[]).includes(value);
 }
 
+/**
+ * Orquesta la pantalla de configuración: permisos definen las pestañas y SettingsStore
+ * conserva los datos remotos. Los formularios hijos solo presentan y emiten acciones.
+ */
 @Component({
   selector: 'app-settings-page',
   changeDetection: ChangeDetectionStrategy.OnPush,

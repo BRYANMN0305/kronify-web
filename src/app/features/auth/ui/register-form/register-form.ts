@@ -15,7 +15,7 @@ interface RegisterValidationErrors {
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 6;
 
-/** Formulario de registro (port de RegisterForm.vue, contrato por inputs/outputs). */
+/** Formulario de registro; valida datos locales y emite un payload listo para enviar. */
 @Component({
   selector: 'app-register-form',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -60,7 +60,7 @@ export class RegisterForm {
   submit(event: Event): void {
     event.preventDefault();
     if (!this.validate()) return;
-    if (!this.profileTypeSignal()) return; // igual que en Vue: perfil sin seleccionar no envía
+    if (!this.profileTypeSignal()) return; // Sin perfil no hay un registro válido que enviar.
     this.register.emit({
       name: this.name(),
       lastName: this.lastName(),

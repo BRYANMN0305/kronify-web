@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 
+/** Rutas de configuración que se insertan dentro del layout autenticado principal. */
 export const SETTINGS_ROUTES: Routes = [
   {
     path: 'configuracion',

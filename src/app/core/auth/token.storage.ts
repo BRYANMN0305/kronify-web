@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-/** Sesión guardada en localStorage con las mismas claves del proyecto Vue ('token', 'user'). */
+/** Almacenamiento local de la sesión activa: token y datos derivados del usuario. */
 @Injectable({ providedIn: 'root' })
 export class TokenStorage {
   private readonly TOKEN_KEY = 'token';

@@ -10,7 +10,7 @@ import {
   viewChild,
 } from '@angular/core';
 
-/** Port de onboarding/LogoUpload.vue — dropzone con preview; model = File | URL | null */
+/** Selector de logo con arrastre y vista previa; acepta un archivo, URL o valor vacío. */
 @Component({
   selector: 'app-logo-upload',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -27,7 +27,7 @@ export class LogoUpload {
   private currentObjectUrl: string | null = null;
 
   constructor() {
-    // watch(modelValue, immediate) de Vue — computar y revocar la URL de preview
+    // Mantiene la vista previa actualizada y libera URLs temporales que ya no se usan.
     effect(() => {
       const value = this.logoValue();
       const nextPreview = value instanceof File ? URL.createObjectURL(value) : value;

@@ -19,7 +19,7 @@ export class DatetimeService {
 
   readonly zone = this.tz;
 
-  /** "ahora" en la zona del navegador — reemplaza a nowCO() del proyecto Vue */
+  /** Devuelve el instante actual en la zona horaria configurada del navegador. */
   now(): Dayjs {
     return dayjs().tz(this.tz);
   }

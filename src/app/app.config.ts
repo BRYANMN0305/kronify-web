@@ -9,6 +9,7 @@ import { provideApi } from './core/api/openapi/provide-api';
 import { Configuration } from './core/api/openapi/configuration';
 import { environment } from '../environments/environment';
 
+/** Servicios globales: rutas, HTTP autenticado y cliente generado desde OpenAPI. */
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),

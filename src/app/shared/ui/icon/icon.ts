@@ -19,6 +19,7 @@ export type IconName =
   | 'mail'
   | 'alert-circle';
 
+/** Catálogo pequeño de iconos inline para no cargar una librería completa solo por la navegación. */
 @Component({
   selector: 'app-icon',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -22,6 +22,7 @@ interface ValidationErrors {
 
 const NO_ERRORS: ValidationErrors = { name: '', lastName: '' };
 
+/** Formulario presentacional de datos personales; su padre se ocupa de guardar y cerrar sesión. */
 @Component({
   selector: 'app-my-details-tab',
   changeDetection: ChangeDetectionStrategy.OnPush,
