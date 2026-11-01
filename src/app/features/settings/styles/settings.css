@@ -603,7 +603,174 @@
   font-size: 0.72rem;
 }
 
+/* ---- Invitaciones del equipo ---- */
+.invitations-table {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+.invitations-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(90px, max-content) minmax(110px, max-content) minmax(110px, max-content) minmax(140px, max-content);
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.65rem 1rem;
+  font-size: 0.82rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  transition: background 0.15s;
+}
+
+.invitations-row:last-child {
+  border-bottom: none;
+}
+
+.invitations-row:not(.invitations-head):hover {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.invitations-head {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: var(--color-surface-alt);
+  padding: 0.55rem 1rem;
+}
+
+.inv-email {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  word-break: break-all;
+}
+
+.inv-date {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.inv-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  white-space: nowrap;
+}
+
+/* ---- Badges de estado ---- */
+.status-badge {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.status-pending {
+  background: rgba(255, 199, 91, 0.15);
+  color: #ffc75b;
+}
+
+.status-accepted {
+  background: rgba(74, 222, 128, 0.15);
+  color: #5ee69b;
+}
+
+.status-cancelled {
+  background: rgba(255, 107, 107, 0.15);
+  color: #ff8a8a;
+}
+
+.status-expired {
+  background: rgba(148, 163, 184, 0.15);
+  color: #94a3b8;
+}
+
+.status-default {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* ---- Acciones de fila ---- */
+.btn-action {
+  background: none;
+  border: none;
+  padding: 0;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 3px;
+}
+
+.btn-action:hover {
+  color: var(--neon);
+  text-decoration-color: currentColor;
+}
+
+.btn-action-danger {
+  color: rgba(255, 138, 138, 0.7);
+}
+
+.btn-action-danger:hover {
+  color: #ff8a8a;
+}
+
+.btn-action:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+/* ---- Invitación inline ---- */
+.invite-form {
+  padding: 1rem;
+  background: var(--color-surface-alt);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
 /* ---- Responsive ---- */
+/* Variante tablet: las tablas/tarjetas se apilan antes de que el ancho
+   del contenido las recorte (769-991px con sidebar visible). */
+@media (max-width: 992px) {
+  .invitations-row {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.4rem;
+    padding: 0.85rem 1rem;
+  }
+
+  .inv-email {
+    font-size: 0.85rem;
+  }
+
+  .invitations-row > span:nth-child(2) {
+    align-self: flex-start;
+  }
+
+  .inv-actions {
+    margin-top: 0.15rem;
+    justify-content: flex-start;
+  }
+
+  .invitations-head {
+    display: none;
+  }
+
+  .inv-date {
+    display: none;
+  }
+}
+
 @media (max-width: 768px) {
   .settings-layout {
     grid-template-columns: 1fr;
@@ -707,6 +874,16 @@
 
   .settings-form-actions .btn,
   .settings-form-actions .btn-ghost {
+    width: 100%;
+  }
+
+  .invite-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .invite-row .flex-grow-1,
+  .invite-row .btn {
     width: 100%;
   }
 }
