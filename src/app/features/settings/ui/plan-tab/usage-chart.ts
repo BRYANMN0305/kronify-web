@@ -9,9 +9,16 @@ import {
   input,
   viewChild,
 } from '@angular/core';
-import { ArcElement, Chart, ChartConfiguration, Tooltip } from 'chart.js';
+import {
+  ArcElement,
+  Chart,
+  ChartConfiguration,
+  DoughnutController,
+  Legend,
+  Tooltip,
+} from 'chart.js';
 
-Chart.register(ArcElement, Tooltip);
+Chart.register(DoughnutController, ArcElement, Legend, Tooltip);
 Chart.defaults.color = 'rgba(255, 255, 255, 0.5)';
 Chart.defaults.font.family = 'inherit';
 
