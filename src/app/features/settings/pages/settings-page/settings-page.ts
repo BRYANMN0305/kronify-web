@@ -20,6 +20,7 @@ import { BusinessUpdateRequest } from '../../../../core/api/openapi/model/busine
 import { Icon, IconName } from '../../../../shared/ui/icon/icon';
 import { MyDetailsTab } from '../../ui/my-details-tab/my-details-tab';
 import { PasswordTab } from '../../ui/password-tab/password-tab';
+import { PlanChangeRequest, PlanTab } from '../../ui/plan-tab/plan-tab';
 import { ProfileTab, BusinessProfileSubmitPayload } from '../../ui/profile-tab/profile-tab';
 import { TeamTab } from '../../ui/team-tab/team-tab';
 
@@ -62,7 +63,7 @@ function isSettingsTab(value: string | null): value is SettingsTab {
 @Component({
   selector: 'app-settings-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Icon, MyDetailsTab, PasswordTab, ProfileTab, TeamTab],
+  imports: [Icon, MyDetailsTab, PasswordTab, PlanTab, ProfileTab, TeamTab],
   templateUrl: './settings-page.html',
   styleUrl: '../../styles/settings.css',
   encapsulation: ViewEncapsulation.None,
@@ -99,6 +100,12 @@ export class SettingsPage implements OnInit {
   protected readonly businessCompleted = signal(0);
   protected readonly ownerToggling = signal(false);
   protected readonly ownerToggleError = signal<string | null>(null);
+  protected readonly plan = this.settings.plan;
+  protected readonly planHistory = this.settings.planHistory;
+  protected readonly availablePlans = this.settings.availablePlans;
+  protected readonly planChangingId = signal<number | null>(null);
+  protected readonly planError = signal<string | null>(null);
+  protected readonly planCompleted = signal(0);
 
   protected readonly publicBusinessUrl = computed(() => {
     const slug = this.auth.user()?.slug;
@@ -172,6 +179,7 @@ export class SettingsPage implements OnInit {
     if (tab !== 'password') this.passwordError.set(null);
     if (tab !== 'team') this.teamError.set(null);
     if (tab !== 'profile') this.ownerToggleError.set(null);
+    if (tab !== 'plan') this.planError.set(null);
     if (tab === 'team' && this.settings.invitationsLoaded()) {
       void this.settings.fetchInvitations().catch(() => undefined);
     }
@@ -243,6 +251,19 @@ export class SettingsPage implements OnInit {
       this.ownerToggleError.set(apiErrorMessage(error) || 'Error al actualizar la opción');
     } finally {
       this.ownerToggling.set(false);
+    }
+  }
+
+  protected async handleChangePlan(payload: PlanChangeRequest): Promise<void> {
+    this.planChangingId.set(payload.planId);
+    this.planError.set(null);
+    try {
+      await this.settings.changePlan(payload.planId, payload.activationCode);
+      this.planCompleted.update((count) => count + 1);
+    } catch (error) {
+      this.planError.set(apiErrorMessage(error) || 'Error al cambiar el plan');
+    } finally {
+      this.planChangingId.set(null);
     }
   }
 
