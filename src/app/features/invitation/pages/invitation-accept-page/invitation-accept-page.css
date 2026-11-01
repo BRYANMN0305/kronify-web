@@ -1,0 +1,19 @@
+.invite-accept {
+  width: 100%;
+}
+
+.btn-ghost-inline {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 0.7rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.btn-ghost-inline:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.35);
+}

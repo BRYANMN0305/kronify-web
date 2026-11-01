@@ -56,11 +56,19 @@ function isUsableJwt(token: string | null): token is string {
   return typeof claims.exp !== 'number' || claims.exp * 1000 > Date.now();
 }
 
+const INVITE_TOKEN_KEY = 'inviteToken';
+
+export function storePendingInvitation(token: string): void {
+  const trimmed = token.trim();
+  if (!trimmed) return;
+  sessionStorage.setItem(INVITE_TOKEN_KEY, trimmed);
+}
+
 /** consumePendingInvitation — Devuelve y limpia el token de invitación de sessionStorage */
 export function consumePendingInvitation(): string | null {
-  const token = sessionStorage.getItem('inviteToken');
+  const token = sessionStorage.getItem(INVITE_TOKEN_KEY);
   if (!token) return null;
-  sessionStorage.removeItem('inviteToken');
+  sessionStorage.removeItem(INVITE_TOKEN_KEY);
   return token;
 }
 
