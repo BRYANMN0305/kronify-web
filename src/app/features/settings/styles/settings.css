@@ -690,6 +690,265 @@
   margin: 0.1rem 0 0;
 }
 
+/* ---- Plan ---- */
+.plan-description {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  margin: 1rem 0 0;
+}
+
+.plan-charts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.plan-chart-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 1rem 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  background: var(--color-surface-alt);
+}
+
+.plan-chart {
+  width: 130px;
+  height: 130px;
+  position: relative;
+}
+
+.plan-chart canvas {
+  max-height: 130px;
+}
+
+.plan-chart-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.plan-chart-center strong {
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.plan-chart-center span {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.65rem;
+  font-weight: 600;
+}
+
+.plan-chart-unlimited {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+}
+
+.plan-chart-label {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.plan-chart-status {
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.plan-unlimited-symbol {
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 2.5rem;
+  font-weight: 300;
+}
+
+.plan-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.plan-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.plan-card:hover {
+  border-color: rgba(63, 225, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+.plan-card.is-current {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px var(--color-primary), 0 0 18px rgba(var(--color-primary-rgb), 0.18);
+  background: rgba(var(--color-primary-rgb), 0.06);
+}
+
+.plan-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.plan-card-name {
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 0.2rem;
+}
+
+.plan-card-price {
+  color: var(--color-primary);
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.plan-card-price span {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.72rem;
+  font-weight: 600;
+  margin-left: 0.25rem;
+}
+
+.plan-card-desc {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.plan-card-features {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.plan-card-features li {
+  position: relative;
+  padding-left: 1.1rem;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.8rem;
+}
+
+.plan-card-features li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.4em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-primary);
+}
+
+.plan-card-code {
+  margin-top: auto;
+}
+
+.plan-card-code .form-control {
+  background: #1a2632;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 0.875rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 8px;
+  box-shadow: none;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.plan-card-code .form-control:hover {
+  border-color: var(--color-border-hover);
+  background: #1e2d3a;
+}
+
+.plan-card-code .form-control:focus {
+  background: #1e2d3a;
+  border-color: var(--neon-dim);
+  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.18);
+  color: #fff;
+  outline: none;
+}
+
+.plan-card-code .form-control::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.plan-card-code .form-label {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin-bottom: 0.4rem;
+}
+
+.plan-card-code .field-hint {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.45);
+  margin: 0.3rem 0 0;
+}
+
+.plan-card-btn {
+  margin-top: auto;
+}
+
+.plan-card-current {
+  margin-top: auto;
+  padding-top: 0.5rem;
+  border-top: 1px dashed rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.plan-trial-tag {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(255, 199, 91, 0.15);
+  color: #ffc75b;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  vertical-align: middle;
+}
+
+.plan-status-ok {
+  color: #5ee69b;
+}
+
+.plan-status-reached {
+  color: #ffc75b;
+}
+
+.plan-status-exceeded {
+  color: #ff8a8a;
+}
+
 /* ---- Invitaciones del equipo ---- */
 .invitations-table {
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -856,6 +1115,10 @@
   .inv-date {
     display: none;
   }
+
+  .plan-charts-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 768px) {
@@ -873,6 +1136,10 @@
 
   .settings-section {
     padding: 1rem;
+  }
+
+  .plan-charts-grid {
+    grid-template-columns: 1fr;
   }
 
   .settings-sidebar {

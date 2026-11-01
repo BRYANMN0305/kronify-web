@@ -7,14 +7,17 @@ import { BusinessControllerService } from '../api/openapi/api/businessController
 import { EmployeeControllerService } from '../api/openapi/api/employeeController.service';
 import { EmployeeInvitationControllerService } from '../api/openapi/api/employeeInvitationController.service';
 import { PlanControllerService } from '../api/openapi/api/planController.service';
+import { PublicPlanControllerService } from '../api/openapi/api/publicPlanController.service';
 import { UploadControllerService } from '../api/openapi/api/uploadController.service';
 import { UserControllerService } from '../api/openapi/api/userController.service';
+import { BusinessPlanResponse } from '../api/openapi/model/businessPlanResponse';
 import { BusinessPlanUsageResponse } from '../api/openapi/model/businessPlanUsageResponse';
 import { BusinessSettingsResponse } from '../api/openapi/model/businessSettingsResponse';
 import { BusinessUpdateRequest } from '../api/openapi/model/businessUpdateRequest';
 import { BusinessUpdateResponse } from '../api/openapi/model/businessUpdateResponse';
 import { InvitationResponse } from '../api/openapi/model/invitationResponse';
 import { LinkedAuthMethodResponse } from '../api/openapi/model/linkedAuthMethodResponse';
+import { PlanResponse } from '../api/openapi/model/planResponse';
 import { UploadFileRequest } from '../api/openapi/model/uploadFileRequest';
 import { UserChangePasswordRequest } from '../api/openapi/model/userChangePasswordRequest';
 import { UserChangePasswordResponse } from '../api/openapi/model/userChangePasswordResponse';
@@ -24,16 +27,15 @@ import { UserUpdateRequest } from '../api/openapi/model/userUpdateRequest';
 /**
  * SettingsStore — Equivalente de stores/settings.js (kernel de A).
  * Centraliza datos de la cuenta (perfil, métodos de auth), del negocio
- * (dueño), y del plan con su uso — con caché por sección: la primera
- * carga usa spinner y las siguientes revalidan en silencio.
- * La página de configuración puede ampliarse con
- * invitaciones / historial / catálogo de planes (TODO(A)).
+ * (dueño), invitaciones y plan con su uso — con caché por sección: la
+ * primera carga usa spinner y las siguientes revalidan en silencio.
  */
 @Injectable({ providedIn: 'root' })
 export class SettingsStore {
   private readonly userApi = inject(UserControllerService);
   private readonly businessApi = inject(BusinessControllerService);
   private readonly planApi = inject(PlanControllerService);
+  private readonly publicPlanApi = inject(PublicPlanControllerService);
   private readonly employeeApi = inject(EmployeeControllerService);
   private readonly invitationApi = inject(EmployeeInvitationControllerService);
   private readonly uploadApi = inject(UploadControllerService);
@@ -44,6 +46,8 @@ export class SettingsStore {
   readonly businessData = signal<BusinessSettingsResponse | null>(null);
   readonly invitations = signal<InvitationResponse[]>([]);
   readonly plan = signal<BusinessPlanUsageResponse | null>(null);
+  readonly planHistory = signal<BusinessPlanResponse[]>([]);
+  readonly availablePlans = signal<PlanResponse[]>([]);
   readonly ownerAsEmployee = signal(false);
   readonly loading = signal(false);
   readonly error = signal('');
@@ -53,6 +57,8 @@ export class SettingsStore {
   readonly businessLoaded = signal(false);
   readonly invitationsLoaded = signal(false);
   readonly planLoaded = signal(false);
+  readonly planHistoryLoaded = signal(false);
+  readonly availablePlansLoaded = signal(false);
   readonly ownerAsEmployeeLoaded = signal(false);
 
   private lastToken: string | null = this.authStore.token();
@@ -160,6 +166,24 @@ export class SettingsStore {
     this.planLoaded.set(true);
   }
 
+  /** fetchPlanHistory — Historial de planes del negocio */
+  async fetchPlanHistory(): Promise<void> {
+    this.planHistory.set(await firstValueFrom(this.planApi.getPlanHistory()));
+    this.planHistoryLoaded.set(true);
+  }
+
+  /** fetchAvailablePlans — Catálogo público de planes disponibles */
+  async fetchAvailablePlans(): Promise<void> {
+    this.availablePlans.set(await firstValueFrom(this.publicPlanApi.getPublicPlans()));
+    this.availablePlansLoaded.set(true);
+  }
+
+  /** changePlan — Asigna un plan y refresca plan + historial */
+  async changePlan(planId: number, activationCode?: string): Promise<void> {
+    await firstValueFrom(this.planApi.assignPlan({ planId, activationCode }));
+    await Promise.all([this.fetchPlan(), this.fetchPlanHistory()]);
+  }
+
   /** fetchOwnerAsEmployee — ¿El dueño tiene registro de employee activo? */
   async fetchOwnerAsEmployee(): Promise<void> {
     try {
@@ -185,6 +209,8 @@ export class SettingsStore {
           this.fetchBusiness(),
           this.fetchInvitations(),
           this.fetchPlan(),
+          this.fetchPlanHistory(),
+          this.fetchAvailablePlans(),
           this.fetchOwnerAsEmployee(),
         );
       }
@@ -205,6 +231,8 @@ export class SettingsStore {
     this.businessData.set(null);
     this.invitations.set([]);
     this.plan.set(null);
+    this.planHistory.set([]);
+    this.availablePlans.set([]);
     this.ownerAsEmployee.set(false);
     this.loading.set(false);
     this.error.set('');
@@ -212,6 +240,8 @@ export class SettingsStore {
     this.businessLoaded.set(false);
     this.invitationsLoaded.set(false);
     this.planLoaded.set(false);
+    this.planHistoryLoaded.set(false);
+    this.availablePlansLoaded.set(false);
     this.ownerAsEmployeeLoaded.set(false);
   }
 }
