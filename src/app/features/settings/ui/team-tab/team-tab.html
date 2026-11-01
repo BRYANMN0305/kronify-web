@@ -1,0 +1,99 @@
+<div class="settings-tab">
+  <section class="settings-section">
+    <div class="settings-section-header">
+      <div>
+        <h3 class="settings-section-title">Equipo</h3>
+        <p class="settings-section-subtitle">Invita a empleados a trabajar en tu negocio</p>
+      </div>
+
+      @if (showForm()) {
+        <button type="button" class="btn-ghost" (click)="showForm.set(false)">Cerrar</button>
+      } @else {
+        <button type="button" class="btn btn-primary text-nowrap" (click)="showForm.set(true)">
+          Invitar miembro
+        </button>
+      }
+    </div>
+
+    @if (showForm()) {
+      <form class="settings-form invite-form" novalidate (ngSubmit)="submit()">
+        <div class="d-flex gap-2 align-items-start invite-row">
+          <div class="flex-grow-1">
+            <input name="inviteEmail"
+                   type="email"
+                   class="form-control"
+                   placeholder="correo@empleado.com"
+                   autocomplete="email"
+                   [class.is-invalid]="emailError()"
+                   [ngModel]="email()"
+                   (ngModelChange)="email.set($event)"/>
+            <div class="invalid-feedback">{{ emailError() }}</div>
+          </div>
+          <button type="submit" class="btn btn-primary text-nowrap" [disabled]="sending()">
+            @if (sending()) {
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            }
+            Enviar invitación
+          </button>
+        </div>
+      </form>
+    }
+
+    @if (successMessage()) {
+      <div class="settings-alert settings-alert-success">
+        <app-icon name="check" aria-hidden="true"/>
+        <span>{{ successMessage() }}</span>
+      </div>
+    }
+
+    @if (errorMessage()) {
+      <div class="settings-alert settings-alert-error">
+        <app-icon name="alert-circle" aria-hidden="true"/>
+        <span>{{ errorMessage() }}</span>
+      </div>
+    }
+
+    @if (invitations().length === 0) {
+      <div class="settings-empty">Aún no has invitado a nadie.</div>
+    } @else {
+      <div class="invitations-table">
+        <div class="invitations-row invitations-head">
+          <span>Correo</span>
+          <span>Estado</span>
+          <span>Expira</span>
+          <span>Creada</span>
+          <span></span>
+        </div>
+
+        @for (invitation of invitations(); track invitation.invitationId) {
+          <div class="invitations-row">
+            <span class="inv-email">{{ invitation.email }}</span>
+            <span>
+              <span [class]="'status-badge ' + statusClass(invitation.status)">
+                {{ statusLabel(invitation.status) }}
+              </span>
+            </span>
+            <span class="inv-date">{{ invitation.expiresAt | dateFmt }}</span>
+            <span class="inv-date">{{ invitation.createdAt | dateFmt }}</span>
+            <span class="inv-actions">
+              @if (canResend(invitation)) {
+                <button type="button"
+                        class="btn-action"
+                        [disabled]="busyId() === invitation.invitationId"
+                        (click)="resendInvitation.emit(invitation.invitationId!)">
+                  Reenviar
+                </button>
+                <button type="button"
+                        class="btn-action btn-action-danger"
+                        [disabled]="busyId() === invitation.invitationId"
+                        (click)="cancelInvitation.emit(invitation.invitationId!)">
+                  Cancelar
+                </button>
+              }
+            </span>
+          </div>
+        }
+      </div>
+    }
+  </section>
+</div>
