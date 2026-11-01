@@ -4,7 +4,8 @@ Migración del frontend de Kronify a Angular 22 con componentes standalone, sign
 `ChangeDetectionStrategy.OnPush`. La interfaz usa Bootstrap 5 (solo CSS: grid, utilidades,
 formularios y botones); el CSS propio queda para tokens, temas y animaciones. La aplicación
 cubre autenticación, invitaciones de equipo, onboarding, el shell de la zona autenticada, la
-agenda de citas y la configuración de cuenta.
+agenda de citas y la configuración completa de cuenta y negocio (datos, contraseña, perfil,
+plan con gráficas de Chart.js y equipo).
 
 ## Enlaces
 
@@ -56,7 +57,7 @@ La URL del backend se configura en `src/environments/environment.ts`.
 | `/onboarding-negocio` | Autenticado | Wizard de creación del negocio |
 | `/calendario` | Autenticado | Agenda de citas; destino posterior al login |
 | `/demo-calendario` | Público | Vista previa de la agenda con datos locales |
-| `/configuracion` | Autenticado | Configuración de cuenta y negocio con pestaña Mis datos funcional |
+| `/configuracion` | Autenticado | Configuración de cuenta y negocio con todas las pestañas funcionales |
 | `**` | — | Redirección a `/calendario` |
 
 ## Flujo de autenticación
@@ -102,7 +103,14 @@ App
         │   │   ├── CalendarGrid
         │   │   └── AppointmentRow
         │   └── SettingsPage
-        │       └── MyDetailsTab
+        │       ├── MyDetailsTab
+        │       ├── PasswordTab
+        │       ├── ProfileTab
+        │       │   ├── CategoryDropdown
+        │       │   └── LogoUpload
+        │       ├── PlanTab
+        │       │   └── UsageChart
+        │       └── TeamTab
         └── BottomNav
 ```
 
@@ -122,6 +130,11 @@ App
 | `AgendaSummary` | `confirmed`, `total`, `revenue` (requeridos) | — | Presenta indicadores derivados de la agenda |
 | `SettingsPage` | — | — | Coordina las pestañas, los datos de `SettingsStore`, el guardado y el logout |
 | `MyDetailsTab` | `profile`, `authMethods`, `role`, `saving`, `errorMessage`, `saveCompleted` | `editStarted`, `saveProfile: UserUpdateRequest`, `logout` | Perfil, edición de datos personales y métodos de autenticación |
+| `PasswordTab` | `saving`, `errorMessage`, `saveCompleted` | `savePassword: UserChangePasswordRequest` | Cambio de contraseña con validación local |
+| `ProfileTab` | `business`, `publicUrl`, `ownerAsEmployee`, `toggling`, `toggleError`, `saving`, `errorMessage`, `saveCompleted` | `editStarted`, `updateBusiness: BusinessProfileSubmitPayload`, `toggleOwner` | Perfil público del negocio, logo, contacto y toggle de dueño-empleado |
+| `PlanTab` | `plan`, `availablePlans`, `planHistory`, `changingPlanId`, `errorMessage`, `changeCompleted` | `changePlan: PlanChangeRequest` | Plan actual, uso con Chart.js, catálogo e historial |
+| `UsageChart` | `label`, `data`, `options` | — | Doughnut de una métrica de uso con Chart.js |
+| `TeamTab` | `invitations`, `sending`, `busyId`, `successMessage`, `errorMessage` | `createInvitation`, `resendInvitation`, `cancelInvitation` | Invitaciones del equipo y acciones por fila |
 
 ## Estado y ownership
 
@@ -129,7 +142,7 @@ App
 | --- | --- | --- |
 | `AuthStore` | `core/auth/auth.store.ts` | La sesión es global: la consumen guards, interceptor y shell |
 | `BusinessStore` | `core/business/business.store.ts` | Contexto del negocio compartido entre auth, onboarding y shell |
-| `SettingsStore` | `core/settings/settings.store.ts` | Datos y plan del negocio usados por el shell |
+| `SettingsStore` | `core/settings/settings.store.ts` | Datos de cuenta, negocio, invitaciones, plan, catálogo e historial |
 | `AgendaStore` | `features/agenda/data/agenda.store.ts` | Fuente única de citas, carga, error y modo demo |
 | Señales locales de formularios | `features/auth/ui/*` | Solo el formulario necesita sus campos y errores |
 
@@ -168,12 +181,30 @@ por qué un formulario emite un evento, pero no que `set(true)` cambia una seña
 
 ## Configuración
 
-`SettingsPage` compone el sidebar de secciones y el contenido. La pestaña **Mis datos** está
-migrada para todos los roles; las pestañas de negocio (Perfil del negocio, Plan y Equipo) solo
-aparecen para el dueño y muestran un placeholder hasta su migración. `MyDetailsTab` es
-presentacional: recibe perfil, métodos de autenticación, rol y estado de guardado, y emite
-`saveProfile`/`logout`. `SettingsStore.updateProfile()` persiste los cambios y fusiona la
-respuesta en el perfil cacheado; las fechas se presentan con el pipe `dateFmt`.
+`SettingsPage` compone el sidebar de secciones y el contenido. La pestaña **Mis datos** y la
+pestaña **Contraseña** están disponibles para todos los roles; las pestañas de negocio
+(**Perfil del negocio**, **Plan** y **Equipo**) solo aparecen para el dueño.
+
+- **Mis datos** (`MyDetailsTab`): perfil, edición de datos personales y métodos de
+  autenticación. `SettingsStore.updateProfile()` persiste los cambios y fusiona la respuesta
+  en el perfil cacheado; el logout delega en `AuthStore`.
+- **Contraseña** (`PasswordTab`): valida contraseña actual, nueva y confirmación, y llama a
+  `SettingsStore.updatePassword()`. El formulario se limpia cuando el padre confirma el
+  guardado.
+- **Perfil del negocio** (`ProfileTab`): muestra y edita nombre, categoría, descripción,
+  contacto, logo y URL pública. Reutiliza `CategoryDropdown` y `LogoUpload` del onboarding.
+  `SettingsStore.uploadLogo()` sube un archivo nuevo y `updateBusiness()` guarda el resto.
+  El toggle de dueño-empleado usa `toggleOwnerAsEmployee()` y refresca plan y empleados.
+- **Plan** (`PlanTab`): presenta el plan actual, el consumo de límites con doughnuts de
+  Chart.js, el catálogo público, los códigos de activación y el historial. `SettingsStore`
+  expone `plan`, `availablePlans`, `planHistory` y `changePlan()`.
+- **Equipo** (`TeamTab`): lista invitaciones con su estado y permite crear, reenviar y
+  cancelar. `SettingsStore` mantiene `invitations` y refresca la lista después de cada
+  operación.
+
+Las fechas se presentan con el pipe `dateFmt` y los precios con `CurrencyPipe` en COP. Todos
+los formularios son presentacionales: reciben datos por `input`, emiten acciones por `output`
+y dejan las peticiones HTTP en `SettingsStore`.
 
 ## Agenda
 
