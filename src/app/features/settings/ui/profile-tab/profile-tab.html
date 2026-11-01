@@ -1,0 +1,232 @@
+<div class="settings-tab">
+  <div class="owner-toggle">
+    <div>
+      <div class="owner-toggle-label">¿Trabajas como empleado en tu negocio?</div>
+      <div class="owner-toggle-hint">Aparecerás como parte de tu equipo de trabajo</div>
+    </div>
+    <label class="switch">
+      <input type="checkbox"
+             [checked]="ownerAsEmployee()"
+             [disabled]="toggling()"
+             (change)="toggleOwnerAsEmployee($any($event.target).checked)"/>
+      <span class="switch-slider"></span>
+    </label>
+  </div>
+
+  @if (toggleError()) {
+    <div class="settings-alert settings-alert-error">
+      <app-icon name="alert-circle" aria-hidden="true"/>
+      <span>{{ toggleError() }}</span>
+    </div>
+  }
+
+  <section class="settings-section">
+    <div class="settings-section-header">
+      <div>
+        <h3 class="settings-section-title">Perfil del negocio</h3>
+        <p class="settings-section-subtitle">Nombre, categoría y logo</p>
+      </div>
+      @if (editing()) {
+        <button type="button" class="btn-ghost" (click)="cancelEdit()">Cancelar</button>
+      } @else {
+        <button type="button" class="btn-edit" (click)="startEdit()">
+          <app-icon name="pencil" aria-hidden="true"/>
+          Editar
+        </button>
+      }
+    </div>
+
+    @if (!editing()) {
+      <div class="settings-profile-header">
+        <span class="settings-profile-avatar">
+          @if (business()?.logoUrl) {
+            <img [src]="business()?.logoUrl" alt="Logo del negocio"/>
+          } @else {
+            {{ businessInitial() }}
+          }
+        </span>
+        <div>
+          <p class="settings-profile-name">{{ business()?.name || '—' }}</p>
+          <p class="settings-profile-meta">{{ business()?.category || 'Sin categoría' }}</p>
+        </div>
+      </div>
+    }
+  </section>
+
+  <section class="settings-section">
+    <div class="settings-section-header">
+      <div>
+        <h3 class="settings-section-title">Información de contacto</h3>
+        <p class="settings-section-subtitle">Formas en que tus clientes pueden contactarte</p>
+      </div>
+    </div>
+
+    @if (!editing()) {
+      <div class="settings-data-grid">
+        <div>
+          <div class="settings-data-label">Correo electrónico</div>
+          <div class="settings-data-value">{{ business()?.email || '—' }}</div>
+        </div>
+        <div>
+          <div class="settings-data-label">Teléfono</div>
+          <div class="settings-data-value">{{ business()?.phoneNumber || '—' }}</div>
+        </div>
+        <div>
+          <div class="settings-data-label">WhatsApp</div>
+          <div class="settings-data-value">{{ business()?.whatsApp || '—' }}</div>
+        </div>
+        <div>
+          <div class="settings-data-label">Dirección</div>
+          <div class="settings-data-value">{{ business()?.address || '—' }}</div>
+        </div>
+        <div>
+          <div class="settings-data-label">URL pública</div>
+          @if (publicUrl()) {
+            <a [href]="publicUrl()"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="settings-data-link">{{ publicUrl() }}</a>
+          } @else {
+            <span class="settings-data-value">—</span>
+          }
+        </div>
+        <div>
+          <div class="settings-data-label">Fecha de creación</div>
+          <div class="settings-data-value">{{ business()?.createdAt | dateFmt }}</div>
+        </div>
+        <div>
+          <div class="settings-data-label">Última actualización</div>
+          <div class="settings-data-value">{{ business()?.updatedAt | dateFmt }}</div>
+        </div>
+      </div>
+    }
+  </section>
+
+  <section class="settings-section">
+    <div class="settings-section-header">
+      <div>
+        <h3 class="settings-section-title">Descripción</h3>
+        <p class="settings-section-subtitle">Describe brevemente tu negocio</p>
+      </div>
+    </div>
+
+    @if (!editing()) {
+      <div class="settings-data-value">
+        {{ business()?.description || 'Sin descripción' }}
+      </div>
+    }
+  </section>
+
+  @if (editing()) {
+    <form class="settings-section settings-form" novalidate (ngSubmit)="submit()">
+      <div class="settings-section-header">
+        <div>
+          <h3 class="settings-section-title">Editar negocio</h3>
+          <p class="settings-section-subtitle">Modifica los datos de tu negocio</p>
+        </div>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label" for="pbName">Nombre del negocio</label>
+          <input id="pbName"
+                 name="pbName"
+                 type="text"
+                 class="form-control"
+                 placeholder="Ej: Barbería El Clásico"
+                 [class.is-invalid]="errors().name"
+                 [ngModel]="name()"
+                 (ngModelChange)="name.set($event)"/>
+          <div class="invalid-feedback">{{ errors().name }}</div>
+        </div>
+
+        <div class="col-md-6">
+          <app-category-dropdown [category]="category()" (categoryChange)="category.set($event)"/>
+          <div class="invalid-feedback"></div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label" for="pbEmail">Email de contacto</label>
+          <input id="pbEmail"
+                 name="pbEmail"
+                 type="email"
+                 class="form-control"
+                 placeholder="contacto@negocio.com"
+                 [class.is-invalid]="errors().email"
+                 [ngModel]="email()"
+                 (ngModelChange)="email.set($event)"/>
+          <div class="invalid-feedback">{{ errors().email }}</div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label" for="pbWhatsApp">WhatsApp</label>
+          <input id="pbWhatsApp"
+                 name="pbWhatsApp"
+                 type="tel"
+                 class="form-control"
+                 placeholder="+57 3006217237"
+                 [class.is-invalid]="errors().whatsApp"
+                 [ngModel]="whatsApp()"
+                 (ngModelChange)="whatsApp.set($event)"/>
+          <div class="invalid-feedback">{{ errors().whatsApp }}</div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label" for="pbPhone">Teléfono</label>
+          <input id="pbPhone"
+                 name="pbPhone"
+                 type="tel"
+                 class="form-control"
+                 placeholder="+57 3006217237"
+                 [class.is-invalid]="errors().phoneNumber"
+                 [ngModel]="phoneNumber()"
+                 (ngModelChange)="phoneNumber.set($event)"/>
+          <div class="invalid-feedback">{{ errors().phoneNumber }}</div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label" for="pbAddress">Dirección</label>
+          <input id="pbAddress"
+                 name="pbAddress"
+                 type="text"
+                 class="form-control"
+                 placeholder="Calle 123 #45-67"
+                 [ngModel]="address()"
+                 (ngModelChange)="address.set($event)"/>
+        </div>
+
+        <div class="col-md-6">
+          <app-logo-upload [logoValue]="logoValue()" (logoValueChange)="logoValue.set($event)"/>
+        </div>
+
+        <div class="col-12">
+          <label class="form-label" for="pbDescription">Descripción</label>
+          <textarea id="pbDescription"
+                    name="pbDescription"
+                    class="form-control"
+                    rows="3"
+                    placeholder="Describe brevemente tu negocio..."
+                    [ngModel]="description()"
+                    (ngModelChange)="description.set($event)"></textarea>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 mt-4 settings-form-actions">
+        <button type="submit" class="btn btn-primary" [disabled]="saving()">
+          @if (saving()) {
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+          }
+          {{ saving() ? 'Guardando...' : 'Guardar cambios' }}
+        </button>
+        <button type="button" class="btn-ghost" (click)="cancelEdit()">Cancelar</button>
+      </div>
+
+      @if (errorMessage()) {
+        <div class="settings-alert settings-alert-error">
+          <app-icon name="alert-circle" aria-hidden="true"/>
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+    </form>
+  }
+</div>

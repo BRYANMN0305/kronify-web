@@ -16,9 +16,11 @@ import { Permissions } from '../../../../core/auth/permissions';
 import { SettingsStore } from '../../../../core/settings/settings.store';
 import { UserChangePasswordRequest } from '../../../../core/api/openapi/model/userChangePasswordRequest';
 import { UserUpdateRequest } from '../../../../core/api/openapi/model/userUpdateRequest';
+import { BusinessUpdateRequest } from '../../../../core/api/openapi/model/businessUpdateRequest';
 import { Icon, IconName } from '../../../../shared/ui/icon/icon';
 import { MyDetailsTab } from '../../ui/my-details-tab/my-details-tab';
 import { PasswordTab } from '../../ui/password-tab/password-tab';
+import { ProfileTab, BusinessProfileSubmitPayload } from '../../ui/profile-tab/profile-tab';
 import { TeamTab } from '../../ui/team-tab/team-tab';
 
 type SettingsTab = 'details' | 'profile' | 'plan' | 'password' | 'team';
@@ -60,7 +62,7 @@ function isSettingsTab(value: string | null): value is SettingsTab {
 @Component({
   selector: 'app-settings-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Icon, MyDetailsTab, PasswordTab, TeamTab],
+  imports: [Icon, MyDetailsTab, PasswordTab, ProfileTab, TeamTab],
   templateUrl: './settings-page.html',
   styleUrl: '../../styles/settings.css',
   encapsulation: ViewEncapsulation.None,
@@ -90,6 +92,18 @@ export class SettingsPage implements OnInit {
   protected readonly teamBusyId = signal<number | null>(null);
   protected readonly teamSuccess = signal<string | null>(null);
   protected readonly teamError = signal<string | null>(null);
+  protected readonly business = this.settings.businessData;
+  protected readonly ownerAsEmployee = this.settings.ownerAsEmployee;
+  protected readonly businessSaving = signal(false);
+  protected readonly businessError = signal<string | null>(null);
+  protected readonly businessCompleted = signal(0);
+  protected readonly ownerToggling = signal(false);
+  protected readonly ownerToggleError = signal<string | null>(null);
+
+  protected readonly publicBusinessUrl = computed(() => {
+    const slug = this.auth.user()?.slug;
+    return slug ? `${window.location.origin}/negocio/${slug}` : '';
+  });
 
   protected readonly navGroups = computed<SettingsNavGroup[]>(() => {
     const groups: SettingsNavGroup[] = [
@@ -157,6 +171,7 @@ export class SettingsPage implements OnInit {
   protected selectTab(tab: SettingsTab): void {
     if (tab !== 'password') this.passwordError.set(null);
     if (tab !== 'team') this.teamError.set(null);
+    if (tab !== 'profile') this.ownerToggleError.set(null);
     if (tab === 'team' && this.settings.invitationsLoaded()) {
       void this.settings.fetchInvitations().catch(() => undefined);
     }
@@ -197,8 +212,41 @@ export class SettingsPage implements OnInit {
     }
   }
 
-  protected async handleCreateInvitation(email: string): Promise<void> {
-    this.teamSending.set(true);
+  protected handleBusinessEditStarted(): void {
+    this.businessError.set(null);
+  }
+
+  protected async handleUpdateBusiness(payload: BusinessProfileSubmitPayload): Promise<void> {
+    this.businessSaving.set(true);
+    this.businessError.set(null);
+    try {
+      let logoUrl: string | null = payload.request.logoUrl ?? null;
+      if (payload.logo) logoUrl = await this.settings.uploadLogo(payload.logo);
+      await this.settings.updateBusiness({
+        ...payload.request,
+        logoUrl,
+      } as BusinessUpdateRequest);
+      this.businessCompleted.update((count) => count + 1);
+    } catch (error) {
+      this.businessError.set(apiErrorMessage(error) || 'Error al actualizar el negocio');
+    } finally {
+      this.businessSaving.set(false);
+    }
+  }
+
+  protected async handleToggleOwner(enabled: boolean): Promise<void> {
+    this.ownerToggling.set(true);
+    this.ownerToggleError.set(null);
+    try {
+      await this.settings.toggleOwnerAsEmployee(enabled);
+    } catch (error) {
+      this.ownerToggleError.set(apiErrorMessage(error) || 'Error al actualizar la opción');
+    } finally {
+      this.ownerToggling.set(false);
+    }
+  }
+
+  protected async handleCreateInvitation(email: string): Promise<void> {    this.teamSending.set(true);
     this.teamSuccess.set(null);
     this.teamError.set(null);
     try {
