@@ -14,9 +14,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AuthStore, apiErrorMessage } from '../../../../core/auth/auth.store';
 import { Permissions } from '../../../../core/auth/permissions';
 import { SettingsStore } from '../../../../core/settings/settings.store';
+import { UserChangePasswordRequest } from '../../../../core/api/openapi/model/userChangePasswordRequest';
 import { UserUpdateRequest } from '../../../../core/api/openapi/model/userUpdateRequest';
 import { Icon, IconName } from '../../../../shared/ui/icon/icon';
 import { MyDetailsTab } from '../../ui/my-details-tab/my-details-tab';
+import { PasswordTab } from '../../ui/password-tab/password-tab';
 
 type SettingsTab = 'details' | 'profile' | 'plan' | 'password' | 'team';
 
@@ -57,7 +59,7 @@ function isSettingsTab(value: string | null): value is SettingsTab {
 @Component({
   selector: 'app-settings-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Icon, MyDetailsTab],
+  imports: [Icon, MyDetailsTab, PasswordTab],
   templateUrl: './settings-page.html',
   styleUrl: '../../styles/settings.css',
   encapsulation: ViewEncapsulation.None,
@@ -79,6 +81,9 @@ export class SettingsPage implements OnInit {
   protected readonly saving = signal(false);
   protected readonly saveError = signal<string | null>(null);
   protected readonly saveCompleted = signal(0);
+  protected readonly passwordSaving = signal(false);
+  protected readonly passwordError = signal<string | null>(null);
+  protected readonly passwordCompleted = signal(0);
 
   protected readonly navGroups = computed<SettingsNavGroup[]>(() => {
     const groups: SettingsNavGroup[] = [
@@ -144,6 +149,7 @@ export class SettingsPage implements OnInit {
   }
 
   protected selectTab(tab: SettingsTab): void {
+    if (tab !== 'password') this.passwordError.set(null);
     this.activeTab.set(tab);
   }
 
@@ -165,6 +171,19 @@ export class SettingsPage implements OnInit {
       this.saveError.set(apiErrorMessage(error));
     } finally {
       this.saving.set(false);
+    }
+  }
+
+  protected async handleSavePassword(payload: UserChangePasswordRequest): Promise<void> {
+    this.passwordSaving.set(true);
+    this.passwordError.set(null);
+    try {
+      await this.settings.updatePassword(payload);
+      this.passwordCompleted.update((count) => count + 1);
+    } catch (error) {
+      this.passwordError.set(apiErrorMessage(error));
+    } finally {
+      this.passwordSaving.set(false);
     }
   }
 
