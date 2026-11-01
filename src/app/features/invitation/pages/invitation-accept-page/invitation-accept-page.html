@@ -1,0 +1,51 @@
+<app-auth-layout>
+  @if (!token()) {
+    <div class="invite-accept">
+      <h1 class="auth-title">Enlace inválido</h1>
+      <p class="auth-subtitle">El enlace de invitación está incompleto o ya no es válido.</p>
+      <div class="auth-error mt-3">No se encontró el token de invitación en la URL.</div>
+      <a class="btn btn-primary w-100 mt-3" routerLink="/">Ir al inicio</a>
+    </div>
+  } @else if (!isAuthenticated()) {
+    <div class="invite-accept">
+      <h1 class="auth-title">Te invitaron a un equipo</h1>
+      <p class="auth-subtitle">
+        Para aceptar la invitación, crea una cuenta o inicia sesión con el correo al que llegó la
+        invitación.
+      </p>
+
+      <button type="button" class="btn btn-primary w-100" (click)="goToRegister()">
+        Crear mi cuenta
+      </button>
+      <button type="button" class="btn btn-ghost-inline w-100 mt-2" (click)="goToLogin()">
+        Ya tengo una cuenta — Iniciar sesión
+      </button>
+    </div>
+  } @else if (processing()) {
+    <div class="invite-accept">
+      <h1 class="auth-title">Aceptando invitación…</h1>
+      <div class="d-flex justify-content-center mt-4">
+        <span class="spinner-border text-info" role="status"></span>
+      </div>
+    </div>
+  } @else if (resultOk()) {
+    <div class="invite-accept">
+      <h1 class="auth-title">¡Invitación aceptada!</h1>
+      <p class="auth-subtitle">
+        {{ resultMessage() || 'Ya formas parte del equipo. Puedes empezar desde tu calendario.' }}
+      </p>
+      <button type="button" class="btn btn-primary w-100 mt-3" (click)="goToCalendar()">
+        Ir al calendario
+      </button>
+    </div>
+  } @else {
+    <div class="invite-accept">
+      <h1 class="auth-title">No se pudo aceptar</h1>
+      <p class="auth-subtitle">{{ resultMessage() }}</p>
+      <div class="auth-error mt-3">{{ resultError() }}</div>
+      <button type="button" class="btn btn-primary w-100 mt-3" (click)="goToCalendar()">
+        Ir al calendario
+      </button>
+    </div>
+  }
+</app-auth-layout>
