@@ -7,11 +7,15 @@ import { BusinessControllerService } from '../api/openapi/api/businessController
 import { EmployeeControllerService } from '../api/openapi/api/employeeController.service';
 import { EmployeeInvitationControllerService } from '../api/openapi/api/employeeInvitationController.service';
 import { PlanControllerService } from '../api/openapi/api/planController.service';
+import { UploadControllerService } from '../api/openapi/api/uploadController.service';
 import { UserControllerService } from '../api/openapi/api/userController.service';
 import { BusinessPlanUsageResponse } from '../api/openapi/model/businessPlanUsageResponse';
 import { BusinessSettingsResponse } from '../api/openapi/model/businessSettingsResponse';
+import { BusinessUpdateRequest } from '../api/openapi/model/businessUpdateRequest';
+import { BusinessUpdateResponse } from '../api/openapi/model/businessUpdateResponse';
 import { InvitationResponse } from '../api/openapi/model/invitationResponse';
 import { LinkedAuthMethodResponse } from '../api/openapi/model/linkedAuthMethodResponse';
+import { UploadFileRequest } from '../api/openapi/model/uploadFileRequest';
 import { UserChangePasswordRequest } from '../api/openapi/model/userChangePasswordRequest';
 import { UserChangePasswordResponse } from '../api/openapi/model/userChangePasswordResponse';
 import { UserProfileResponse } from '../api/openapi/model/userProfileResponse';
@@ -32,6 +36,7 @@ export class SettingsStore {
   private readonly planApi = inject(PlanControllerService);
   private readonly employeeApi = inject(EmployeeControllerService);
   private readonly invitationApi = inject(EmployeeInvitationControllerService);
+  private readonly uploadApi = inject(UploadControllerService);
   private readonly authStore = inject(AuthStore);
 
   readonly profile = signal<UserProfileResponse | null>(null);
@@ -99,8 +104,33 @@ export class SettingsStore {
     this.businessLoaded.set(true);
   }
 
-  /** fetchInvitations — Invitaciones del negocio (solo dueño) */
-  async fetchInvitations(): Promise<void> {
+  /** updateBusiness — Guarda los datos del negocio y fusiona la respuesta local */
+  async updateBusiness(payload: BusinessUpdateRequest): Promise<BusinessUpdateResponse> {
+    const updated = await firstValueFrom(this.businessApi.updateBusiness(payload));
+    this.businessData.update((business) =>
+      business
+        ? { ...business, ...payload, updatedAt: updated.updatedAt ?? business.updatedAt }
+        : business,
+    );
+    return updated;
+  }
+
+  /** uploadLogo — Sube el logo y devuelve su URL pública */
+  async uploadLogo(file: File): Promise<string | null> {
+    const response = await firstValueFrom(
+      this.uploadApi.uploadFile({ file } satisfies UploadFileRequest),
+    );
+    return response['url'] ?? null;
+  }
+
+  /** toggleOwnerAsEmployee — Activa/desactiva al dueño como empleado de su negocio */
+  async toggleOwnerAsEmployee(enabled: boolean): Promise<void> {
+    await firstValueFrom(this.employeeApi.toggleOwnerEmployee({ enabled }));
+    this.ownerAsEmployee.set(enabled);
+    await Promise.allSettled([this.fetchPlan(), this.fetchOwnerAsEmployee()]);
+  }
+
+  /** fetchInvitations — Invitaciones del negocio (solo dueño) */  async fetchInvitations(): Promise<void> {
     this.invitations.set(await firstValueFrom(this.invitationApi.listInvitations()));
     this.invitationsLoaded.set(true);
   }
