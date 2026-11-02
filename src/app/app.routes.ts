@@ -16,6 +16,9 @@ export const routes: Routes = [
   ...AUTH_ROUTES,
   ...INVITATION_ROUTES,
 
+  // Perfil público del negocio, fuera del shell de administración.
+  { path: 'negocio/:slug', data: { title: 'Negocio' }, loadComponent: () => import('./features/business/pages/public-business-page/public-business-page').then(m => m.PublicBusinessPage) },
+
   // Onboarding fullscreen (feature onboarding)
   { path: 'onboarding-negocio',
     data: { requiresAuth: true, onboardingRoute: true, title: 'Onboarding del negocio' },
@@ -46,11 +49,7 @@ export const routes: Routes = [
       ...SETTINGS_ROUTES,
 
       { path: 'resenas', data: { title: 'Reseñas' }, loadComponent: () => import('./features/business/pages/reviews-page/reviews-page').then(m => m.ReviewsPage) },
-
-      ...SETTINGS_ROUTES,
-
       // TODO(B): 'mis-citas'
-      // TODO(B): { path: 'negocio/:slug', ... } pública, fuera de este layout
     ] },
 
   { path: '**', redirectTo: '/calendario' },
