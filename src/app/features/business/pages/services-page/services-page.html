@@ -1,20 +1,22 @@
 <main class="services-page">
-  <header><span class="eyebrow">NEGOCIO</span><h1>Servicios</h1><p>Define lo que ofreces, su duración y precio.</p></header>
+  <header class="page-heading"><span class="eyebrow">NEGOCIO · CATÁLOGO</span><h1>Servicios</h1><p>Arma una oferta clara para tus clientes y mantén tus precios al día.</p></header>
   @if (error()) { <p class="message error" role="alert">{{ error() }}</p> }
   @if (notice()) { <p class="message success" role="status">{{ notice() }}</p> }
-  <section class="service-card"><h2>{{ editingId() == null ? 'Agregar servicio' : 'Editar servicio' }}</h2>
-    <form class="service-form" (ngSubmit)="save()">
-      <label>Nombre<input required maxlength="100" [ngModel]="form().name" (ngModelChange)="update('name', $event)" name="name"></label>
-      <label>Duración (minutos)<input required type="number" min="1" max="600" [ngModel]="form().durationMinutes" (ngModelChange)="update('durationMinutes', +$event)" name="duration"></label>
-      <label>Precio (COP)<input required type="number" min="0" [ngModel]="form().price" (ngModelChange)="update('price', +$event)" name="price"></label>
-      <label>Descanso entre citas<input type="number" min="0" max="180" [ngModel]="form().bufferMinutes" (ngModelChange)="update('bufferMinutes', +$event)" name="buffer"></label>
-      <label class="wide">Descripción<textarea rows="2" maxlength="500" [ngModel]="form().description" (ngModelChange)="update('description', $event)" name="description"></textarea></label>
-      <div class="form-actions"><button class="primary" type="submit" [disabled]="busy()">{{ busy() ? 'Guardando…' : editingId() == null ? 'Crear servicio' : 'Guardar cambios' }}</button>@if (editingId() != null) { <button class="secondary" type="button" (click)="cancelEdit()">Cancelar edición</button> }</div>
-    </form>
-  </section>
-  <section class="service-card"><h2>Catálogo</h2>
-    @for (service of services(); track service.id) {
-      <article class="service-row"><div><h3>{{ service.name }}</h3><p>{{ service.description || 'Sin descripción' }}</p><small>{{ service.durationMinutes }} min · {{ service.price | currency:'COP':'symbol':'1.0-0':'es-CO' }}</small></div><div class="row-actions"><button class="secondary" type="button" [disabled]="busy() || service.id == null" (click)="edit(service)">Editar</button><button class="danger" type="button" [disabled]="busy() || service.id == null" (click)="remove(service.id!)">Eliminar</button></div></article>
-    } @empty { <p class="empty">{{ busy() ? 'Cargando…' : 'Aún no hay servicios.' }}</p> }
+  <section class="service-layout">
+    <section class="service-card editor-card"><div class="section-heading"><span class="section-icon">✦</span><div><span class="section-kicker">TU OFERTA</span><h2>{{ editingId() == null ? 'Crea un servicio' : 'Edita tu servicio' }}</h2></div></div>
+      <form class="service-form" (ngSubmit)="save()">
+        <label class="name-field">Nombre del servicio<input required maxlength="100" placeholder="Ej. Corte clásico" [ngModel]="form().name" (ngModelChange)="update('name', $event)" name="name"></label>
+        <label>Duración<input required type="number" min="1" max="600" [ngModel]="form().durationMinutes" (ngModelChange)="update('durationMinutes', +$event)" name="duration"><small>Minutos</small></label>
+        <label>Precio<input required type="number" min="0" [ngModel]="form().price" (ngModelChange)="update('price', +$event)" name="price"><small>COP</small></label>
+        <label>Descanso entre citas<input type="number" min="0" max="180" [ngModel]="form().bufferMinutes" (ngModelChange)="update('bufferMinutes', +$event)" name="buffer"><small>Minutos</small></label>
+        <label class="wide">Descripción<textarea rows="3" maxlength="500" placeholder="Cuéntale al cliente qué incluye…" [ngModel]="form().description" (ngModelChange)="update('description', $event)" name="description"></textarea></label>
+        <div class="form-actions"><button class="primary" type="submit" [disabled]="busy()">{{ busy() ? 'Guardando…' : editingId() == null ? '＋ Crear servicio' : 'Guardar cambios' }}</button>@if (editingId() != null) { <button class="secondary" type="button" (click)="cancelEdit()">Cancelar</button> }</div>
+      </form>
+    </section>
+    <section class="catalog-section"><div class="catalog-heading"><div><span class="section-kicker">LO QUE OFRECES</span><h2>Catálogo</h2></div><span class="count-pill">{{ services().length }} {{ services().length === 1 ? 'servicio' : 'servicios' }}</span></div>
+      <div class="service-grid">@for (service of services(); track service.id) {
+        <article class="catalog-card"><div class="catalog-card-top"><span class="catalog-icon">✦</span><span class="duration-pill">◷ {{ service.durationMinutes }} min</span></div><h3>{{ service.name }}</h3><p>{{ service.description || 'Un servicio de calidad para tus clientes.' }}</p><div class="catalog-card-bottom"><strong>{{ service.price | currency:'COP':'symbol':'1.0-0':'es-CO' }}</strong><div class="row-actions"><button class="secondary" type="button" [disabled]="busy() || service.id == null" (click)="edit(service)">Editar</button><button class="danger" type="button" [disabled]="busy() || service.id == null" (click)="remove(service.id!)">Eliminar</button></div></div></article>
+      } @empty { <div class="empty-state"><span>✦</span><strong>{{ busy() ? 'Cargando catálogo…' : 'Tu catálogo empieza aquí' }}</strong><p>{{ busy() ? 'Estamos buscando tus servicios.' : 'Agrega tu primer servicio desde el formulario y aparecerá aquí.' }}</p></div> }</div>
+    </section>
   </section>
 </main>
