@@ -14,7 +14,7 @@ import { CreateAppointmentDialog } from '../create-appointment-page/create-appoi
 // La agenda siempre presenta fechas y moneda con convenciones colombianas.
 registerLocaleData(localeEsCo);
 
-/** Coordina filtros y navegación mensual; el acceso a datos permanece en AgendaStore. */
+/** Coordina la navegación mensual y el acceso a datos mediante AgendaStore. */
 @Component({
   selector: 'app-agenda-page',
   standalone: true,
@@ -35,31 +35,16 @@ export class AgendaPage implements OnInit {
   protected readonly storeError = this.store.error;
   protected readonly month = signal(this.datetime.now().startOf('month'));
   protected readonly selectedDate = signal(this.datetime.now().startOf('day'));
-  protected readonly selectedStatus = signal<'TODAS' | AppointmentStatus>('TODAS');
-  protected readonly selectedEmployee = signal('TODOS');
-  protected readonly selectedService = signal('TODOS');
   protected readonly today = this.datetime.now().toDate();
   protected readonly dayDialogOpen = signal(false);
   protected readonly createDialogOpen = signal(false);
 
-  protected readonly employees = computed(() => ['TODOS', ...new Set(this.appointments().map((item) => item.employee))]);
-  protected readonly services = computed(() => ['TODOS', ...new Set(this.appointments().map((item) => item.service))]);
   protected readonly visibleAppointments = computed(() => this.appointments().filter((appointment) => {
     const key = appointment.dateKey ?? this.datetime.now().format('YYYY-MM-DD');
-    return key === this.selectedDate().format('YYYY-MM-DD')
-      && (this.selectedStatus() === 'TODAS' || appointment.status === this.selectedStatus())
-      && (this.selectedEmployee() === 'TODOS' || appointment.employee === this.selectedEmployee())
-      && (this.selectedService() === 'TODOS' || appointment.service === this.selectedService());
+    return key === this.selectedDate().format('YYYY-MM-DD');
   }));
   protected readonly calendarWeeks = computed(() => this.makeCalendar(this.month(), this.appointments()));
   protected readonly selectedDayKey = computed(() => this.selectedDate().format('YYYY-MM-DD'));
-  protected readonly statusFilters: readonly { label: string; value: 'TODAS' | AppointmentStatus }[] = [
-    { label: 'Todos los estados', value: 'TODAS' },
-    { label: 'Pendiente', value: 'Pendiente' },
-    { label: 'Confirmada', value: 'Confirmada' },
-    { label: 'Completada', value: 'Completada' },
-    { label: 'Cancelada', value: 'Cancelada' },
-  ];
 
   ngOnInit(): void {
     if (this.demoMode()) this.store.loadDemo();
@@ -76,9 +61,6 @@ export class AgendaPage implements OnInit {
   protected closeCreateDialog(): void { this.createDialogOpen.set(false); }
   protected appointmentCreated(): void { this.createDialogOpen.set(false); this.loadMonth(); }
   protected closeDayDialog(): void { this.dayDialogOpen.set(false); }
-  protected setStatus(value: string): void { this.selectedStatus.set(value as 'TODAS' | AppointmentStatus); }
-  protected setEmployee(value: string): void { this.selectedEmployee.set(value); }
-  protected setService(value: string): void { this.selectedService.set(value); }
   protected updateAppointmentStatus(event: { id: number; status: AppointmentStatus }): void {
     void this.store.updateStatus(event.id, event.status);
   }
