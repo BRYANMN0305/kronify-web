@@ -1,0 +1,8 @@
+<main class="reviews-page"><header><span class="eyebrow">NEGOCIO</span><h1>Reseñas</h1><p>Lee las opiniones de tus clientes y controla cuáles aparecen en tu perfil público.</p></header>
+  @if (error()) { <p class="message error" role="alert">{{ error() }}</p> } @if (notice()) { <p class="message success" role="status">{{ notice() }}</p> }
+  <section class="reviews-card"><h2>Opiniones recibidas</h2>
+    @for (review of reviews(); track review.reviewId) {
+      <article class="review-row"><div class="review-copy"><div class="review-title"><strong>{{ review.customerName || 'Cliente' }}</strong><time>{{ review.createdAt | date:'d MMM y':'':'es-CO' }}</time></div><span class="stars" [attr.aria-label]="(review.rating || 0) + ' de 5 estrellas'">{{ '★'.repeat(review.rating || 0) }}{{ '☆'.repeat(5 - (review.rating || 0)) }}</span><p>{{ review.comment || 'Sin comentario' }}</p></div><button type="button" [class.danger]="review.visible" [class.primary]="!review.visible" [disabled]="busy() || review.reviewId == null" (click)="toggle(review)">{{ review.visible ? 'Ocultar' : 'Publicar' }}</button></article>
+    } @empty { <p class="empty">{{ busy() ? 'Cargando reseñas…' : 'Todavía no hay reseñas.' }}</p> }
+  </section>
+</main>

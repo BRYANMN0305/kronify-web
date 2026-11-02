@@ -45,7 +45,11 @@ export const routes: Routes = [
 
       ...SETTINGS_ROUTES,
 
-      // TODO(B): 'mis-citas' · 'resenas'
+      { path: 'resenas', data: { title: 'Reseñas' }, loadComponent: () => import('./features/business/pages/reviews-page/reviews-page').then(m => m.ReviewsPage) },
+
+      ...SETTINGS_ROUTES,
+
+      // TODO(B): 'mis-citas'
       // TODO(B): { path: 'negocio/:slug', ... } pública, fuera de este layout
     ] },
 
