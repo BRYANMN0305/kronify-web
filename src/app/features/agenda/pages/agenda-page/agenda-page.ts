@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, OnInit, signal, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, HostListener, inject, input, OnInit, signal, ViewEncapsulation } from '@angular/core';
 import { registerLocaleData, TitleCasePipe } from '@angular/common';
 import localeEsCo from '@angular/common/locales/es-CO';
 import type { Dayjs } from 'dayjs';
@@ -10,9 +10,11 @@ import { CalendarGrid } from '../../ui/calendar-grid';
 import { DayAppointmentsDialog } from '../../ui/day-appointments-dialog';
 import type { CalendarDay } from '../../ui/calendar-grid';
 import { CreateAppointmentDialog } from '../create-appointment-page/create-appointment-page';
+import { PUBLIC_APPOINTMENT_CREATED_KEY, readPublicAppointmentCreatedEvent } from '../../../../core/events/public-appointment-created';
 
 // La agenda siempre presenta fechas y moneda con convenciones colombianas.
 registerLocaleData(localeEsCo);
+
 
 /** Coordina la navegación mensual y el acceso a datos mediante AgendaStore. */
 @Component({
@@ -51,6 +53,23 @@ export class AgendaPage implements OnInit {
     else this.loadMonth();
   }
 
+  @HostListener('window:storage', ['$event'])
+  protected onPublicAppointmentStored(event: StorageEvent): void {
+    if (event.key !== PUBLIC_APPOINTMENT_CREATED_KEY || this.isDemo()) return;
+    const payload = readPublicAppointmentCreatedEvent(event.newValue);
+    if (!payload?.startAt) { this.loadMonth(); return; }
+    const appointmentDate = this.datetime.fromUtc(payload.startAt);
+    this.month.set(appointmentDate.startOf('month'));
+    this.selectedDate.set(appointmentDate.startOf('day'));
+    this.dayDialogOpen.set(false);
+    this.loadMonth();
+  }
+
+  @HostListener('window:focus')
+  protected refreshWhenReturningToCalendar(): void {
+    if (!this.isDemo()) this.loadMonth();
+  }
+
   protected previousMonth(): void { this.changeMonth(this.month().subtract(1, 'month')); }
   protected nextMonth(): void { this.changeMonth(this.month().add(1, 'month')); }
   protected selectDay(date: Date): void {
@@ -83,6 +102,15 @@ export class AgendaPage implements OnInit {
     void this.store.loadRange(start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD'));
   }
 
+  private readPublicAppointmentEvent(value: string | null): { startAt?: string } | null {
+    if (!value) return null;
+    try {
+      const parsed: unknown = JSON.parse(value);
+      return parsed && typeof parsed === 'object' && 'startAt' in parsed
+        ? parsed as { startAt?: string }
+        : null;
+    } catch { return null; }
+  }
   private makeCalendar(month: Dayjs, appointments: readonly Appointment[]): readonly (readonly CalendarDay[])[] {
     const first = month.startOf('month');
     const mondayOffset = (first.day() + 6) % 7;

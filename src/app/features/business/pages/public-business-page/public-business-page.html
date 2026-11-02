@@ -1,22 +1,23 @@
 @if (loading()) {
-  <main class="public-state"><p>Cargando negocio…</p></main>
+  <main class="public-state"><span class="loading-mark">K</span><p>Cargando negocio y disponibilidad…</p></main>
 } @else if (error() || !business()) {
-  <main class="public-state"><h1>No encontramos este negocio</h1><p>Revisa el enlace o inténtalo de nuevo más tarde.</p><a href="https://kronify.page.gd/">Ir a Kronify</a></main>
+  <main class="public-state"><span class="loading-mark">!</span><h1>No encontramos este negocio</h1><p>Revisa el enlace o inténtalo de nuevo más tarde.</p><a href="https://kronify.page.gd/">Ir a Kronify</a></main>
 } @else {
   <main class="public-page">
     <header class="public-hero">
-      <div class="public-logo">@if (business()!.logoUrl) { <img [src]="business()!.logoUrl" [alt]="'Logo de ' + business()!.name"> } @else { {{ business()!.name?.charAt(0) || 'K' }} }</div>
-      <div class="public-intro"><span>{{ business()!.category || 'Negocio local' }}</span><h1>{{ business()!.name }}</h1><p>{{ business()!.description || 'Agenda tu próxima visita con nosotros.' }}</p>
-        <div class="public-contact">@if (business()!.address) { <span>⌖ {{ business()!.address }}</span> } @if (business()!.phoneNumber) { <a [href]="'tel:' + business()!.phoneNumber">☎ {{ business()!.phoneNumber }}</a> } @if (business()!.whatsapp) { <a [href]="'https://wa.me/' + business()!.whatsapp!.replace('+', '').replace(' ', '')" target="_blank" rel="noopener noreferrer">WhatsApp</a> }</div>
+      <div class="hero-wrap">
+        <div class="public-logo">@if (business()!.logoUrl) { <img [src]="business()!.logoUrl" [alt]="'Logo de ' + business()!.name"> } @else { {{ business()!.name?.charAt(0) || 'K' }} }</div>
+        <div class="public-intro"><span>{{ business()!.category || 'Negocio local' }}</span><h1>{{ business()!.name }}</h1><p>{{ business()!.description || 'Agenda tu próxima visita con nosotros.' }}</p>
+          <div class="public-contact">@if (business()!.address) { <span>⌖ {{ business()!.address }}</span> } @if (business()!.phoneNumber) { <a [href]="'tel:' + business()!.phoneNumber">☎ {{ business()!.phoneNumber }}</a> } @if (business()!.whatsapp) { <a class="whatsapp-link" [href]="'https://wa.me/' + business()!.whatsapp!.replace('+', '').replace(' ', '')" target="_blank" rel="noopener noreferrer">WhatsApp ↗</a> }</div>
+        </div>
       </div>
     </header>
+
     <div class="public-content">
-      <section class="public-card"><span class="public-eyebrow">LO QUE OFRECEMOS</span><h2>Servicios</h2>
-        @for (service of business()!.services ?? []; track service.serviceId) { <article class="public-service"><div><h3>{{ service.name }}</h3><p>{{ service.description || 'Servicio profesional' }}</p><small>{{ service.durationMinutes }} minutos</small></div><strong>{{ service.price | currency:'COP':'symbol':'1.0-0':'es-CO' }}</strong></article> } @empty { <p class="muted">Este negocio todavía no ha publicado sus servicios.</p> }
-      </section>
-      <aside>
-        <section class="public-card"><span class="public-eyebrow">ENCUÉNTRANOS</span><h2>Horario</h2><ul class="public-hours">@for (day of weekdays; track day; let i = $index) { <li><span>{{ day }}</span><strong>{{ hoursFor(i) || 'Cerrado' }}</strong></li> }</ul></section>
-        <section class="public-card"><span class="public-eyebrow">OPINIONES</span><h2>Reseñas</h2>@for (review of reviews(); track review.reviewId) { <article class="public-review"><div><strong>{{ review.customerName || 'Cliente' }}</strong><span>{{ '★'.repeat(review.rating || 0) }}</span></div><p>{{ review.comment || 'Excelente servicio.' }}</p><time>{{ review.createdAt | date:'d MMM y':'':'es-CO' }}</time></article> } @empty { <p class="muted">Aún no hay reseñas publicadas.</p> }</section>
+      <app-public-booking-widget [business]="business()!" [slug]="slug()" />
+      <aside class="business-aside">
+        <section class="public-card side-card"><span class="public-eyebrow">ENCUÉNTRANOS</span><h2>Horario de atención</h2><ul class="public-hours">@for (day of weekdays; track day; let i = $index) { <li><span>{{ day }}</span><strong [class.closed]="!hoursFor(i)">{{ hoursFor(i) || 'Cerrado' }}</strong></li> }</ul><div class="aside-business-name">{{ business()!.name }}</div></section>
+        <section class="public-card side-card"><span class="public-eyebrow">OPINIONES</span><h2>Reseñas</h2>@for (review of reviews(); track review.reviewId) { <article class="public-review"><div><strong>{{ review.customerName || 'Cliente' }}</strong><span>{{ '★'.repeat(review.rating || 0) }}</span></div><p>{{ review.comment || 'Excelente servicio.' }}</p><time>{{ review.createdAt | date:'d MMM y':'':'es-CO' }}</time></article> } @empty { <p class="muted">Aún no hay reseñas publicadas.</p> }</section>
       </aside>
     </div>
     <footer class="public-footer">Página de <strong>{{ business()!.name }}</strong> · Kronify</footer>
