@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, OnInit, signal, ViewEncapsulation } from '@angular/core';
 import { DatePipe, registerLocaleData, TitleCasePipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import localeEsCo from '@angular/common/locales/es-CO';
 import type { Dayjs } from 'dayjs';
 import { DatetimeService } from '../../../../core/datetime/datetime.service';
@@ -17,7 +18,7 @@ registerLocaleData(localeEsCo);
 @Component({
   selector: 'app-agenda-page',
   standalone: true,
-  imports: [DatePipe, TitleCasePipe, AgendaSummary, AppointmentRow, CalendarGrid],
+  imports: [DatePipe, TitleCasePipe, RouterLink, AgendaSummary, AppointmentRow, CalendarGrid],
   templateUrl: './agenda-page.html',
   styleUrl: './agenda-page.css',
   encapsulation: ViewEncapsulation.None,

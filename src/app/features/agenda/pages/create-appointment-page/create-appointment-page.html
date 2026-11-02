@@ -1,0 +1,16 @@
+<main class="create-appointment-page">
+  <header><a routerLink="/calendario" class="back-link">‹ Volver al calendario</a><span class="create-eyebrow">AGENDA</span><h1>Nueva cita</h1><p>Registra el servicio, profesional y datos del cliente.</p></header>
+  @if (error()) { <p class="create-message" role="alert">{{ error() }}</p> }
+  <form class="create-card" (ngSubmit)="submit()">
+    <div class="form-grid">
+      <label>Servicio<select required [ngModel]="form().serviceId" (ngModelChange)="update('serviceId', $event)" name="serviceId"><option value="">Selecciona un servicio</option>@for (service of services(); track service.id) { <option [value]="service.id">{{ service.name }} · {{ service.durationMinutes }} min</option> }</select></label>
+      <label>Profesional<select required [ngModel]="form().employeeId" (ngModelChange)="update('employeeId', $event)" name="employeeId"><option value="">Selecciona un profesional</option>@for (employee of employees(); track employee.employeeId) { <option [value]="employee.employeeId">{{ employee.name }} {{ employee.lastName }}</option> }</select></label>
+      <label>Fecha y hora<input required type="datetime-local" [ngModel]="form().startAt" (ngModelChange)="update('startAt', $event)" name="startAt"></label>
+      <label>Nombre<input required maxlength="100" [ngModel]="form().customerName" (ngModelChange)="update('customerName', $event)" name="customerName"></label>
+      <label>Apellido<input maxlength="100" [ngModel]="form().customerLastName" (ngModelChange)="update('customerLastName', $event)" name="customerLastName"></label>
+      <label>Teléfono<input type="tel" maxlength="30" [ngModel]="form().customerPhone" (ngModelChange)="update('customerPhone', $event)" name="customerPhone"></label>
+      <label>Correo<input type="email" maxlength="150" [ngModel]="form().customerEmail" (ngModelChange)="update('customerEmail', $event)" name="customerEmail"></label>
+    </div>
+    <footer><button type="button" class="create-cancel" (click)="cancel()">Cancelar</button><button type="submit" class="create-submit" [disabled]="busy()">{{ busy() ? 'Guardando…' : 'Crear cita' }}</button></footer>
+  </form>
+</main>

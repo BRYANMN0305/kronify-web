@@ -25,7 +25,7 @@
           @for (filter of statusFilters; track filter.value) { <option [value]="filter.value">{{ filter.label }}</option> }
         </select>
       </label>
-      <button class="agenda-new-button" type="button"><span>＋</span> Nueva cita</button>
+      @if (isDemo()) { <button class="agenda-new-button" type="button" disabled><span>＋</span> Nueva cita</button> } @else { <a class="agenda-new-button" routerLink="/nueva-cita"><span>＋</span> Nueva cita</a> }
     </div>
   </header>
 
