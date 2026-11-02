@@ -1,0 +1,14 @@
+<main class="schedules-page"><header><span class="eyebrow">NEGOCIO</span><h1>Horarios</h1><p>Configura la disponibilidad pública y las jornadas de tu equipo.</p></header>
+  @if (error()) { <p class="message error" role="alert">{{ error() }}</p> } @if (notice()) { <p class="message success" role="status">{{ notice() }}</p> }
+  <section class="schedule-card"><h2>Horario de atención del negocio</h2>
+    @for (day of days; track day; let i = $index) { <div class="hours-row"><strong>{{ day }}</strong><label><input type="checkbox" [checked]="openingHours()[i].startTime < openingHours()[i].endTime" (change)="setOpening(i, 'startTime', $any($event.target).checked ? '09:00' : '00:00'); setOpening(i, 'endTime', $any($event.target).checked ? '18:00' : '00:00')"> Abierto</label><input type="time" [attr.aria-label]="'Apertura ' + day" [ngModel]="openingHours()[i].startTime" (ngModelChange)="setOpening(i, 'startTime', $event)" [name]="'business-start-'+i"><span>a</span><input type="time" [attr.aria-label]="'Cierre ' + day" [ngModel]="openingHours()[i].endTime" (ngModelChange)="setOpening(i, 'endTime', $event)" [name]="'business-end-'+i"></div> }
+    <button class="primary" type="button" [disabled]="busy()" (click)="saveOpeningHours()">Guardar horario del negocio</button>
+  </section>
+  <section class="schedule-card"><h2>Jornada por profesional</h2>
+    @if (employees().length) {
+      <label class="employee-select">Profesional<select [ngModel]="employeeId()" (ngModelChange)="selectEmployee(+$event)" name="employee">@for (employee of employees(); track employee.employeeId) { <option [value]="employee.employeeId">{{ employee.name }} {{ employee.lastName }}</option> }</select></label>
+      @for (day of days; track day; let i = $index) { <div class="hours-row"><strong>{{ day }}</strong><label><input type="checkbox" [checked]="employeeHours()[i].startTime < employeeHours()[i].endTime" (change)="setEmployeeHour(i, 'startTime', $any($event.target).checked ? '09:00' : '00:00'); setEmployeeHour(i, 'endTime', $any($event.target).checked ? '18:00' : '00:00')"> Trabaja</label><input type="time" [attr.aria-label]="'Inicio ' + day" [ngModel]="employeeHours()[i].startTime" (ngModelChange)="setEmployeeHour(i, 'startTime', $event)" [name]="'staff-start-'+i"><span>a</span><input type="time" [attr.aria-label]="'Fin ' + day" [ngModel]="employeeHours()[i].endTime" (ngModelChange)="setEmployeeHour(i, 'endTime', $event)" [name]="'staff-end-'+i"></div> }
+      <button class="primary" type="button" [disabled]="busy()" (click)="saveEmployeeHours()">Guardar jornada</button>
+    } @else { <p class="empty">{{ busy() ? 'Cargando…' : 'No hay profesionales activos.' }}</p> }
+  </section>
+</main>

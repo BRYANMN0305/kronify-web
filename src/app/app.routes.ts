@@ -41,10 +41,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/agenda/pages/agenda-page/agenda-page').then(m => m.AgendaPage) },
 
       { path: 'servicios', data: { title: 'Servicios' }, loadComponent: () => import('./features/business/pages/services-page/services-page').then(m => m.ServicesPage) },
+      { path: 'horarios', data: { title: 'Horarios' }, loadComponent: () => import('./features/business/pages/schedules-page/schedules-page').then(m => m.SchedulesPage) },
 
       ...SETTINGS_ROUTES,
 
-      // TODO(B): 'mis-citas' · 'resenas' · 'horarios'
+      // TODO(B): 'mis-citas' · 'resenas'
       // TODO(B): { path: 'negocio/:slug', ... } pública, fuera de este layout
     ] },
 
