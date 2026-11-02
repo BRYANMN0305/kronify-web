@@ -1,0 +1,20 @@
+<main class="services-page">
+  <header><span class="eyebrow">NEGOCIO</span><h1>Servicios</h1><p>Define lo que ofreces, su duración y precio.</p></header>
+  @if (error()) { <p class="message error" role="alert">{{ error() }}</p> }
+  @if (notice()) { <p class="message success" role="status">{{ notice() }}</p> }
+  <section class="service-card"><h2>{{ editingId() == null ? 'Agregar servicio' : 'Editar servicio' }}</h2>
+    <form class="service-form" (ngSubmit)="save()">
+      <label>Nombre<input required maxlength="100" [ngModel]="form().name" (ngModelChange)="update('name', $event)" name="name"></label>
+      <label>Duración (minutos)<input required type="number" min="1" max="600" [ngModel]="form().durationMinutes" (ngModelChange)="update('durationMinutes', +$event)" name="duration"></label>
+      <label>Precio (COP)<input required type="number" min="0" [ngModel]="form().price" (ngModelChange)="update('price', +$event)" name="price"></label>
+      <label>Descanso entre citas<input type="number" min="0" max="180" [ngModel]="form().bufferMinutes" (ngModelChange)="update('bufferMinutes', +$event)" name="buffer"></label>
+      <label class="wide">Descripción<textarea rows="2" maxlength="500" [ngModel]="form().description" (ngModelChange)="update('description', $event)" name="description"></textarea></label>
+      <div class="form-actions"><button class="primary" type="submit" [disabled]="busy()">{{ busy() ? 'Guardando…' : editingId() == null ? 'Crear servicio' : 'Guardar cambios' }}</button>@if (editingId() != null) { <button class="secondary" type="button" (click)="cancelEdit()">Cancelar edición</button> }</div>
+    </form>
+  </section>
+  <section class="service-card"><h2>Catálogo</h2>
+    @for (service of services(); track service.id) {
+      <article class="service-row"><div><h3>{{ service.name }}</h3><p>{{ service.description || 'Sin descripción' }}</p><small>{{ service.durationMinutes }} min · {{ service.price | currency:'COP':'symbol':'1.0-0':'es-CO' }}</small></div><div class="row-actions"><button class="secondary" type="button" [disabled]="busy() || service.id == null" (click)="edit(service)">Editar</button><button class="danger" type="button" [disabled]="busy() || service.id == null" (click)="remove(service.id!)">Eliminar</button></div></article>
+    } @empty { <p class="empty">{{ busy() ? 'Cargando…' : 'Aún no hay servicios.' }}</p> }
+  </section>
+</main>

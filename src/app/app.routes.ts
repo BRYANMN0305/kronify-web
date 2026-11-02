@@ -40,9 +40,11 @@ export const routes: Routes = [
         data: { title: 'Calendario' },
         loadComponent: () => import('./features/agenda/pages/agenda-page/agenda-page').then(m => m.AgendaPage) },
 
+      { path: 'servicios', data: { title: 'Servicios' }, loadComponent: () => import('./features/business/pages/services-page/services-page').then(m => m.ServicesPage) },
+
       ...SETTINGS_ROUTES,
 
-      // TODO(B): 'mis-citas' · 'resenas' · 'servicios' · 'horarios'
+      // TODO(B): 'mis-citas' · 'resenas' · 'horarios'
       // TODO(B): { path: 'negocio/:slug', ... } pública, fuera de este layout
     ] },
 
