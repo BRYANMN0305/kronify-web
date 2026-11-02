@@ -19,26 +19,34 @@ export class ReviewsPage implements OnInit {
   ngOnInit(): void { void this.load(); }
 
   protected async load(): Promise<void> {
-    this.busy.set(true); this.error.set(null);
+    this.busy.set(true); this.error.set(null); this.notice.set(null);
     try {
       const page = await firstValueFrom(this.api.listBusinessReviews({ page: 0, size: 100 }));
       this.reviews.set((page.content ?? []).map((review) => this.normalize(review)));
     } catch {
-      this.error.set('No se pudieron cargar las reseñas desde el servidor. Tus cambios no se han eliminado; vuelve a intentarlo.');
+      this.error.set('No se pudieron cargar las reseñas desde el servidor. Tus datos siguen guardados; vuelve a intentarlo.');
     } finally { this.busy.set(false); }
   }
 
   protected customerName(review: ReviewResponse): string {
-    return review.customerName?.trim() || 'Cliente';
+    return review.customerName?.trim() || 'Nombre no enviado por el servidor';
   }
 
   protected comment(review: ReviewResponse): string {
-    return review.comment?.trim() || 'El cliente no dejó un comentario.';
+    return review.comment?.trim() || 'El servidor no incluyó un comentario para esta reseña.';
   }
 
-  protected rating(review: ReviewResponse): number {
+  protected rating(review: ReviewResponse): number | null {
     const value = Number(review.rating);
-    return Number.isFinite(value) ? Math.min(5, Math.max(0, Math.round(value))) : 0;
+    return review.rating == null || !Number.isFinite(value) || value < 1
+      ? null
+      : Math.min(5, Math.round(value));
+  }
+
+  protected reviewDate(review: ReviewResponse): Date | null {
+    if (!review.createdAt?.trim()) return null;
+    const value = new Date(review.createdAt);
+    return Number.isNaN(value.getTime()) ? null : value;
   }
 
   protected async toggle(review: ReviewResponse): Promise<void> {
@@ -56,9 +64,9 @@ export class ReviewsPage implements OnInit {
   private normalize(review: ReviewResponse): ReviewResponse {
     return {
       ...review,
-      customerName: review.customerName?.trim() || 'Cliente',
-      comment: review.comment?.trim() || 'El cliente no dejó un comentario.',
-      rating: this.rating(review),
+      customerName: review.customerName?.trim() || undefined,
+      comment: review.comment?.trim() || undefined,
+      rating: this.rating(review) ?? undefined,
       visible: review.visible === true,
     };
   }

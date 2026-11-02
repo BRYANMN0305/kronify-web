@@ -3,14 +3,14 @@
   @if (error()) { <p class="message error" role="alert">{{ error() }}</p> }
   @if (notice()) { <p class="message success" role="status">{{ notice() }}</p> }
   <section class="reviews-section">
-    <div class="reviews-heading"><div><span class="section-kicker">VOZ DE TUS CLIENTES</span><h2>Opiniones recibidas</h2></div><span class="count-pill">{{ reviews().length }} {{ reviews().length === 1 ? 'opinión' : 'opiniones' }}</span></div>
+    <div class="reviews-heading"><div><span class="section-kicker">VOZ DE TUS CLIENTES</span><h2>Opiniones recibidas</h2></div><div class="reviews-tools"><span class="count-pill">{{ reviews().length }} {{ reviews().length === 1 ? 'opinión' : 'opiniones' }}</span><button class="refresh-button" type="button" [disabled]="busy()" (click)="load()">{{ busy() ? 'Actualizando…' : '↻ Actualizar' }}</button></div></div>
     @if (reviews().length) {
       <div class="reviews-grid">@for (review of reviews(); track review.reviewId) {
         <article class="review-card">
-          <div class="review-card-top"><span class="quote-mark" aria-hidden="true">“</span><time>{{ review.createdAt ? (review.createdAt | date:'d MMM y':'':'es-CO') : 'Fecha no disponible' }}</time></div>
-          <div class="rating-line"><span class="stars" [attr.aria-label]="rating(review) + ' de 5 estrellas'">{{ '★'.repeat(rating(review)) }}{{ '☆'.repeat(5 - rating(review)) }}</span><span class="rating-number">{{ rating(review) }}<small>/5</small></span></div>
+          <div class="review-card-top"><span class="quote-mark" aria-hidden="true">“</span><time>{{ reviewDate(review) ? (reviewDate(review) | date:'d MMM y':'':'es-CO') : 'Fecha no disponible' }}</time></div>
+          <div class="rating-line">@if (rating(review) !== null) { <span class="stars" [attr.aria-label]="rating(review) + ' de 5 estrellas'">{{ '★'.repeat(rating(review)!) }}{{ '☆'.repeat(5 - rating(review)!) }}</span><span class="rating-number">{{ rating(review) }}<small>/5</small></span> } @else { <span class="missing-value">Sin calificación enviada</span> }</div>
           <p class="review-comment">{{ comment(review) }}</p>
-          <footer class="review-author"><span class="avatar">{{ customerName(review).slice(0, 1).toUpperCase() }}</span><div class="author-copy"><strong>{{ customerName(review) }}</strong><span>Cliente</span></div><span class="visibility-badge" [class.is-visible]="review.visible">{{ review.visible ? '● Pública' : '○ Oculta' }}</span><button type="button" [class.danger]="review.visible" [class.primary]="!review.visible" [disabled]="busy() || review.reviewId == null" (click)="toggle(review)">{{ review.visible ? 'Ocultar' : 'Publicar' }}</button></footer>
+          <footer class="review-author"><span class="avatar">{{ customerName(review).startsWith('Nombre no enviado') ? '?' : customerName(review).slice(0, 1).toUpperCase() }}</span><div class="author-copy"><strong>{{ customerName(review) }}</strong><span>Cliente</span></div><span class="visibility-badge" [class.is-visible]="review.visible">{{ review.visible ? '● Pública' : '○ Oculta' }}</span><button type="button" [class.danger]="review.visible" [class.primary]="!review.visible" [disabled]="busy() || review.reviewId == null" (click)="toggle(review)">{{ review.visible ? 'Ocultar' : 'Publicar' }}</button></footer>
         </article>
       }</div>
     } @else {
