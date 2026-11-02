@@ -1,15 +1,15 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, OnInit, signal, ViewEncapsulation } from '@angular/core';
-import { DatePipe, registerLocaleData, TitleCasePipe } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { registerLocaleData, TitleCasePipe } from '@angular/common';
 import localeEsCo from '@angular/common/locales/es-CO';
 import type { Dayjs } from 'dayjs';
 import { DatetimeService } from '../../../../core/datetime/datetime.service';
 import { AgendaStore } from '../../data/agenda.store';
 import type { Appointment, AppointmentStatus } from '../../modelos/appointment.model';
 import { AgendaSummary } from '../../ui/agenda-summary';
-import { AppointmentRow } from '../../ui/appointment-row';
 import { CalendarGrid } from '../../ui/calendar-grid';
+import { DayAppointmentsDialog } from '../../ui/day-appointments-dialog';
 import type { CalendarDay } from '../../ui/calendar-grid';
+import { CreateAppointmentDialog } from '../create-appointment-page/create-appointment-page';
 
 // La agenda siempre presenta fechas y moneda con convenciones colombianas.
 registerLocaleData(localeEsCo);
@@ -18,7 +18,7 @@ registerLocaleData(localeEsCo);
 @Component({
   selector: 'app-agenda-page',
   standalone: true,
-  imports: [DatePipe, TitleCasePipe, RouterLink, AgendaSummary, AppointmentRow, CalendarGrid],
+  imports: [TitleCasePipe, AgendaSummary, CalendarGrid, DayAppointmentsDialog, CreateAppointmentDialog],
   templateUrl: './agenda-page.html',
   styleUrl: './agenda-page.css',
   encapsulation: ViewEncapsulation.None,
@@ -39,6 +39,8 @@ export class AgendaPage implements OnInit {
   protected readonly selectedEmployee = signal('TODOS');
   protected readonly selectedService = signal('TODOS');
   protected readonly today = this.datetime.now().toDate();
+  protected readonly dayDialogOpen = signal(false);
+  protected readonly createDialogOpen = signal(false);
 
   protected readonly employees = computed(() => ['TODOS', ...new Set(this.appointments().map((item) => item.employee))]);
   protected readonly services = computed(() => ['TODOS', ...new Set(this.appointments().map((item) => item.service))]);
@@ -66,11 +68,20 @@ export class AgendaPage implements OnInit {
 
   protected previousMonth(): void { this.changeMonth(this.month().subtract(1, 'month')); }
   protected nextMonth(): void { this.changeMonth(this.month().add(1, 'month')); }
-  protected selectDay(date: Date): void { this.selectedDate.set(this.datetime.at(date.getFullYear(), date.getMonth(), date.getDate()).startOf('day')); }
+  protected selectDay(date: Date): void {
+    this.selectedDate.set(this.datetime.at(date.getFullYear(), date.getMonth(), date.getDate()).startOf('day'));
+    this.dayDialogOpen.set(this.visibleAppointments().length > 0);
+  }
+  protected openCreateDialog(): void { if (!this.isDemo()) this.createDialogOpen.set(true); }
+  protected closeCreateDialog(): void { this.createDialogOpen.set(false); }
+  protected appointmentCreated(): void { this.createDialogOpen.set(false); this.loadMonth(); }
+  protected closeDayDialog(): void { this.dayDialogOpen.set(false); }
   protected setStatus(value: string): void { this.selectedStatus.set(value as 'TODAS' | AppointmentStatus); }
   protected setEmployee(value: string): void { this.selectedEmployee.set(value); }
   protected setService(value: string): void { this.selectedService.set(value); }
-  protected updateStatus(appointment: Appointment, status: AppointmentStatus): void { void this.store.updateStatus(appointment.id, status); }
+  protected updateAppointmentStatus(event: { id: number; status: AppointmentStatus }): void {
+    void this.store.updateStatus(event.id, event.status);
+  }
   protected monthLabel(): string { return this.month().format('MMMM YYYY'); }
   protected revenueLabel(): string {
     return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(this.store.todayRevenue());

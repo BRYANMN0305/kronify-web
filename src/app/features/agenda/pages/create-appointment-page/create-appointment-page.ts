@@ -1,6 +1,5 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { AppointmentControllerService } from '../../../../core/api/openapi/api/appointmentController.service';
 import { EmployeeControllerService } from '../../../../core/api/openapi/api/employeeController.service';
@@ -8,17 +7,18 @@ import { ServiceControllerService } from '../../../../core/api/openapi/api/servi
 import type { EmployeeResponse } from '../../../../core/api/openapi/model/employeeResponse';
 import type { ServiceResponse } from '../../../../core/api/openapi/model/serviceResponse';
 
-/** Captura los datos mínimos para registrar una cita privada desde la agenda. */
+/** Modal para registrar una cita privada sin abandonar la vista del calendario. */
 @Component({
-  selector: 'app-create-appointment-page', standalone: true, imports: [FormsModule, RouterLink],
+  selector: 'app-create-appointment-dialog', standalone: true, imports: [FormsModule],
   templateUrl: './create-appointment-page.html', styleUrl: './create-appointment-page.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CreateAppointmentPage implements OnInit {
+export class CreateAppointmentDialog implements OnInit {
   private readonly appointmentsApi = inject(AppointmentControllerService);
   private readonly employeesApi = inject(EmployeeControllerService);
   private readonly servicesApi = inject(ServiceControllerService);
-  private readonly router = inject(Router);
+  readonly closed = output<void>();
+  readonly created = output<void>();
   protected readonly services = signal<readonly ServiceResponse[]>([]);
   protected readonly employees = signal<readonly EmployeeResponse[]>([]);
   protected readonly busy = signal(false);
@@ -34,7 +34,7 @@ export class CreateAppointmentPage implements OnInit {
   protected update<K extends keyof ReturnType<typeof this.form>>(field: K, value: ReturnType<typeof this.form>[K]): void {
     this.form.update((current) => ({ ...current, [field]: value }));
   }
-  protected cancel(): void { void this.router.navigate(['/calendario']); }
+  protected cancel(): void { if (!this.busy()) this.closed.emit(); }
   protected async submit(): Promise<void> {
     const value = this.form();
     if (!value.serviceId || !value.employeeId || !value.startAt || !value.customerName.trim()) {
@@ -50,7 +50,7 @@ export class CreateAppointmentPage implements OnInit {
         customerPhone: value.customerPhone.trim() || undefined,
         customerEmail: value.customerEmail.trim() || undefined,
       }));
-      await this.router.navigate(['/calendario']);
+      this.created.emit();
     } catch {
       this.error.set('No se pudo crear la cita. Verifica que el horario esté disponible e inténtalo otra vez.');
     } finally { this.busy.set(false); }

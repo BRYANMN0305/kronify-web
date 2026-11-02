@@ -45,7 +45,6 @@ export const routes: Routes = [
 
       { path: 'servicios', data: { title: 'Servicios' }, loadComponent: () => import('./features/business/pages/services-page/services-page').then(m => m.ServicesPage) },
       { path: 'horarios', data: { title: 'Horarios' }, loadComponent: () => import('./features/business/pages/schedules-page/schedules-page').then(m => m.SchedulesPage) },
-      { path: 'nueva-cita', data: { title: 'Nueva cita' }, loadComponent: () => import('./features/agenda/pages/create-appointment-page/create-appointment-page').then(m => m.CreateAppointmentPage) },
 
       ...SETTINGS_ROUTES,
 

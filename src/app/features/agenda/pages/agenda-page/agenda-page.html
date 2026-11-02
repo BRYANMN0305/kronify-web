@@ -25,7 +25,7 @@
           @for (filter of statusFilters; track filter.value) { <option [value]="filter.value">{{ filter.label }}</option> }
         </select>
       </label>
-      @if (isDemo()) { <button class="agenda-new-button" type="button" disabled><span>＋</span> Nueva cita</button> } @else { <a class="agenda-new-button" routerLink="/nueva-cita"><span>＋</span> Nueva cita</a> }
+      @if (isDemo()) { <button class="agenda-new-button" type="button" disabled><span>＋</span> Nueva cita</button> } @else { <button class="agenda-new-button" type="button" (click)="openCreateDialog()"><span>＋</span> Nueva cita</button> }
     </div>
   </header>
 
@@ -39,17 +39,11 @@
 
   <app-calendar-grid [weeks]="calendarWeeks()" [selectedKey]="selectedDayKey()" (daySelected)="selectDay($event)" />
 
-  <section class="selected-day-panel" aria-live="polite">
-    <div class="selected-day-heading">
-      <div><span class="agenda-kicker">DÍA SELECCIONADO</span><h3>{{ selectedDate().toDate() | date:'EEEE, d MMMM':'':'es-CO' | titlecase }}</h3></div>
-      <span class="selected-day-count">{{ visibleAppointments().length }} citas</span>
-    </div>
-    <div class="selected-day-list">
-      @for (appointment of visibleAppointments(); track appointment.id) {
-          <app-appointment-row [appointment]="appointment" (statusChange)="updateStatus(appointment, $event)" />
-      } @empty {
-        <p class="selected-day-empty">No hay citas para este día con los filtros seleccionados.</p>
-      }
-    </div>
-  </section>
 </section>
+
+@if (dayDialogOpen()) {
+  <app-day-appointments-dialog [date]="selectedDate().toDate()" [appointments]="visibleAppointments()" (closed)="closeDayDialog()" (statusChange)="updateAppointmentStatus($event)" />
+}
+@if (createDialogOpen()) {
+  <app-create-appointment-dialog (closed)="closeCreateDialog()" (created)="appointmentCreated()" />
+}

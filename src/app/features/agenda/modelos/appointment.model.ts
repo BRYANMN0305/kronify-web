@@ -6,6 +6,7 @@ export interface Appointment {
   readonly id: number;
   readonly client: string;
   readonly service: string;
+  readonly description?: string;
   readonly employee: string;
   readonly time: string;
   readonly dateKey?: string;

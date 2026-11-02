@@ -1,5 +1,6 @@
-<main class="create-appointment-page">
-  <header><a routerLink="/calendario" class="back-link">‹ Volver al calendario</a><span class="create-eyebrow">AGENDA</span><h1>Nueva cita</h1><p>Registra el servicio, profesional y datos del cliente.</p></header>
+<div class="create-dialog-backdrop" (click)="cancel()">
+<section class="create-appointment-page" role="dialog" aria-modal="true" aria-labelledby="create-appointment-title" (click)="$event.stopPropagation()">
+  <header><div><span class="create-eyebrow">AGENDA</span><h1 id="create-appointment-title">Nueva cita</h1><p>Registra el servicio, profesional y datos del cliente.</p></div><button class="dialog-close" type="button" aria-label="Cerrar" (click)="cancel()">×</button></header>
   @if (error()) { <p class="create-message" role="alert">{{ error() }}</p> }
   <form class="create-card" (ngSubmit)="submit()">
     <div class="form-grid">
@@ -13,4 +14,5 @@
     </div>
     <footer><button type="button" class="create-cancel" (click)="cancel()">Cancelar</button><button type="submit" class="create-submit" [disabled]="busy()">{{ busy() ? 'Guardando…' : 'Crear cita' }}</button></footer>
   </form>
-</main>
+</section>
+</div>
