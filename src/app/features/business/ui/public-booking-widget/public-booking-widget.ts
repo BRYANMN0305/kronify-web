@@ -6,6 +6,7 @@ import { PublicAppointmentControllerService } from '../../../../core/api/openapi
 import { PublicBusinessControllerService } from '../../../../core/api/openapi/api/publicBusinessController.service';
 import type { AppointmentResponse } from '../../../../core/api/openapi/model/appointmentResponse';
 import type { PublicBusinessResponse } from '../../../../core/api/openapi/model/publicBusinessResponse';
+import type { PublicEmployeeResponse } from '../../../../core/api/openapi/model/publicEmployeeResponse';
 import type { PublicServiceResponse } from '../../../../core/api/openapi/model/publicServiceResponse';
 import type { TimeSlotResponse } from '../../../../core/api/openapi/model/timeSlotResponse';
 import { announcePublicAppointmentCreated } from '../../../../core/events/public-appointment-created';
@@ -13,7 +14,7 @@ import { DatetimeService } from '../../../../core/datetime/datetime.service';
 
 interface BookingDate { readonly key: string; readonly weekday: string; readonly day: string; readonly month: string; }
 
-/** Reserva una cita pública usando el negocio, servicio y disponibilidad del slug. */
+/** Reserva una cita pública usando el negocio, su equipo y disponibilidad del slug. */
 @Component({
   selector: 'app-public-booking-widget', standalone: true, imports: [CurrencyPipe, DatePipe, TitleCasePipe],
   templateUrl: './public-booking-widget.html', styleUrl: './public-booking-widget.css',
@@ -29,10 +30,17 @@ export class PublicBookingWidget implements OnInit {
   readonly slug = input.required<string>();
   protected readonly dates = signal<readonly BookingDate[]>(this.makeDates());
   protected readonly selectedServiceId = signal<number | null>(null);
-  protected readonly selectedDate = signal(this.datetime.now().format('YYYY-MM-DD'));
+  protected readonly selectedEmployeeId = signal<number | null>(null);
+  protected readonly selectedDate = signal(this.dates()[0]?.key ?? this.datetime.now().format('YYYY-MM-DD'));
   protected readonly slots = signal<readonly TimeSlotResponse[]>([]);
   protected readonly selectedSlot = signal<TimeSlotResponse | null>(null);
   protected readonly selectedService = computed(() => this.business().services?.find((service) => service.serviceId === this.selectedServiceId()) ?? null);
+  protected readonly employeesForService = computed(() => {
+    const serviceId = this.selectedServiceId();
+    return (this.business().employees ?? []).filter((employee) => employee.employeeId != null
+      && (!employee.serviceIds?.length || serviceId == null || employee.serviceIds.includes(serviceId)));
+  });
+  protected readonly selectedEmployee = computed(() => this.employeesForService().find((employee) => employee.employeeId === this.selectedEmployeeId()) ?? null);
   protected readonly dateLabel = computed(() => this.dateFor(this.selectedDate()));
   protected readonly customerName = signal('');
   protected readonly customerPhone = signal('');
@@ -42,9 +50,10 @@ export class PublicBookingWidget implements OnInit {
   protected readonly bookingSuccess = signal<AppointmentResponse | null>(null);
 
   ngOnInit(): void {
-    const firstServiceId = this.business().services?.find((service) => service.serviceId != null)?.serviceId;
-    if (firstServiceId != null) {
-      this.selectedServiceId.set(firstServiceId);
+    const serviceId = this.business().services?.find((service) => service.serviceId != null)?.serviceId;
+    if (serviceId != null) {
+      this.selectedServiceId.set(serviceId);
+      this.selectDefaultEmployee();
       void this.loadAvailability();
     }
   }
@@ -52,6 +61,14 @@ export class PublicBookingWidget implements OnInit {
   protected chooseService(service: PublicServiceResponse): void {
     if (service.serviceId == null) return;
     this.selectedServiceId.set(service.serviceId);
+    this.selectDefaultEmployee();
+    this.selectedSlot.set(null);
+    this.bookingSuccess.set(null);
+    void this.loadAvailability();
+  }
+
+  protected chooseEmployee(value: string): void {
+    this.selectedEmployeeId.set(value ? Number(value) : null);
     this.selectedSlot.set(null);
     this.bookingSuccess.set(null);
     void this.loadAvailability();
@@ -77,21 +94,27 @@ export class PublicBookingWidget implements OnInit {
 
   protected bookingReady(): boolean {
     const slot = this.selectedSlot();
-    return !this.bookingBusy() && this.selectedServiceId() != null && !!slot?.startAt && slot.employeeId != null
+    return !this.bookingBusy() && this.selectedServiceId() != null && this.selectedEmployeeId() != null
+      && !!slot?.startAt && slot.employeeId === this.selectedEmployeeId()
       && !!this.customerName().trim() && this.customerPhone().replace(/\D/g, '').length >= 7;
   }
 
   protected async loadAvailability(): Promise<void> {
     const requestId = ++this.availabilityRequestId;
     const serviceId = this.selectedServiceId();
+    const employeeId = this.selectedEmployeeId();
     this.slots.set([]);
     this.selectedSlot.set(null);
     this.bookingError.set(null);
-    if (serviceId == null || !this.slug()) return;
+    if (serviceId == null || employeeId == null || !this.slug()) {
+      this.loadingAvailability.set(false);
+      return;
+    }
+
     this.loadingAvailability.set(true);
     try {
-      const result = await firstValueFrom(this.api.getAvailability(this.slug(), serviceId, this.selectedDate()));
-      if (requestId === this.availabilityRequestId) this.slots.set(result.slots ?? []);
+      const result = await firstValueFrom(this.api.getAvailability(this.slug(), serviceId, this.selectedDate(), employeeId));
+      if (requestId === this.availabilityRequestId) this.slots.set((result.slots ?? []).filter((slot) => slot.employeeId === employeeId));
     } catch (error) {
       if (requestId === this.availabilityRequestId) this.bookingError.set(this.errorMessage(error));
     } finally {
@@ -102,9 +125,10 @@ export class PublicBookingWidget implements OnInit {
   protected async submitBooking(): Promise<void> {
     const business = this.business();
     const serviceId = this.selectedServiceId();
+    const employeeId = this.selectedEmployeeId();
     const slot = this.selectedSlot();
-    if (business.businessId == null || serviceId == null || !slot?.startAt || slot.employeeId == null) {
-      this.bookingError.set('Elige un servicio, un día y una hora disponible para continuar.');
+    if (business.businessId == null || serviceId == null || employeeId == null || !slot?.startAt || slot.employeeId !== employeeId) {
+      this.bookingError.set('Elige un servicio, un profesional, un día y una hora disponible.');
       return;
     }
     if (!this.customerName().trim() || this.customerPhone().replace(/\D/g, '').length < 7) {
@@ -118,7 +142,7 @@ export class PublicBookingWidget implements OnInit {
       const appointment = await firstValueFrom(this.appointmentsApi.createAppointment1({
         businessId: business.businessId,
         serviceId,
-        employeeId: slot.employeeId,
+        employeeId,
         startAt: slot.startAt,
         customerName: this.customerName().trim(),
         customerPhone: this.customerPhone().trim(),
@@ -137,6 +161,14 @@ export class PublicBookingWidget implements OnInit {
     this.customerPhone.set('');
     this.selectedSlot.set(null);
     void this.loadAvailability();
+  }
+
+  private selectDefaultEmployee(): void {
+    const eligible = this.employeesForService();
+    const current = this.selectedEmployeeId();
+    this.selectedEmployeeId.set(eligible.some((employee) => employee.employeeId === current)
+      ? current
+      : eligible[0]?.employeeId ?? null);
   }
 
   private makeDates(): readonly BookingDate[] {
