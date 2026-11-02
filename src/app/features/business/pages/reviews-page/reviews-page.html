@@ -1,0 +1,20 @@
+<main class="reviews-page">
+  <header class="page-heading"><span class="eyebrow">NEGOCIO · EXPERIENCIAS</span><h1>Reseñas</h1><p>Las opiniones de tus clientes cuentan la historia de tu negocio.</p></header>
+  @if (error()) { <p class="message error" role="alert">{{ error() }}</p> }
+  @if (notice()) { <p class="message success" role="status">{{ notice() }}</p> }
+  <section class="reviews-section">
+    <div class="reviews-heading"><div><span class="section-kicker">VOZ DE TUS CLIENTES</span><h2>Opiniones recibidas</h2></div><span class="count-pill">{{ reviews().length }} {{ reviews().length === 1 ? 'opinión' : 'opiniones' }}</span></div>
+    @if (reviews().length) {
+      <div class="reviews-grid">@for (review of reviews(); track review.reviewId) {
+        <article class="review-card">
+          <div class="review-card-top"><span class="quote-mark" aria-hidden="true">“</span><time>{{ review.createdAt | date:'d MMM y':'':'es-CO' }}</time></div>
+          <div class="rating-line"><span class="stars" [attr.aria-label]="(review.rating || 0) + ' de 5 estrellas'">{{ '★'.repeat(review.rating || 0) }}{{ '☆'.repeat(5 - (review.rating || 0)) }}</span><span class="rating-number">{{ review.rating || 0 }}<small>/5</small></span></div>
+          <p class="review-comment">{{ review.comment || 'El cliente no dejó un comentario.' }}</p>
+          <footer class="review-author"><span class="avatar">{{ (review.customerName || 'C').slice(0, 1).toUpperCase() }}</span><div class="author-copy"><strong>{{ review.customerName || 'Cliente' }}</strong><span>Cliente</span></div><span class="visibility-badge" [class.is-visible]="review.visible">{{ review.visible ? '● Pública' : '○ Oculta' }}</span><button type="button" [class.danger]="review.visible" [class.primary]="!review.visible" [disabled]="busy() || review.reviewId == null" (click)="toggle(review)">{{ review.visible ? 'Ocultar' : 'Publicar' }}</button></footer>
+        </article>
+      }</div>
+    } @else {
+      <div class="empty-state"><span>☆</span><strong>{{ busy() ? 'Cargando opiniones…' : 'Tus reseñas aparecerán aquí' }}</strong><p>{{ busy() ? 'Estamos buscando las opiniones de tus clientes.' : 'Cuando tus clientes compartan su experiencia, podrás gestionarla desde esta sección.' }}</p></div>
+    }
+  </section>
+</main>

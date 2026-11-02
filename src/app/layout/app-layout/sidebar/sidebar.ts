@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 
 import { AuthStore } from '../../../core/auth/auth.store';
 import { Permissions } from '../../../core/auth/permissions';
@@ -26,7 +26,7 @@ const ICONS = {
 @Component({
   selector: 'app-sidebar',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Icon],
+  imports: [Icon, RouterLink, RouterLinkActive],
   host: { '(document:click)': 'closeMenu($event)' },
   templateUrl: './sidebar.html',
 })
@@ -134,19 +134,6 @@ export class Sidebar {
     if (!this.settings.profileLoaded()) {
       void this.settings.fetchAll(this.permissions.isOwner()).catch(() => undefined);
     }
-  }
-
-  isActive(item: NavItem): boolean {
-    return this.router.isActive(item.path, {
-      paths: 'subset',
-      queryParams: 'subset',
-      fragment: 'ignored',
-      matrixParams: 'ignored',
-    });
-  }
-
-  navigate(item: NavItem): void {
-    if (!this.isActive(item)) this.router.navigate([item.path]);
   }
 
   goPlan(): void {

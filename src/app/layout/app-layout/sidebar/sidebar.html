@@ -10,15 +10,16 @@
 
   <nav class="sidebar-nav" aria-label="Navegación principal">
     @for (item of navItems(); track item.path) {
-      <button type="button"
-              class="sidebar-nav-item"
-              [class.is-active]="isActive(item)"
-              (click)="navigate(item)">
+      <a class="sidebar-nav-item"
+         [routerLink]="item.path"
+         routerLinkActive="is-active"
+         [routerLinkActiveOptions]="{ exact: true }"
+         ariaCurrentWhenActive="page">
         <span class="sidebar-nav-icon">
           <app-icon [name]="item.icon" aria-hidden="true"/>
         </span>
         <span class="sidebar-nav-label">{{ item.label }}</span>
-      </button>
+      </a>
     }
   </nav>
 
