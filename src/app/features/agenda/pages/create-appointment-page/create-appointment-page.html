@@ -1,0 +1,74 @@
+<div class="create-dialog-backdrop" (click)="cancel()">
+  <section class="create-appointment-page" role="dialog" aria-modal="true" aria-labelledby="create-appointment-title" (click)="$event.stopPropagation()">
+    <header class="create-dialog-heading">
+      <div><span class="create-eyebrow">AGENDA</span><h1 id="create-appointment-title">Nueva cita</h1><p>Elige un horario disponible y agrega los datos del cliente.</p></div>
+      <button class="dialog-close" type="button" aria-label="Cerrar" (click)="cancel()">×</button>
+    </header>
+
+    @if (error()) { <p class="create-message" role="alert">{{ error() }}</p> }
+
+    <form class="create-card" (ngSubmit)="submit()">
+      <div class="form-grid">
+        <label>Servicio
+          <select required [ngModel]="form().serviceId" (ngModelChange)="serviceChanged($event)" name="serviceId" [disabled]="loadingOptions()">
+            <option value="">{{ loadingOptions() ? 'Cargando servicios…' : 'Selecciona un servicio' }}</option>
+            @for (service of services(); track service.id) { <option [value]="service.id">{{ service.name }} · {{ service.durationMinutes }} min</option> }
+          </select>
+        </label>
+        <label>Profesional
+          <select required [ngModel]="form().employeeId" (ngModelChange)="employeeChanged($event)" name="employeeId" [disabled]="loadingOptions()">
+            <option value="">{{ loadingOptions() ? 'Cargando profesionales…' : 'Selecciona un profesional' }}</option>
+            @for (employee of employees(); track employee.employeeId) { <option [value]="employee.employeeId">{{ employee.name }} {{ employee.lastName }}</option> }
+          </select>
+        </label>
+      </div>
+
+      <section class="appointment-picker" aria-label="Selecciona la fecha y hora de la cita">
+        <div class="picker-title"><div><span class="create-eyebrow">DISPONIBILIDAD</span><h2>Fecha y hora</h2></div><p>Los horarios se consultan en tiempo real.</p></div>
+        <div class="picker-layout">
+          <section class="date-picker-card" aria-label="Calendario de fechas">
+            <div class="calendar-heading"><button type="button" aria-label="Mes anterior" [disabled]="!canGoPrevious()" (click)="previousMonth()">‹</button><h3>{{ monthLabel() | titlecase }}</h3><button type="button" aria-label="Mes siguiente" (click)="nextMonth()">›</button></div>
+            <div class="calendar-grid calendar-weekdays">@for (weekday of weekdays; track weekday) { <span>{{ weekday }}</span> }</div>
+            @for (week of calendarWeeks(); track $index) {
+              <div class="calendar-grid">
+                @for (cell of week; track cell.key) {
+                  <button type="button" class="calendar-date" [class.other-month]="!cell.inMonth" [class.is-today]="cell.today" [class.is-selected]="selectedDate() === cell.key" [disabled]="cell.disabled" [attr.aria-pressed]="selectedDate() === cell.key" [attr.aria-label]="cell.key" (click)="chooseDate(cell.key)">{{ cell.day }}</button>
+                }
+              </div>
+            }
+            <p class="selected-date-label">{{ dateLabel() | titlecase }}</p>
+          </section>
+
+          <section class="time-picker-card" aria-live="polite">
+            <div class="time-picker-heading"><div><h3>Horarios disponibles</h3><p>{{ dateLabel() | titlecase }}</p></div><span class="slot-count">{{ slots().length }}</span></div>
+            @if (!form().serviceId || !form().employeeId) {
+              <div class="slot-state"><span class="slot-state-icon">◷</span><p>Selecciona un servicio y un profesional para consultar sus horarios.</p></div>
+            } @else if (loadingAvailability()) {
+              <div class="slot-state"><span class="slot-spinner" aria-hidden="true"></span><p>Buscando horarios libres…</p></div>
+            } @else if (availabilityError()) {
+              <div class="slot-state slot-error" role="alert"><strong>No se pudo consultar la disponibilidad</strong><p>{{ availabilityError() }}</p></div>
+            } @else if (!slots().length) {
+              <div class="slot-state"><span class="slot-state-icon">◷</span><p>No hay horarios disponibles para esta fecha. Prueba otro día.</p></div>
+            } @else {
+              <div class="time-slots">
+                @for (slot of slots(); track slot.startAt) {
+                  <button type="button" class="time-slot" [class.is-selected]="selectedSlot()?.startAt === slot.startAt" [attr.aria-pressed]="selectedSlot()?.startAt === slot.startAt" (click)="chooseSlot(slot)">{{ slotLabel(slot.startAt) }}</button>
+                }
+              </div>
+            }
+            @if (selectedSlot()) { <p class="selected-slot-summary">✓ {{ slotLabel(selectedSlot()?.startAt) }} seleccionado</p> }
+          </section>
+        </div>
+      </section>
+
+      <div class="form-grid customer-fields">
+        <label>Nombre del cliente<input required maxlength="100" autocomplete="given-name" [ngModel]="form().customerName" (ngModelChange)="update('customerName', $event)" name="customerName"></label>
+        <label>Apellido<input maxlength="100" autocomplete="family-name" [ngModel]="form().customerLastName" (ngModelChange)="update('customerLastName', $event)" name="customerLastName"></label>
+        <label>Teléfono<input type="tel" maxlength="30" autocomplete="tel" [ngModel]="form().customerPhone" (ngModelChange)="update('customerPhone', $event)" name="customerPhone"></label>
+        <label>Correo<input type="email" maxlength="150" autocomplete="email" [ngModel]="form().customerEmail" (ngModelChange)="update('customerEmail', $event)" name="customerEmail"></label>
+      </div>
+
+      <footer class="create-actions"><button type="button" class="create-cancel" (click)="cancel()">Cancelar</button><button type="submit" class="create-submit" [disabled]="busy() || loadingAvailability() || !selectedSlot()">{{ busy() ? 'Guardando…' : 'Crear cita' }}</button></footer>
+    </form>
+  </section>
+</div>

@@ -1,13 +1,14 @@
 <nav class="app-bottom-nav" aria-label="Navegación inferior">
   @for (item of navItems(); track item.path) {
-    <button type="button"
-            class="bottom-nav-item"
-            [class.is-active]="isActive(item)"
-            (click)="navigate(item)">
+    <a class="bottom-nav-item"
+       [routerLink]="item.path"
+       routerLinkActive="is-active"
+       [routerLinkActiveOptions]="{ exact: true }"
+       ariaCurrentWhenActive="page">
       <span class="bottom-nav-icon">
         <app-icon [name]="item.icon" aria-hidden="true"/>
       </span>
       <span class="bottom-nav-label">{{ item.label }}</span>
-    </button>
+    </a>
   }
 </nav>

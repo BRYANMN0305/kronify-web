@@ -57,8 +57,8 @@ export class AgendaStore {
         firstValueFrom(this.api.getAgenda(startDate, endDate)),
         firstValueFrom(this.servicesApi.listServices()).catch(() => []),
       ]);
-      const prices = new Map(services.map((service) => [service.id, service.price]));
-      this.appointmentsState.set(appointments.map((appointment) => this.fromApi(appointment, prices)));
+      const serviceDetails = new Map(services.map((service) => [service.id, { price: service.price, description: service.description }]));
+      this.appointmentsState.set(appointments.map((appointment) => this.fromApi(appointment, serviceDetails)));
       this.demoState.set(false);
     } catch {
       this.errorState.set('No se pudo cargar la agenda del servidor. Se muestran datos de demostración.');
@@ -84,8 +84,8 @@ export class AgendaStore {
         firstValueFrom(this.api.getAgenda(start.format('YYYY-MM-DD'), start.format('YYYY-MM-DD'))),
         firstValueFrom(this.servicesApi.listServices()).catch(() => []),
       ]);
-      const prices = new Map(services.map((service) => [service.id, service.price]));
-      this.appointmentsState.set(appointments.map((appointment) => this.fromApi(appointment, prices)));
+      const serviceDetails = new Map(services.map((service) => [service.id, { price: service.price, description: service.description }]));
+      this.appointmentsState.set(appointments.map((appointment) => this.fromApi(appointment, serviceDetails)));
       this.demoState.set(false);
     } catch {
       this.errorState.set('No se pudo cargar la agenda del servidor. Se muestran datos de demostración.');
@@ -118,7 +118,7 @@ export class AgendaStore {
     );
   }
 
-  private fromApi(appointment: AppointmentResponse, prices: ReadonlyMap<number | undefined, number | undefined>): Appointment {
+  private fromApi(appointment: AppointmentResponse, services: ReadonlyMap<number | undefined, { price?: number; description?: string }>): Appointment {
     const startsAt = appointment.startAt ? this.datetime.fromUtc(appointment.startAt) : this.datetime.now();
     const statusByApi: Record<NonNullable<AppointmentResponse['status']>, AppointmentStatus> = {
       PENDING: 'Pendiente', CONFIRMED: 'Confirmada', COMPLETED: 'Completada', CANCELLED: 'Cancelada', NO_SHOW: 'Cancelada',
@@ -128,11 +128,12 @@ export class AgendaStore {
       id: appointment.appointmentId ?? 0,
       client: appointment.customerName ?? 'Cliente',
       service: appointment.serviceName ?? 'Servicio',
+      description: services.get(appointment.serviceId)?.description,
       employee: appointment.employeeName ?? 'Por asignar',
       time: startsAt.format('HH:mm'),
       dateKey: startsAt.format('YYYY-MM-DD'),
       durationMinutes: appointment.serviceDurationMinutes ?? 0,
-      price: prices.get(appointment.serviceId),
+      price: services.get(appointment.serviceId)?.price,
       status,
     };
   }

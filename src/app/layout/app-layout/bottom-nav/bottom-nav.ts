@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 
 import { AuthStore } from '../../../core/auth/auth.store';
 import { Permissions } from '../../../core/auth/permissions';
@@ -18,11 +18,10 @@ const ICONS = {
 @Component({
   selector: 'app-bottom-nav',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Icon],
+  imports: [Icon, RouterLink, RouterLinkActive],
   templateUrl: './bottom-nav.html',
 })
 export class BottomNav {
-  private readonly router = inject(Router);
   private readonly auth = inject(AuthStore);
   private readonly permissions = inject(Permissions);
 
@@ -44,16 +43,4 @@ export class BottomNav {
     return items;
   });
 
-  isActive(item: NavItem): boolean {
-    return this.router.isActive(item.path, {
-      paths: 'subset',
-      queryParams: 'subset',
-      fragment: 'ignored',
-      matrixParams: 'ignored',
-    });
-  }
-
-  navigate(item: NavItem): void {
-    if (!this.isActive(item)) this.router.navigate([item.path]);
-  }
 }

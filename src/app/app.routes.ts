@@ -16,6 +16,9 @@ export const routes: Routes = [
   ...AUTH_ROUTES,
   ...INVITATION_ROUTES,
 
+  // Perfil público del negocio, fuera del shell de administración.
+  { path: 'negocio/:slug', data: { title: 'Negocio' }, loadComponent: () => import('./features/business/pages/public-business-page/public-business-page').then(m => m.PublicBusinessPage) },
+
   // Onboarding fullscreen (feature onboarding)
   { path: 'onboarding-negocio',
     data: { requiresAuth: true, onboardingRoute: true, title: 'Onboarding del negocio' },
@@ -40,10 +43,13 @@ export const routes: Routes = [
         data: { title: 'Calendario' },
         loadComponent: () => import('./features/agenda/pages/agenda-page/agenda-page').then(m => m.AgendaPage) },
 
+      { path: 'servicios', data: { title: 'Servicios' }, loadComponent: () => import('./features/business/pages/services-page/services-page').then(m => m.ServicesPage) },
+      { path: 'horarios', data: { title: 'Horarios' }, loadComponent: () => import('./features/business/pages/schedules-page/schedules-page').then(m => m.SchedulesPage) },
+
       ...SETTINGS_ROUTES,
 
-      // TODO(B): 'mis-citas' · 'resenas' · 'servicios' · 'horarios'
-      // TODO(B): { path: 'negocio/:slug', ... } pública, fuera de este layout
+      { path: 'resenas', data: { title: 'Reseñas' }, loadComponent: () => import('./features/business/pages/reviews-page/reviews-page').then(m => m.ReviewsPage) },
+      // TODO(B): 'mis-citas'
     ] },
 
   { path: '**', redirectTo: '/calendario' },
