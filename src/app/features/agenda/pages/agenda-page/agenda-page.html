@@ -10,21 +10,6 @@
       </div>
     </div>
     <div class="agenda-controls">
-      <label class="agenda-select-wrap"><span class="visually-hidden">Filtrar por empleado</span>
-        <select class="agenda-select" [value]="selectedEmployee()" (change)="setEmployee($any($event.target).value)">
-          @for (employee of employees(); track employee) { <option [value]="employee">{{ employee === 'TODOS' ? 'Todos los empleados' : employee }}</option> }
-        </select>
-      </label>
-      <label class="agenda-select-wrap"><span class="visually-hidden">Filtrar por servicio</span>
-        <select class="agenda-select" [value]="selectedService()" (change)="setService($any($event.target).value)">
-          @for (service of services(); track service) { <option [value]="service">{{ service === 'TODOS' ? 'Todos los servicios' : service }}</option> }
-        </select>
-      </label>
-      <label class="agenda-select-wrap"><span class="visually-hidden">Filtrar por estado</span>
-        <select class="agenda-select" [value]="selectedStatus()" (change)="setStatus($any($event.target).value)">
-          @for (filter of statusFilters; track filter.value) { <option [value]="filter.value">{{ filter.label }}</option> }
-        </select>
-      </label>
       @if (isDemo()) { <button class="agenda-new-button" type="button" disabled><span>＋</span> Nueva cita</button> } @else { <button class="agenda-new-button" type="button" (click)="openCreateDialog()"><span>＋</span> Nueva cita</button> }
     </div>
   </header>
