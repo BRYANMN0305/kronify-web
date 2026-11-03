@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, OnInit, signal, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, HostListener, inject, input, OnInit, signal, ViewEncapsulation } from '@angular/core';
 import { registerLocaleData, TitleCasePipe } from '@angular/common';
 import localeEsCo from '@angular/common/locales/es-CO';
 import type { Dayjs } from 'dayjs';
@@ -10,11 +10,13 @@ import { CalendarGrid } from '../../ui/calendar-grid';
 import { DayAppointmentsDialog } from '../../ui/day-appointments-dialog';
 import type { CalendarDay } from '../../ui/calendar-grid';
 import { CreateAppointmentDialog } from '../create-appointment-page/create-appointment-page';
+import { PUBLIC_APPOINTMENT_CREATED_KEY, readPublicAppointmentCreatedEvent } from '../../../../core/events/public-appointment-created';
 
 // La agenda siempre presenta fechas y moneda con convenciones colombianas.
 registerLocaleData(localeEsCo);
 
-/** Coordina filtros y navegación mensual; el acceso a datos permanece en AgendaStore. */
+
+/** Coordina la navegación mensual y el acceso a datos mediante AgendaStore. */
 @Component({
   selector: 'app-agenda-page',
   standalone: true,
@@ -35,35 +37,37 @@ export class AgendaPage implements OnInit {
   protected readonly storeError = this.store.error;
   protected readonly month = signal(this.datetime.now().startOf('month'));
   protected readonly selectedDate = signal(this.datetime.now().startOf('day'));
-  protected readonly selectedStatus = signal<'TODAS' | AppointmentStatus>('TODAS');
-  protected readonly selectedEmployee = signal('TODOS');
-  protected readonly selectedService = signal('TODOS');
   protected readonly today = this.datetime.now().toDate();
   protected readonly dayDialogOpen = signal(false);
   protected readonly createDialogOpen = signal(false);
 
-  protected readonly employees = computed(() => ['TODOS', ...new Set(this.appointments().map((item) => item.employee))]);
-  protected readonly services = computed(() => ['TODOS', ...new Set(this.appointments().map((item) => item.service))]);
   protected readonly visibleAppointments = computed(() => this.appointments().filter((appointment) => {
     const key = appointment.dateKey ?? this.datetime.now().format('YYYY-MM-DD');
-    return key === this.selectedDate().format('YYYY-MM-DD')
-      && (this.selectedStatus() === 'TODAS' || appointment.status === this.selectedStatus())
-      && (this.selectedEmployee() === 'TODOS' || appointment.employee === this.selectedEmployee())
-      && (this.selectedService() === 'TODOS' || appointment.service === this.selectedService());
+    return key === this.selectedDate().format('YYYY-MM-DD');
   }));
   protected readonly calendarWeeks = computed(() => this.makeCalendar(this.month(), this.appointments()));
   protected readonly selectedDayKey = computed(() => this.selectedDate().format('YYYY-MM-DD'));
-  protected readonly statusFilters: readonly { label: string; value: 'TODAS' | AppointmentStatus }[] = [
-    { label: 'Todos los estados', value: 'TODAS' },
-    { label: 'Pendiente', value: 'Pendiente' },
-    { label: 'Confirmada', value: 'Confirmada' },
-    { label: 'Completada', value: 'Completada' },
-    { label: 'Cancelada', value: 'Cancelada' },
-  ];
 
   ngOnInit(): void {
     if (this.demoMode()) this.store.loadDemo();
     else this.loadMonth();
+  }
+
+  @HostListener('window:storage', ['$event'])
+  protected onPublicAppointmentStored(event: StorageEvent): void {
+    if (event.key !== PUBLIC_APPOINTMENT_CREATED_KEY || this.isDemo()) return;
+    const payload = readPublicAppointmentCreatedEvent(event.newValue);
+    if (!payload?.startAt) { this.loadMonth(); return; }
+    const appointmentDate = this.datetime.fromUtc(payload.startAt);
+    this.month.set(appointmentDate.startOf('month'));
+    this.selectedDate.set(appointmentDate.startOf('day'));
+    this.dayDialogOpen.set(false);
+    this.loadMonth();
+  }
+
+  @HostListener('window:focus')
+  protected refreshWhenReturningToCalendar(): void {
+    if (!this.isDemo()) this.loadMonth();
   }
 
   protected previousMonth(): void { this.changeMonth(this.month().subtract(1, 'month')); }
@@ -76,9 +80,6 @@ export class AgendaPage implements OnInit {
   protected closeCreateDialog(): void { this.createDialogOpen.set(false); }
   protected appointmentCreated(): void { this.createDialogOpen.set(false); this.loadMonth(); }
   protected closeDayDialog(): void { this.dayDialogOpen.set(false); }
-  protected setStatus(value: string): void { this.selectedStatus.set(value as 'TODAS' | AppointmentStatus); }
-  protected setEmployee(value: string): void { this.selectedEmployee.set(value); }
-  protected setService(value: string): void { this.selectedService.set(value); }
   protected updateAppointmentStatus(event: { id: number; status: AppointmentStatus }): void {
     void this.store.updateStatus(event.id, event.status);
   }
@@ -101,6 +102,15 @@ export class AgendaPage implements OnInit {
     void this.store.loadRange(start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD'));
   }
 
+  private readPublicAppointmentEvent(value: string | null): { startAt?: string } | null {
+    if (!value) return null;
+    try {
+      const parsed: unknown = JSON.parse(value);
+      return parsed && typeof parsed === 'object' && 'startAt' in parsed
+        ? parsed as { startAt?: string }
+        : null;
+    } catch { return null; }
+  }
   private makeCalendar(month: Dayjs, appointments: readonly Appointment[]): readonly (readonly CalendarDay[])[] {
     const first = month.startOf('month');
     const mondayOffset = (first.day() + 6) % 7;
