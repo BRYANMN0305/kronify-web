@@ -1,35 +1,85 @@
-<section class="booking-card public-card" id="reservar">
-  @if (bookingSuccess(); as appointment) {
-    <div class="booking-success"><span class="success-mark">✓</span><span class="public-eyebrow">RESERVA CONFIRMADA</span><h2>¡Te esperamos!</h2><p>La cita quedó registrada con {{ business().name }}.</p>
-      <div class="booking-ticket"><div><span>Servicio</span><strong>{{ selectedService()?.name }}</strong></div><div><span>Fecha</span><strong>{{ appointment.startAt | date:'EEEE d MMMM y':'':'es-CO' }}</strong></div><div><span>Hora</span><strong>{{ slotLabel(appointment.startAt) }}</strong></div><div><span>Cliente</span><strong>{{ appointment.customerName || customerName() }}</strong></div></div>
-      <button class="booking-secondary" type="button" (click)="bookAnother()">Agendar otra cita</button>
+<div class="booking-backdrop" (click)="close()">
+  <section class="booking-modal" role="dialog" aria-modal="true" aria-labelledby="booking-title" (click)="$event.stopPropagation()">
+    <header class="booking-modal-head">
+      <div>
+        <span class="public-eyebrow">RESERVAS EN LÍNEA</span>
+        <h2 id="booking-title">Agenda tu cita</h2>
+        <p>{{ business().name }}</p>
+      </div>
+      <button class="booking-close" type="button" aria-label="Cerrar" (click)="close()">×</button>
+    </header>
+
+    <div class="booking-modal-body">
+      @if (bookingSuccess(); as appointment) {
+        <div class="booking-success">
+          <span class="success-mark">✓</span>
+          <span class="public-eyebrow">RESERVA CONFIRMADA</span>
+          <h2>¡Te esperamos!</h2>
+          <p>La cita quedó registrada con {{ business().name }}.</p>
+          <div class="booking-ticket">
+            <div><span>Servicio</span><strong>{{ selectedService()?.name }}</strong></div>
+            <div><span>Fecha</span><strong>{{ appointment.startAt | date:'EEEE d MMMM y':'':'es-CO' }}</strong></div>
+            <div><span>Hora</span><strong>{{ slotLabel(appointment.startAt) }}</strong></div>
+            <div><span>Cliente</span><strong>{{ appointment.customerName || customerName() }}</strong></div>
+          </div>
+          <div class="success-actions">
+            <button class="btn-kronify-outline booking-secondary" type="button" (click)="bookAnother()">Agendar otra cita</button>
+            <button class="btn-kronify booking-cta" type="button" (click)="close()">Cerrar</button>
+          </div>
+        </div>
+      } @else {
+        <div class="booking-progress" aria-hidden="true"><span class="is-active"></span><span [class.is-active]="selectedServiceId() !== null"></span><span [class.is-active]="selectedSlot() !== null"></span></div>
+
+        <section class="booking-step">
+          <div class="step-title"><span>01</span><div><h3>Elige el servicio</h3><p>¿Qué te gustaría reservar?</p></div></div>
+          @if (business().services?.length) {
+            <div class="service-options">
+              @for (service of business().services; track service.serviceId) {
+                <button class="service-option" type="button" [class.is-selected]="selectedServiceId() === service.serviceId" [attr.aria-pressed]="selectedServiceId() === service.serviceId" (click)="chooseService(service)">
+                  <span class="service-check">✓</span>
+                  <span class="service-copy"><strong>{{ service.name }}</strong><small>{{ service.description || 'Servicio profesional' }} · {{ service.durationMinutes }} min</small></span>
+                  <strong class="service-price">{{ service.price | currency:'COP':'symbol':'1.0-0':'es-CO' }}</strong>
+                </button>
+              }
+            </div>
+          } @else { <p class="empty-state">Este negocio todavía no tiene servicios reservables.</p> }
+        </section>
+
+        <section class="booking-step worker-step" [class.is-locked]="selectedServiceId() === null">
+          <div class="step-title"><span>02</span><div><h3>Elige al trabajador</h3><p>Selecciona quién te atenderá.</p></div></div>
+          @if (employeesForService().length) {
+            <label class="worker-select"><span>Profesional</span><select [value]="selectedEmployeeId()" (change)="chooseEmployee($any($event.target).value)">@for (employee of employeesForService(); track employee.employeeId) { <option [value]="employee.employeeId">{{ employee.name || 'Profesional' }}</option> }</select></label>
+          } @else { <p class="empty-state">Este servicio no tiene profesionales disponibles.</p> }
+        </section>
+
+        <section class="booking-step" [class.is-locked]="selectedServiceId() === null || selectedEmployeeId() === null">
+          <div class="step-title"><span>03</span><div><h3>Elige el día</h3><p>Elige una fecha entre los próximos 14 días.</p></div></div>
+          <div class="date-options">@for (date of dates(); track date.key) { <button type="button" class="date-option" [class.is-selected]="selectedDate() === date.key" [attr.aria-pressed]="selectedDate() === date.key" [disabled]="selectedServiceId() === null || selectedEmployeeId() === null" (click)="chooseDate(date.key)"><small>{{ date.weekday }}</small><span class="date-number">{{ date.day }}</span><span>{{ date.month }}</span></button> }</div>
+        </section>
+
+        <section class="booking-step" [class.is-locked]="selectedServiceId() === null">
+          <div class="step-title"><span>04</span><div><h3>Elige la hora</h3><p>{{ dateLabel() | titlecase }}</p></div></div>
+          @if (loadingAvailability()) { <p class="availability-state"><span class="loader-dot"></span> Consultando disponibilidad…</p> }
+          @else if (slots().length) { <div class="time-options">@for (slot of slots(); track slot.startAt) { <button type="button" class="time-option" [class.is-selected]="selectedSlot()?.startAt === slot.startAt" [attr.aria-pressed]="selectedSlot()?.startAt === slot.startAt" (click)="chooseSlot(slot)"><strong>{{ slotLabel(slot.startAt) }}</strong>@if (slot.employeeName) { <small>{{ slot.employeeName }}</small> }</button> }</div> }
+          @else if (selectedServiceId() !== null && selectedEmployeeId() !== null && !bookingError()) { <p class="empty-state">No hay horas disponibles ese día. Prueba con otra fecha.</p> }
+        </section>
+
+        <section class="booking-step customer-step" [class.is-locked]="selectedSlot() === null">
+          <div class="step-title"><span>05</span><div><h3>Tus datos</h3><p>Los usaremos para identificar tu reserva.</p></div></div>
+          <div class="customer-fields"><label class="field"><span>Nombre completo</span><input autocomplete="name" placeholder="Ej. Carlos Pérez" [value]="customerName()" (input)="customerName.set($any($event.target).value)"></label><label class="field"><span>Celular / WhatsApp</span><input type="tel" inputmode="tel" autocomplete="tel" placeholder="300 000 0000" [value]="customerPhone()" (input)="customerPhone.set($any($event.target).value)"></label></div>
+        </section>
+
+        @if (bookingError()) { <p class="booking-error" role="alert">{{ bookingError() }}</p> }
+
+        <div class="booking-submit">
+          <div>
+            <span>Tu reserva</span>
+            <strong>{{ selectedService()?.name || 'Elige un servicio' }}@if (selectedEmployee()) { <span class="summary-worker">· {{ selectedEmployee()?.name }}</span> }</strong>
+            <small>{{ selectedSlot() ? (dateLabel() | titlecase) + ' · ' + slotLabel(selectedSlot()?.startAt) : 'Selecciona trabajador, día y hora disponible' }}</small>
+          </div>
+          <button class="btn-kronify booking-cta" type="button" [disabled]="!bookingReady()" (click)="submitBooking()">{{ bookingBusy() ? 'Confirmando…' : 'Confirmar cita' }} <span>→</span></button>
+        </div>
+      }
     </div>
-  } @else {
-    <div class="booking-heading"><span class="public-eyebrow">RESERVAS EN LÍNEA</span><h2>Agenda tu cita</h2><p>Elige el servicio, busca un horario disponible y confirma tus datos.</p></div>
-    <div class="booking-progress" aria-hidden="true"><span class="is-active"></span><span [class.is-active]="selectedServiceId() != null"></span><span [class.is-active]="selectedSlot() != null"></span></div>
-    <section class="booking-step"><div class="step-title"><span>01</span><div><h3>Elige el servicio</h3><p>¿Qué te gustaría reservar?</p></div></div>
-      @if (business().services?.length) { <div class="service-options">@for (service of business().services; track service.serviceId) {
-        <button class="service-option" type="button" [class.is-selected]="selectedServiceId() === service.serviceId" [attr.aria-pressed]="selectedServiceId() === service.serviceId" (click)="chooseService(service)"><span class="service-check">✓</span><span class="service-copy"><strong>{{ service.name }}</strong><small>{{ service.description || 'Servicio profesional' }} · {{ service.durationMinutes }} min</small></span><strong class="service-price">{{ service.price | currency:'COP':'symbol':'1.0-0':'es-CO' }}</strong></button>
-      }</div> } @else { <p class="empty-state">Este negocio todavía no tiene servicios reservables.</p> }
-    </section>
-    <section class="booking-step worker-step" [class.is-locked]="selectedServiceId() == null">
-  <div class="step-title"><span>02</span><div><h3>Elige al trabajador</h3><p>Selecciona quién te atenderá.</p></div></div>
-  @if (employeesForService().length) {
-    <label class="worker-select"><span>Profesional</span><select [value]="selectedEmployeeId()" (change)="chooseEmployee($any($event.target).value)">@for (employee of employeesForService(); track employee.employeeId) { <option [value]="employee.employeeId">{{ employee.name || 'Profesional' }}</option> }</select></label>
-  } @else { <p class="empty-state">Este servicio no tiene profesionales disponibles.</p> }
-</section>
-    <section class="booking-step" [class.is-locked]="selectedServiceId() == null || selectedEmployeeId() == null"><div class="step-title"><span>03</span><div><h3>Elige el día</h3><p>Elige una fecha entre los próximos 14 días.</p></div></div>
-      <div class="date-options">@for (date of dates(); track date.key) { <button type="button" class="date-option" [class.is-selected]="selectedDate() === date.key" [attr.aria-pressed]="selectedDate() === date.key" [disabled]="selectedServiceId() == null || selectedEmployeeId() == null" (click)="chooseDate(date.key)"><small>{{ date.weekday }}</small><span class="date-number">{{ date.day }}</span><span>{{ date.month }}</span></button> }</div>
-    </section>
-    <section class="booking-step" [class.is-locked]="selectedServiceId() == null"><div class="step-title"><span>04</span><div><h3>Elige la hora</h3><p>{{ dateLabel() | titlecase }}</p></div></div>
-      @if (loadingAvailability()) { <p class="availability-state"><span class="loader-dot"></span> Consultando disponibilidad…</p> }
-      @else if (slots().length) { <div class="time-options">@for (slot of slots(); track slot.startAt) { <button type="button" class="time-option" [class.is-selected]="selectedSlot()?.startAt === slot.startAt" [attr.aria-pressed]="selectedSlot()?.startAt === slot.startAt" (click)="chooseSlot(slot)"><strong>{{ slotLabel(slot.startAt) }}</strong>@if (slot.employeeName) { <small>{{ slot.employeeName }}</small> }</button> }</div> }
-      @else if (selectedServiceId() != null && selectedEmployeeId() != null && !bookingError()) { <p class="empty-state">No hay horas disponibles ese día. Prueba con otra fecha.</p> }
-    </section>
-    <section class="booking-step customer-step" [class.is-locked]="selectedSlot() == null"><div class="step-title"><span>05</span><div><h3>Tus datos</h3><p>Los usaremos para identificar tu reserva.</p></div></div>
-      <div class="customer-fields"><label class="field"><span>Nombre completo</span><input autocomplete="name" placeholder="Ej. Carlos Pérez" [value]="customerName()" (input)="customerName.set($any($event.target).value)"></label><label class="field"><span>Celular / WhatsApp</span><input type="tel" inputmode="tel" autocomplete="tel" placeholder="300 000 0000" [value]="customerPhone()" (input)="customerPhone.set($any($event.target).value)"></label></div>
-    </section>
-    @if (bookingError()) { <p class="booking-error" role="alert">{{ bookingError() }}</p> }
-    <div class="booking-submit"><div><span>Tu reserva</span><strong>{{ selectedService()?.name || 'Elige un servicio' }}@if (selectedEmployee()) { <span class="summary-worker">· {{ selectedEmployee()?.name }}</span> }</strong><small>{{ selectedSlot() ? (dateLabel() | titlecase) + ' · ' + slotLabel(selectedSlot()?.startAt) : 'Selecciona trabajador, día y hora disponible' }}</small></div><button class="booking-cta" type="button" [disabled]="!bookingReady()" (click)="submitBooking()">{{ bookingBusy() ? 'Confirmando…' : 'Confirmar cita' }} <span>→</span></button></div>
-  }
-</section>
+  </section>
+</div>

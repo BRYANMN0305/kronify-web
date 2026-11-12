@@ -1,0 +1,144 @@
+/* ============================================================
+   buttons.css — Estilo único de botones
+   ============================================================
+   Referencia visual: botón "Actualizar plan" del sidebar.
+   Todos los botones de acción de la app comparten la misma
+   forma, borde neón, tipografía y glow. Solo cambia el tamaño
+   cuando el contexto lo exige (filas compactas, modales).
+   ============================================================ */
+
+.btn-primary {
+    /* Variables de Bootstrap: así también los estados que maneja
+       (.btn:hover, .btn:disabled, etc.) usan los colores de Kronify. */
+    --bs-btn-color: var(--btn-text);
+    --bs-btn-bg: var(--btn-bg);
+    --bs-btn-border-color: var(--btn-border);
+    --bs-btn-hover-color: var(--btn-text);
+    --bs-btn-hover-bg: var(--btn-bg-hover);
+    --bs-btn-hover-border-color: var(--neon);
+    --bs-btn-active-color: var(--btn-text);
+    --bs-btn-active-bg: var(--btn-bg);
+    --bs-btn-active-border-color: var(--btn-border);
+    --bs-btn-disabled-color: var(--btn-text);
+    --bs-btn-disabled-bg: var(--btn-bg);
+    --bs-btn-disabled-border-color: var(--btn-border);
+    --bs-btn-focus-shadow-rgb: 63, 106, 120;
+
+    background: var(--btn-bg);
+    border: 1px solid var(--btn-border);
+    border-radius: var(--btn-radius);
+    padding: var(--btn-padding);
+    color: var(--btn-text);
+    font-family: var(--font-ui);
+    font-size: var(--btn-font-size);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0.01em;
+    box-shadow: var(--btn-shadow);
+    cursor: pointer;
+    transition:
+        background 0.2s,
+        border-color 0.2s,
+        transform 0.1s,
+        box-shadow 0.2s;
+}
+
+.btn-kronify {
+    background: var(--btn-bg);
+    border: 1px solid var(--btn-border);
+    border-radius: var(--btn-radius);
+    padding: var(--btn-padding);
+    color: var(--btn-text);
+    font-family: var(--font-ui);
+    font-size: var(--btn-font-size);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0.01em;
+    box-shadow: var(--btn-shadow);
+    cursor: pointer;
+    transition:
+        background 0.2s,
+        border-color 0.2s,
+        transform 0.1s,
+        box-shadow 0.2s;
+}
+
+.btn-primary:hover,
+.btn-kronify:hover {
+    background: var(--btn-bg-hover);
+    border-color: var(--neon);
+    color: var(--btn-text);
+    transform: translateY(-1px);
+    box-shadow: var(--btn-shadow-hover);
+}
+
+.btn-primary:active,
+.btn-kronify:active {
+    background: var(--btn-bg) !important;
+    border-color: var(--btn-border) !important;
+    color: var(--btn-text) !important;
+    transform: scale(0.98);
+    box-shadow: var(--btn-shadow);
+}
+
+.btn-primary:focus-visible,
+.btn-kronify:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.3);
+}
+
+.btn-primary:disabled,
+.btn-kronify:disabled,
+.btn-kronify[aria-disabled='true'] {
+    opacity: 0.5;
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ---- Variante secundaria: misma forma, sin relleno ---- */
+.btn-kronify-outline {
+    background: transparent;
+    border: 1px solid var(--btn-border);
+    border-radius: var(--btn-radius);
+    padding: var(--btn-padding);
+    color: var(--neon);
+    font-family: var(--font-ui);
+    font-size: var(--btn-font-size);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition:
+        background 0.2s,
+        border-color 0.2s,
+        transform 0.1s,
+        box-shadow 0.2s;
+}
+
+.btn-kronify-outline:hover {
+    background: rgba(var(--color-primary-rgb), 0.22);
+    border-color: var(--neon);
+    color: var(--neon);
+    transform: translateY(-1px);
+    box-shadow: var(--btn-shadow);
+}
+
+.btn-kronify-outline:active {
+    background: transparent !important;
+    border-color: var(--btn-border) !important;
+    color: var(--neon) !important;
+    transform: scale(0.98);
+    box-shadow: none;
+}
+
+.btn-kronify-outline:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.3);
+}
+
+.btn-kronify-outline:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}

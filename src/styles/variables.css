@@ -17,6 +17,14 @@
     --neon-dim: #1AA8C9;
     --neon-soft: rgba(63, 225, 255, 0.35);
 
+    /* ---- Tipografía ----
+       Misma pila que usa el login (Bootstrap): garantiza que el
+       calendario, los modales y la página pública del negocio se
+       vean con la tipografía del inicio de sesión en cualquier SO. */
+    --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+        "Noto Sans", "Liberation Sans", Arial, sans-serif;
+    --font-display: var(--font-ui);
+
     /* ---- Fondo ---- */
     --color-bg: var(--acero-1);
     --color-bg-dark: var(--acero-1);
@@ -40,6 +48,19 @@
     --color-text-placeholder: #747577;
     --color-text-muted: var(--acero-4);
     --color-text-dim: var(--acero-3);
+
+    /* ---- Botones ----
+       Un solo estilo para toda la app, tomado del botón
+       "Actualizar plan" del sidebar (acero + borde neón + glow). */
+    --btn-bg: #38515a;
+    --btn-bg-hover: #43626e;
+    --btn-border: var(--neon-dim);
+    --btn-text: #ffffff;
+    --btn-radius: 10px;
+    --btn-padding: 0.6rem 1.25rem;
+    --btn-font-size: 0.85rem;
+    --btn-shadow: 0 0 10px rgba(var(--color-primary-rgb), 0.2);
+    --btn-shadow-hover: 0 0 18px rgba(var(--color-primary-rgb), 0.45);
 
     /* ---- Estado ---- */
     --color-error: #ff6b6b;

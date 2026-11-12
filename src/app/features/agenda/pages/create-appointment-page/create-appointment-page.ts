@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { TitleCasePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, OnInit, computed, inject, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import type { Dayjs } from 'dayjs';
 import { firstValueFrom } from 'rxjs';
@@ -60,6 +60,9 @@ export class CreateAppointmentDialog implements OnInit {
   protected readonly availabilityError = signal<string | null>(null);
 
   ngOnInit(): void { void this.loadOptions(); }
+
+  @HostListener('document:keydown.escape')
+  protected onEscape(): void { this.cancel(); }
 
   protected update<K extends keyof ReturnType<typeof this.form>>(field: K, value: ReturnType<typeof this.form>[K]): void {
     this.form.update((current) => ({ ...current, [field]: value }));
