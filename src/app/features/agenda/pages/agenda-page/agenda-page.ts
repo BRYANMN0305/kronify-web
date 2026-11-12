@@ -58,7 +58,7 @@ export class AgendaPage implements OnInit {
     if (event.key !== PUBLIC_APPOINTMENT_CREATED_KEY || this.isDemo()) return;
     const payload = readPublicAppointmentCreatedEvent(event.newValue);
     if (!payload?.startAt) { this.loadMonth(); return; }
-    const appointmentDate = this.datetime.fromUtc(payload.startAt);
+    const appointmentDate = this.datetime.fromLocal(payload.startAt);
     this.month.set(appointmentDate.startOf('month'));
     this.selectedDate.set(appointmentDate.startOf('day'));
     this.dayDialogOpen.set(false);
@@ -80,13 +80,21 @@ export class AgendaPage implements OnInit {
   protected closeCreateDialog(): void { this.createDialogOpen.set(false); }
   protected appointmentCreated(): void { this.createDialogOpen.set(false); this.loadMonth(); }
   protected closeDayDialog(): void { this.dayDialogOpen.set(false); }
+  /** Navega al día anterior/siguiente desde el diálogo sin cerrarlo. */
+  protected shiftDay(offset: number): void {
+    const next = this.selectedDate().add(offset, 'day');
+    const crossesMonth = next.month() !== this.month().month() || next.year() !== this.month().year();
+    this.selectedDate.set(next.startOf('day'));
+    this.dayDialogOpen.set(true);
+    if (crossesMonth) {
+      this.month.set(next.startOf('month'));
+      this.loadMonth();
+    }
+  }
   protected updateAppointmentStatus(event: { id: number; status: AppointmentStatus }): void {
     void this.store.updateStatus(event.id, event.status);
   }
   protected monthLabel(): string { return this.month().format('MMMM YYYY'); }
-  protected revenueLabel(): string {
-    return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(this.store.todayRevenue());
-  }
 
   private changeMonth(month: Dayjs): void {
     this.month.set(month);
@@ -102,15 +110,6 @@ export class AgendaPage implements OnInit {
     void this.store.loadRange(start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD'));
   }
 
-  private readPublicAppointmentEvent(value: string | null): { startAt?: string } | null {
-    if (!value) return null;
-    try {
-      const parsed: unknown = JSON.parse(value);
-      return parsed && typeof parsed === 'object' && 'startAt' in parsed
-        ? parsed as { startAt?: string }
-        : null;
-    } catch { return null; }
-  }
   private makeCalendar(month: Dayjs, appointments: readonly Appointment[]): readonly (readonly CalendarDay[])[] {
     const first = month.startOf('month');
     const mondayOffset = (first.day() + 6) % 7;

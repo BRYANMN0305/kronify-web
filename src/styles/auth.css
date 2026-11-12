@@ -114,45 +114,12 @@ body {
     margin-bottom: 0.4rem;
 }
 
-/* ---- Botón primario ---- */
+/* ---- Botón primario ----
+   El estilo vive en styles/buttons.css para que login, ajustes,
+   calendario y página pública compartan exactamente el mismo botón. */
 .auth-card .btn-primary,
 .onboarding-form .btn-primary {
-    background: var(--color-primary);
-    border: 1px solid var(--neon-dim);
-    border-radius: 10px;
-    padding: 0.7rem;
-    font-size: 0.875rem;
-    font-weight: 700;
-    color: var(--color-text);
-    letter-spacing: 0.01em;
-    box-shadow: 0 0 10px rgba(var(--color-primary-rgb), 0.2);
-    transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
-}
-
-.auth-card .btn-primary:hover,
-.onboarding-form .btn-primary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 0 18px rgba(var(--color-primary-rgb), 0.45);
-}
-
-.auth-card .btn-primary:active,
-.onboarding-form .btn-primary:active {
-    background: var(--color-primary) !important;
-    border-color: var(--neon-dim) !important;
-    transform: scale(0.98);
-    box-shadow: 0 0 10px rgba(var(--color-primary-rgb), 0.2);
-}
-
-.auth-card .btn-primary:focus-visible,
-.onboarding-form .btn-primary:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.25);
-}
-
-.auth-card .btn-primary:disabled,
-.onboarding-form .btn-primary:disabled {
-    opacity: 0.6;
-    pointer-events: none;
+    width: 100%;
 }
 
 /* ---- Enlace de registro/login ---- */

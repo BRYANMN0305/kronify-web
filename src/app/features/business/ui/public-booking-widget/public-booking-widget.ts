@@ -1,12 +1,11 @@
-import { CurrencyPipe, DatePipe, TitleCasePipe } from '@angular/common';
+import { CurrencyPipe, DatePipe, DOCUMENT, TitleCasePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, OnDestroy, OnInit, computed, inject, input, output, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { PublicAppointmentControllerService } from '../../../../core/api/openapi/api/publicAppointmentController.service';
 import { PublicBusinessControllerService } from '../../../../core/api/openapi/api/publicBusinessController.service';
 import type { AppointmentResponse } from '../../../../core/api/openapi/model/appointmentResponse';
 import type { PublicBusinessResponse } from '../../../../core/api/openapi/model/publicBusinessResponse';
-import type { PublicEmployeeResponse } from '../../../../core/api/openapi/model/publicEmployeeResponse';
 import type { PublicServiceResponse } from '../../../../core/api/openapi/model/publicServiceResponse';
 import type { TimeSlotResponse } from '../../../../core/api/openapi/model/timeSlotResponse';
 import { announcePublicAppointmentCreated } from '../../../../core/events/public-appointment-created';
@@ -14,20 +13,24 @@ import { DatetimeService } from '../../../../core/datetime/datetime.service';
 
 interface BookingDate { readonly key: string; readonly weekday: string; readonly day: string; readonly month: string; }
 
-/** Reserva una cita pública usando el negocio, su equipo y disponibilidad del slug. */
+/** Reserva una cita pública en un modal usando el negocio, su equipo y disponibilidad del slug. */
 @Component({
   selector: 'app-public-booking-widget', standalone: true, imports: [CurrencyPipe, DatePipe, TitleCasePipe],
   templateUrl: './public-booking-widget.html', styleUrl: './public-booking-widget.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PublicBookingWidget implements OnInit {
+export class PublicBookingWidget implements OnInit, OnDestroy {
   private readonly api = inject(PublicBusinessControllerService);
   private readonly appointmentsApi = inject(PublicAppointmentControllerService);
   private readonly datetime = inject(DatetimeService);
+  private readonly document = inject(DOCUMENT);
+  private readonly previousBodyOverflow = this.document.body.style.overflow;
   private availabilityRequestId = 0;
 
   readonly business = input.required<PublicBusinessResponse>();
   readonly slug = input.required<string>();
+  readonly initialServiceId = input<number | null>(null);
+  readonly closed = output<void>();
   protected readonly dates = signal<readonly BookingDate[]>(this.makeDates());
   protected readonly selectedServiceId = signal<number | null>(null);
   protected readonly selectedEmployeeId = signal<number | null>(null);
@@ -49,13 +52,34 @@ export class PublicBookingWidget implements OnInit {
   protected readonly bookingError = signal<string | null>(null);
   protected readonly bookingSuccess = signal<AppointmentResponse | null>(null);
 
+  constructor() {
+    this.document.body.style.overflow = 'hidden';
+  }
+
   ngOnInit(): void {
-    const serviceId = this.business().services?.find((service) => service.serviceId != null)?.serviceId;
+    const services = this.business().services ?? [];
+    const preferred = this.initialServiceId();
+    const serviceId = preferred != null && services.some((service) => service.serviceId === preferred)
+      ? preferred
+      : services.find((service) => service.serviceId != null)?.serviceId;
     if (serviceId != null) {
       this.selectedServiceId.set(serviceId);
       this.selectDefaultEmployee();
       void this.loadAvailability();
     }
+  }
+
+  ngOnDestroy(): void {
+    this.document.body.style.overflow = this.previousBodyOverflow;
+  }
+
+  @HostListener('document:keydown.escape')
+  protected onEscape(): void {
+    this.close();
+  }
+
+  protected close(): void {
+    if (!this.bookingBusy()) this.closed.emit();
   }
 
   protected chooseService(service: PublicServiceResponse): void {

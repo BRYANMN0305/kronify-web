@@ -2,7 +2,17 @@
    El orden importa: Bootstrap primero para que los tokens/diseño de Kronify lo sobrescriban. */
 @import "bootstrap/dist/css/bootstrap.min.css";
 @import "./styles/variables.css";
+@import "./styles/buttons.css";
 @import "./styles/forms.css";
 @import "./styles/sidebar.css";
 @import "./styles/auth.css";
 @import "./styles/schedules.css";
+
+/* Tipografía base de toda la aplicación: la misma del login. */
+body,
+button,
+input,
+select,
+textarea {
+  font-family: var(--font-ui);
+}

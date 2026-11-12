@@ -10,11 +10,15 @@
       </div>
     </div>
     <div class="agenda-controls">
-      @if (isDemo()) { <button class="agenda-new-button" type="button" disabled><span>＋</span> Nueva cita</button> } @else { <button class="agenda-new-button" type="button" (click)="openCreateDialog()"><span>＋</span> Nueva cita</button> }
+      @if (isDemo()) { <button class="btn-kronify agenda-new-button" type="button" disabled><span>＋</span> Nueva cita</button> } @else { <button class="btn-kronify agenda-new-button" type="button" (click)="openCreateDialog()"><span>＋</span> Nueva cita</button> }
     </div>
   </header>
 
-  <app-agenda-summary [confirmed]="store.confirmedCount()" [total]="store.appointmentCount()" [revenue]="revenueLabel()" />
+  <app-agenda-summary
+    [total]="store.appointmentCount()"
+    [confirmed]="store.confirmedCount()"
+    [pending]="store.pendingCount()"
+    [completed]="store.completedCount()" />
 
   @if (storeError()) {
     <div class="agenda-api-alert" role="status"><span class="alert-icon">!</span><div><strong>No se pudo conectar con la agenda</strong><p>{{ storeError() }}</p></div></div>
@@ -27,7 +31,7 @@
 </section>
 
 @if (dayDialogOpen()) {
-  <app-day-appointments-dialog [date]="selectedDate().toDate()" [appointments]="visibleAppointments()" (closed)="closeDayDialog()" (statusChange)="updateAppointmentStatus($event)" />
+  <app-day-appointments-dialog [date]="selectedDate().toDate()" [appointments]="visibleAppointments()" (closed)="closeDayDialog()" (dayShift)="shiftDay($event)" (statusChange)="updateAppointmentStatus($event)" />
 }
 @if (createDialogOpen()) {
   <app-create-appointment-dialog (closed)="closeCreateDialog()" (created)="appointmentCreated()" />
