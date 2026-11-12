@@ -368,32 +368,8 @@
 .sidebar-upgrade .btn-primary {
     display: block;
     width: 100%;
-    background: var(--color-primary);
-    border: 1px solid var(--neon-dim);
-    border-radius: 8px;
-    color: #fff;
     font-size: 0.78rem;
-    font-weight: 700;
     padding: 0.55rem 0.85rem;
-    letter-spacing: 0.01em;
-    box-shadow: 0 0 10px rgba(var(--color-primary-rgb), 0.2);
-    transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
-}
-
-.sidebar-upgrade .btn-primary:hover {
-    transform: translateY(-1px);
-}
-
-.sidebar-upgrade .btn-primary:active {
-    background: var(--color-primary) !important;
-    border-color: var(--neon-dim) !important;
-    transform: scale(0.98);
-    box-shadow: 0 0 10px rgba(var(--color-primary-rgb), 0.2);
-}
-
-.sidebar-upgrade .btn-primary:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.25);
 }
 
 /* ---- User section (card + dropdown) ---- */

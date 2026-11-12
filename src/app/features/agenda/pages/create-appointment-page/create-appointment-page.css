@@ -1,64 +1,433 @@
-.create-dialog-backdrop{position:fixed;inset:0;z-index:1060;display:grid;place-items:center;background:#061115d9;padding:18px}
-.create-appointment-page{width:min(100%,940px);max-height:94vh;overflow:auto;border:1px solid #31535d;border-radius:18px;background:#10252c;padding:24px;color:#eff9fb;box-shadow:0 28px 90px #0009}
-.create-dialog-heading{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px}
-.create-eyebrow{display:block;color:#39d6f1;font-size:10px;font-weight:850;letter-spacing:.16em}
-.create-dialog-heading h1{margin:5px 0;color:#fff;font-size:25px;letter-spacing:-.02em}
-.create-dialog-heading p{margin:0;color:#9cb5bb;font-size:13px}
-.dialog-close{display:grid;width:36px;height:36px;place-items:center;border:1px solid #315763;border-radius:10px;background:#17343e;color:#c5dce1;font-size:24px;cursor:pointer}
-.dialog-close:hover{border-color:#39d6f1;color:white}
-.create-message{margin:0 0 14px;border:1px solid #87464d;border-radius:10px;background:#2a191d;padding:11px 13px;color:#ffdfe2;font-size:13px;line-height:1.45}
-.create-card{border:0;background:transparent;padding:0}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px}
-.form-grid label{display:grid;gap:6px;color:#bfd1d5;font-size:12px;font-weight:750}
-.form-grid input,.form-grid select{width:100%;height:42px;border:1px solid #315763;border-radius:9px;background:#17343e;padding:0 11px;color:#f2fbfd;font:inherit;font-size:13px;outline:none;transition:border-color .15s,box-shadow .15s}
-.form-grid select{cursor:pointer}
-.form-grid input:focus,.form-grid select:focus{border-color:#36d5f2;box-shadow:0 0 0 3px #36d5f220}
-.form-grid input:disabled,.form-grid select:disabled{opacity:.65;cursor:wait}
-.appointment-picker{margin:16px 0;border:1px solid #274651;border-radius:14px;background:linear-gradient(145deg,#122c34,#10252c);padding:15px}
-.picker-title{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:12px}
-.picker-title h2{margin:4px 0 0;color:#f1fbfd;font-size:17px}
-.picker-title>p{margin:0;color:#84a4ad;font-size:11px}
-.picker-layout{display:grid;grid-template-columns:minmax(260px,.95fr) minmax(300px,1.05fr);gap:12px}
-.date-picker-card,.time-picker-card{min-width:0;border:1px solid #25444e;border-radius:12px;background:#0d2026;padding:13px}
-.calendar-heading{display:grid;grid-template-columns:34px 1fr 34px;align-items:center;margin-bottom:10px}
-.calendar-heading h3{margin:0;color:#e8f6f8;font-size:13px;font-weight:750;text-align:center;text-transform:capitalize}
-.calendar-heading button{display:grid;width:32px;height:32px;place-items:center;border:1px solid #2b515c;border-radius:8px;background:#17343e;color:#c9e9ef;font-size:22px;line-height:1;cursor:pointer}
-.calendar-heading button:hover:not(:disabled){border-color:#39d6f1;background:#1d4552}
-.calendar-heading button:disabled{opacity:.35;cursor:not-allowed}
-.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
-.calendar-weekdays{margin-bottom:4px}
-.calendar-weekdays span{padding:4px 0;color:#7fa1aa;font-size:10px;font-weight:800;text-align:center;text-transform:uppercase}
-.calendar-date{display:grid;aspect-ratio:1;place-items:center;border:1px solid transparent;border-radius:8px;background:transparent;color:#d7e9ec;font-size:11px;font-weight:650;cursor:pointer;transition:background .12s,border-color .12s,color .12s}
-.calendar-date:hover:not(:disabled){border-color:#327080;background:#173943;color:#fff}
-.calendar-date.other-month{color:#52727a}
-.calendar-date.is-today{border-color:#2b8090;color:#69d9ea}
-.calendar-date.is-selected{border-color:#39d6f1;background:#1b6372;color:#fff;box-shadow:0 0 0 2px #39d6f120}
-.calendar-date:disabled{opacity:.3;cursor:not-allowed}
-.selected-date-label{margin:9px 0 0;border-top:1px solid #1d3942;padding-top:9px;color:#93b7c0;font-size:11px;text-transform:capitalize}
-.time-picker-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px}
-.time-picker-heading h3{margin:0;color:#e8f6f8;font-size:13px}
-.time-picker-heading p{margin:4px 0 0;color:#7fa1aa;font-size:10px;text-transform:capitalize}
-.slot-count{display:grid;min-width:25px;height:25px;place-items:center;border:1px solid #28626f;border-radius:999px;background:#153842;color:#79deeb;font-size:10px;font-weight:800}
-.time-slots{display:grid;max-height:224px;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:7px;overflow:auto;padding:2px}
-.time-slot{min-height:36px;border:1px solid #315763;border-radius:8px;background:#17343e;color:#d7edf1;font-size:11px;font-weight:750;cursor:pointer;transition:background .12s,border-color .12s,transform .12s}
-.time-slot:hover{transform:translateY(-1px);border-color:#39d6f1;background:#1a4854}
-.time-slot.is-selected{border-color:#39d6f1;background:#176071;color:white;box-shadow:0 0 0 2px #39d6f122}
-.slot-state{display:flex;min-height:144px;align-items:center;justify-content:center;flex-direction:column;gap:8px;border:1px dashed #25444e;border-radius:9px;padding:16px;text-align:center}
-.slot-state p{max-width:280px;margin:0;color:#91adb4;font-size:11px;line-height:1.45}
-.slot-state-icon{color:#50cce0;font-size:25px}
-.slot-error{border-color:#713b42;background:#21191c}
-.slot-error strong{color:#ffdfe2;font-size:12px}
-.slot-error p{color:#e6bfc4}
-.slot-spinner{width:22px;height:22px;border:2px solid #2d5862;border-top-color:#39d6f1;border-radius:50%;animation:slot-spin .7s linear infinite}
-@keyframes slot-spin{to{transform:rotate(360deg)}}
-.selected-slot-summary{margin:10px 0 0;border:1px solid #256451;border-radius:8px;background:#14372f;padding:8px 10px;color:#a2ebce;font-size:11px;font-weight:750}
-.customer-fields{padding-top:2px}
-.create-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:18px;border-top:1px solid #203b44;padding-top:14px}
-.create-cancel,.create-submit{min-height:40px;border-radius:9px;padding:0 15px;font-size:12px;font-weight:800;cursor:pointer;transition:background .15s,border-color .15s,transform .15s}
-.create-cancel{border:1px solid #315763;background:#17343e;color:#d5e9ec}
-.create-cancel:hover{border-color:#4a7782;background:#1c414c}
-.create-submit{border:1px solid #32cde7;background:#176071;color:white}
-.create-submit:hover:not(:disabled){transform:translateY(-1px);background:#1a7182}
-.create-submit:disabled{opacity:.45;cursor:not-allowed}
-@media(max-width:720px){.create-dialog-backdrop{padding:9px}.create-appointment-page{max-height:96vh;padding:17px 14px}.picker-layout{grid-template-columns:1fr}.calendar-date{font-size:12px}.time-slots{max-height:170px}.picker-title{align-items:flex-start;flex-direction:column;gap:4px}}
-@media(max-width:480px){.form-grid{grid-template-columns:1fr}.appointment-picker{padding:10px}.date-picker-card,.time-picker-card{padding:10px}.calendar-grid{gap:2px}.calendar-date{border-radius:6px;font-size:10px}}
+.create-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1060;
+  display: grid;
+  place-items: center;
+  background: #061115d9;
+  padding: 18px;
+}
+.create-appointment-page {
+  width: min(100%, 940px);
+  max-height: 94vh;
+  overflow: auto;
+  border: 1px solid #31535d;
+  border-radius: 18px;
+  background: #10252c;
+  padding: 24px;
+  color: #eff9fb;
+  font-family: var(--font-ui);
+  box-shadow: 0 28px 90px #0009;
+}
+.create-dialog-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.create-eyebrow {
+  display: block;
+  color: #39d6f1;
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 0.16em;
+}
+.create-dialog-heading h1 {
+  margin: 5px 0;
+  color: #fff;
+  font-size: 25px;
+  letter-spacing: -0.02em;
+}
+.create-dialog-heading p {
+  margin: 0;
+  color: #9cb5bb;
+  font-size: 13px;
+}
+.dialog-close {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 1px solid var(--btn-border);
+  border-radius: var(--btn-radius);
+  background: transparent;
+  color: var(--neon);
+  font-size: 24px;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+}
+.dialog-close:hover {
+  border-color: var(--neon);
+  background: rgba(var(--color-primary-rgb), 0.22);
+  color: #fff;
+}
+.create-message {
+  margin: 0 0 14px;
+  border: 1px solid #87464d;
+  border-radius: 10px;
+  background: #2a191d;
+  padding: 11px 13px;
+  color: #ffdfe2;
+  font-size: 13px;
+  line-height: 1.45;
+}
+.create-card {
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 14px;
+}
+.form-grid label {
+  display: grid;
+  gap: 6px;
+  color: #bfd1d5;
+  font-size: 12px;
+  font-weight: 750;
+}
+.form-grid input,
+.form-grid select {
+  width: 100%;
+  height: 42px;
+  border: 1px solid #315763;
+  border-radius: 9px;
+  background: #17343e;
+  padding: 0 11px;
+  color: #f2fbfd;
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+.form-grid select {
+  cursor: pointer;
+}
+.form-grid input:focus,
+.form-grid select:focus {
+  border-color: #36d5f2;
+  box-shadow: 0 0 0 3px #36d5f220;
+}
+.form-grid input:disabled,
+.form-grid select:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+.appointment-picker {
+  margin: 16px 0;
+  border: 1px solid #274651;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #122c34, #10252c);
+  padding: 15px;
+}
+.picker-title {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.picker-title h2 {
+  margin: 4px 0 0;
+  color: #f1fbfd;
+  font-size: 17px;
+}
+.picker-title > p {
+  margin: 0;
+  color: #84a4ad;
+  font-size: 11px;
+}
+.picker-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.95fr) minmax(300px, 1.05fr);
+  gap: 12px;
+}
+.date-picker-card,
+.time-picker-card {
+  min-width: 0;
+  border: 1px solid #25444e;
+  border-radius: 12px;
+  background: #0d2026;
+  padding: 13px;
+}
+.calendar-heading {
+  display: grid;
+  grid-template-columns: 34px 1fr 34px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.calendar-heading h3 {
+  margin: 0;
+  color: #e8f6f8;
+  font-size: 13px;
+  font-weight: 750;
+  text-align: center;
+  text-transform: capitalize;
+}
+.calendar-heading button {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 1px solid #2b515c;
+  border-radius: 8px;
+  background: #17343e;
+  color: #c9e9ef;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+.calendar-heading button:hover:not(:disabled) {
+  border-color: #39d6f1;
+  background: #1d4552;
+}
+.calendar-heading button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+.calendar-weekdays {
+  margin-bottom: 4px;
+}
+.calendar-weekdays span {
+  padding: 4px 0;
+  color: #7fa1aa;
+  font-size: 10px;
+  font-weight: 800;
+  text-align: center;
+  text-transform: uppercase;
+}
+.calendar-date {
+  display: grid;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: #d7e9ec;
+  font-size: 11px;
+  font-weight: 650;
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    border-color 0.12s,
+    color 0.12s;
+}
+.calendar-date:hover:not(:disabled) {
+  border-color: #327080;
+  background: #173943;
+  color: #fff;
+}
+.calendar-date.other-month {
+  color: #52727a;
+}
+.calendar-date.is-today {
+  border-color: #2b8090;
+  color: #69d9ea;
+}
+.calendar-date.is-selected {
+  border-color: #39d6f1;
+  background: #1b6372;
+  color: #fff;
+  box-shadow: 0 0 0 2px #39d6f120;
+}
+.calendar-date:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.selected-date-label {
+  margin: 9px 0 0;
+  border-top: 1px solid #1d3942;
+  padding-top: 9px;
+  color: #93b7c0;
+  font-size: 11px;
+  text-transform: capitalize;
+}
+.time-picker-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 11px;
+}
+.time-picker-heading h3 {
+  margin: 0;
+  color: #e8f6f8;
+  font-size: 13px;
+}
+.time-picker-heading p {
+  margin: 4px 0 0;
+  color: #7fa1aa;
+  font-size: 10px;
+  text-transform: capitalize;
+}
+.slot-count {
+  display: grid;
+  min-width: 25px;
+  height: 25px;
+  place-items: center;
+  border: 1px solid #28626f;
+  border-radius: 999px;
+  background: #153842;
+  color: #79deeb;
+  font-size: 10px;
+  font-weight: 800;
+}
+.time-slots {
+  display: grid;
+  max-height: 224px;
+  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+  gap: 7px;
+  overflow: auto;
+  padding: 2px;
+}
+.time-slot {
+  min-height: 36px;
+  border: 1px solid #315763;
+  border-radius: 8px;
+  background: #17343e;
+  color: #d7edf1;
+  font-size: 11px;
+  font-weight: 750;
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    border-color 0.12s,
+    transform 0.12s;
+}
+.time-slot:hover {
+  transform: translateY(-1px);
+  border-color: #39d6f1;
+  background: #1a4854;
+}
+.time-slot.is-selected {
+  border-color: #39d6f1;
+  background: #176071;
+  color: white;
+  box-shadow: 0 0 0 2px #39d6f122;
+}
+.slot-state {
+  display: flex;
+  min-height: 144px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px dashed #25444e;
+  border-radius: 9px;
+  padding: 16px;
+  text-align: center;
+}
+.slot-state p {
+  max-width: 280px;
+  margin: 0;
+  color: #91adb4;
+  font-size: 11px;
+  line-height: 1.45;
+}
+.slot-state-icon {
+  color: #50cce0;
+  font-size: 25px;
+}
+.slot-error {
+  border-color: #713b42;
+  background: #21191c;
+}
+.slot-error strong {
+  color: #ffdfe2;
+  font-size: 12px;
+}
+.slot-error p {
+  color: #e6bfc4;
+}
+.slot-spinner {
+  width: 22px;
+  height: 22px;
+  border: 2px solid #2d5862;
+  border-top-color: #39d6f1;
+  border-radius: 50%;
+  animation: slot-spin 0.7s linear infinite;
+}
+@keyframes slot-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.selected-slot-summary {
+  margin: 10px 0 0;
+  border: 1px solid #256451;
+  border-radius: 8px;
+  background: #14372f;
+  padding: 8px 10px;
+  color: #a2ebce;
+  font-size: 11px;
+  font-weight: 750;
+}
+.customer-fields {
+  padding-top: 2px;
+}
+.create-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 18px;
+  border-top: 1px solid #203b44;
+  padding-top: 14px;
+}
+.create-cancel,
+.create-submit {
+  min-height: 42px;
+}
+@media (max-width: 720px) {
+  .create-dialog-backdrop {
+    padding: 9px;
+  }
+  .create-appointment-page {
+    max-height: 96vh;
+    padding: 17px 14px;
+  }
+  .picker-layout {
+    grid-template-columns: 1fr;
+  }
+  .calendar-date {
+    font-size: 12px;
+  }
+  .time-slots {
+    max-height: 170px;
+  }
+  .picker-title {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+@media (max-width: 480px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .appointment-picker {
+    padding: 10px;
+  }
+  .date-picker-card,
+  .time-picker-card {
+    padding: 10px;
+  }
+  .calendar-grid {
+    gap: 2px;
+  }
+  .calendar-date {
+    border-radius: 6px;
+    font-size: 10px;
+  }
+}

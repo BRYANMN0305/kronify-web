@@ -416,64 +416,37 @@
   margin: 0.3rem 0 0;
 }
 
-/* ---- Botones ---- */
+/* ---- Botones ----
+   El estilo primario es global (styles/buttons.css). */
 .settings-section .btn-primary {
-  background: var(--color-primary);
-  border: 1px solid var(--neon-dim);
-  border-radius: 8px;
   padding: 0.6rem 1.3rem;
   font-size: 0.85rem;
-  font-weight: 700;
-  color: #fff;
-  letter-spacing: 0.01em;
-  box-shadow: 0 0 10px rgba(var(--color-primary-rgb), 0.2);
-  transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
-}
-
-.settings-section .btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 0 18px rgba(var(--color-primary-rgb), 0.45);
-}
-
-.settings-section .btn-primary:active {
-  background: var(--color-primary) !important;
-  border-color: var(--neon-dim) !important;
-  transform: scale(0.98);
-  box-shadow: 0 0 10px rgba(var(--color-primary-rgb), 0.2);
-}
-
-.settings-section .btn-primary:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.25);
-}
-
-.settings-section .btn-primary:disabled {
-  opacity: 0.6;
-  pointer-events: none;
 }
 
 .btn-ghost {
-  background: none;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 8px;
+  background: transparent;
+  border: 1px solid var(--btn-border);
+  border-radius: var(--btn-radius);
   padding: 0.55rem 1.1rem;
   font-size: 0.82rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.65);
+  font-weight: 700;
+  color: var(--neon);
   cursor: pointer;
   transition: color 0.2s, border-color 0.2s, background 0.2s, transform 0.1s, box-shadow 0.2s;
 }
 
 .btn-ghost:hover {
-  color: #fff;
-  border-color: rgba(255, 255, 255, 0.35);
-  background: rgba(255, 255, 255, 0.05);
+  color: var(--neon);
+  border-color: var(--neon);
+  background: rgba(var(--color-primary-rgb), 0.22);
   transform: translateY(-1px);
-  box-shadow: 0 0 12px rgba(var(--color-primary-rgb), 0.2);
+  box-shadow: var(--btn-shadow);
 }
 
 .btn-ghost:active {
+  background: transparent;
   transform: scale(0.98);
+  box-shadow: none;
 }
 
 .btn-ghost:focus-visible {

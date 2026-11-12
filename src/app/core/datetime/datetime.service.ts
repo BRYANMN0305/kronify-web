@@ -29,6 +29,16 @@ export class DatetimeService {
     return dayjs.utc(iso).tz(this.tz);
   }
 
+  /**
+   * LocalDateTime del backend (hora de pared del negocio, sin offset) → misma hora
+   * de pared en la zona del navegador. Evita el desfase de tratarla como UTC.
+   */
+  fromLocal(iso: string): Dayjs {
+    return /(?:Z|[+-]\d{2}:?\d{2})$/.test(iso)
+      ? dayjs(iso).tz(this.tz)
+      : dayjs(iso).tz(this.tz, true);
+  }
+
   /** construye un dayjs en la zona del navegador a partir de campos sueltos */
   at(year: number, monthIndex: number, day = 1): Dayjs {
     return dayjs().year(year).month(monthIndex).date(day).tz(this.tz, true);

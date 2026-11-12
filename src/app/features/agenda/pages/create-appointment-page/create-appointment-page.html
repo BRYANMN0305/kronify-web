@@ -68,7 +68,7 @@
         <label>Correo<input type="email" maxlength="150" autocomplete="email" [ngModel]="form().customerEmail" (ngModelChange)="update('customerEmail', $event)" name="customerEmail"></label>
       </div>
 
-      <footer class="create-actions"><button type="button" class="create-cancel" (click)="cancel()">Cancelar</button><button type="submit" class="create-submit" [disabled]="busy() || loadingAvailability() || !selectedSlot()">{{ busy() ? 'Guardando…' : 'Crear cita' }}</button></footer>
+      <footer class="create-actions"><button type="button" class="btn-kronify-outline create-cancel" (click)="cancel()">Cancelar</button><button type="submit" class="btn-kronify create-submit" [disabled]="busy() || loadingAvailability() || !selectedSlot()">{{ busy() ? 'Guardando…' : 'Crear cita' }}</button></footer>
     </form>
   </section>
 </div>
