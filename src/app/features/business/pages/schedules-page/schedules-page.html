@@ -133,6 +133,12 @@
         <strong>Selecciona un profesional</strong>
         <p>Los bloqueos se crean sobre la agenda de un integrante del equipo.</p>
       </div>
+    } @else if (!canEditSchedule()) {
+      <div class="empty-state">
+        <span>⊘</span>
+        <strong>Bloqueos no disponibles</strong>
+        <p>El dueño debe habilitar tu autogestión de horario para que puedas bloquear horas.</p>
+      </div>
     } @else {
       <div class="block-form">
         <label>
