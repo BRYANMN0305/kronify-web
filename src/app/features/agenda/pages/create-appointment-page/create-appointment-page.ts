@@ -121,16 +121,17 @@ export class CreateAppointmentDialog implements OnInit {
     this.availabilityError.set(null);
     if (!serviceId || !employeeId) return;
 
-    const slug = this.auth.user()?.slug;
-    if (!slug) {
-      this.availabilityError.set('No encontramos el enlace público del negocio para consultar horarios. Cierra sesión y vuelve a entrar para actualizar la sesión.');
+    const businessId = await this.resolveBusinessId();
+    if (businessId == null) {
+      this.availabilityError.set('No pudimos identificar tu negocio para consultar los horarios disponibles. Recarga la página o vuelve a iniciar sesión.');
       return;
     }
+    if (requestId !== this.availabilityRequestId) return;
 
     this.loadingAvailability.set(true);
     try {
       const result = await firstValueFrom(this.availabilityApi.getAvailability(
-        slug, Number(serviceId), this.selectedDate(), Number(employeeId),
+        String(businessId), Number(serviceId), this.selectedDate(), Number(employeeId),
       ));
       if (requestId === this.availabilityRequestId) this.slots.set(result.slots ?? []);
     } catch (error) {
@@ -138,6 +139,21 @@ export class CreateAppointmentDialog implements OnInit {
     } finally {
       if (requestId === this.availabilityRequestId) this.loadingAvailability.set(false);
     }
+  }
+
+  /**
+   * resolveBusinessId — el JWT emitido al registrarse aún no trae el negocio;
+   * se reemite una vez para obtener el id con el que se consulta la disponibilidad.
+   */
+  private async resolveBusinessId(): Promise<number | null> {
+    const current = this.auth.user()?.businessId;
+    if (current != null) return current;
+    try {
+      await this.auth.refreshSession();
+    } catch {
+      return null;
+    }
+    return this.auth.user()?.businessId ?? null;
   }
 
   protected async submit(): Promise<void> {

@@ -24,6 +24,8 @@ export class BusinessStore {
   private readonly invitationApi = inject(EmployeeInvitationControllerService);
   private readonly authStore = inject(AuthStore);
 
+  private lastSessionUserId: string | null = null;
+
   readonly business = signal<Business | null>(null);
   readonly employees = signal<EmployeeResponse[]>([]);
   readonly pendingInvitations = signal<InvitationResponse[]>([]);
@@ -38,9 +40,13 @@ export class BusinessStore {
   );
 
   constructor() {
-    // Cambio de sesión (login con otra cuenta, logout) → estado en blanco, sin datos de la cuenta anterior
+    // Cambio de sesión (login con otra cuenta, logout) → estado en blanco, sin datos de la cuenta anterior.
+    // Se observa el usuario y no el token: refrescar los claims del mismo usuario
+    // (p. ej. después de crear su negocio) no debe borrar el estado ya cargado.
     effect(() => {
-      this.authStore.token();
+      const userId = this.authStore.user()?.sub ?? null;
+      if (userId === this.lastSessionUserId) return;
+      this.lastSessionUserId = userId;
       this.reset();
     });
   }
@@ -52,8 +58,19 @@ export class BusinessStore {
       const [business] = await Promise.all([this.getMe(), this.loadMyEmployee()]);
       this.business.set(business);
       this.fetched.set(true);
+      // Sesiones creadas antes de tener negocio no traen businessId/slug en el JWT.
+      if (business && this.authStore.user()?.businessId == null) await this.refreshClaims();
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  /** refreshClaims — reemite el JWT con el negocio actual sin obligar a cerrar sesión */
+  private async refreshClaims(): Promise<void> {
+    try {
+      await this.authStore.refreshSession();
+    } catch {
+      /* si falla, la interfaz sigue funcionando con el negocio ya cargado */
     }
   }
 
@@ -80,6 +97,9 @@ export class BusinessStore {
     const created = await firstValueFrom(this.businessApi.createBusiness(payload));
     this.business.set(created);
     this.fetched.set(true);
+    // El token del registro no incluye businessId/slug; se renueva para que la agenda
+    // y el modal de nueva cita puedan consultar disponibilidad sin volver a iniciar sesión.
+    await this.refreshClaims();
     return created;
   }
 

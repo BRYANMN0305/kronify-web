@@ -7,6 +7,7 @@ import { BusinessControllerService } from '../api/openapi/api/businessController
 import { EmployeeControllerService } from '../api/openapi/api/employeeController.service';
 import { EmployeeInvitationControllerService } from '../api/openapi/api/employeeInvitationController.service';
 import { PlanControllerService } from '../api/openapi/api/planController.service';
+import { ServiceControllerService } from '../api/openapi/api/serviceController.service';
 import { PublicPlanControllerService } from '../api/openapi/api/publicPlanController.service';
 import { UploadControllerService } from '../api/openapi/api/uploadController.service';
 import { UserControllerService } from '../api/openapi/api/userController.service';
@@ -15,9 +16,11 @@ import { BusinessPlanUsageResponse } from '../api/openapi/model/businessPlanUsag
 import { BusinessSettingsResponse } from '../api/openapi/model/businessSettingsResponse';
 import { BusinessUpdateRequest } from '../api/openapi/model/businessUpdateRequest';
 import { BusinessUpdateResponse } from '../api/openapi/model/businessUpdateResponse';
+import { EmployeeResponse } from '../api/openapi/model/employeeResponse';
 import { InvitationResponse } from '../api/openapi/model/invitationResponse';
 import { LinkedAuthMethodResponse } from '../api/openapi/model/linkedAuthMethodResponse';
 import { PlanResponse } from '../api/openapi/model/planResponse';
+import { ServiceResponse } from '../api/openapi/model/serviceResponse';
 import { UploadFileRequest } from '../api/openapi/model/uploadFileRequest';
 import { UserChangePasswordRequest } from '../api/openapi/model/userChangePasswordRequest';
 import { UserChangePasswordResponse } from '../api/openapi/model/userChangePasswordResponse';
@@ -38,6 +41,7 @@ export class SettingsStore {
   private readonly publicPlanApi = inject(PublicPlanControllerService);
   private readonly employeeApi = inject(EmployeeControllerService);
   private readonly invitationApi = inject(EmployeeInvitationControllerService);
+  private readonly serviceApi = inject(ServiceControllerService);
   private readonly uploadApi = inject(UploadControllerService);
   private readonly authStore = inject(AuthStore);
 
@@ -45,6 +49,8 @@ export class SettingsStore {
   readonly authMethods = signal<LinkedAuthMethodResponse[]>([]);
   readonly businessData = signal<BusinessSettingsResponse | null>(null);
   readonly invitations = signal<InvitationResponse[]>([]);
+  readonly employees = signal<EmployeeResponse[]>([]);
+  readonly services = signal<ServiceResponse[]>([]);
   readonly plan = signal<BusinessPlanUsageResponse | null>(null);
   readonly planHistory = signal<BusinessPlanResponse[]>([]);
   readonly availablePlans = signal<PlanResponse[]>([]);
@@ -56,6 +62,8 @@ export class SettingsStore {
   readonly profileLoaded = signal(false);
   readonly businessLoaded = signal(false);
   readonly invitationsLoaded = signal(false);
+  readonly employeesLoaded = signal(false);
+  readonly servicesLoaded = signal(false);
   readonly planLoaded = signal(false);
   readonly planHistoryLoaded = signal(false);
   readonly availablePlansLoaded = signal(false);
@@ -160,6 +168,51 @@ export class SettingsStore {
     await this.fetchInvitations();
   }
 
+  /** fetchEmployees — Integrantes activos del negocio (solo dueño) */
+  async fetchEmployees(): Promise<void> {
+    this.employees.set(await firstValueFrom(this.employeeApi.listEmployees()));
+    this.employeesLoaded.set(true);
+  }
+
+  /** fetchServices — Catálogo activo del negocio para asignarlo al equipo */
+  async fetchServices(): Promise<void> {
+    const services = await firstValueFrom(this.serviceApi.listServices());
+    this.services.set((services ?? []).filter((service) => service.active !== false && service.id != null));
+    this.servicesLoaded.set(true);
+  }
+
+  /** fetchEmployeeServices — Servicios que puede realizar un empleado */
+  async fetchEmployeeServices(employeeId: number): Promise<ServiceResponse[]> {
+    return firstValueFrom(this.employeeApi.listEmployeeServices(employeeId));
+  }
+
+  /**
+   * addEmployeeService — PATCH /business/employees/{id}/services.
+   * El backend agrega los ids enviados y conserva los existentes, por lo que
+   * se envía solo el servicio nuevo.
+   */
+  async addEmployeeService(employeeId: number, serviceId: number): Promise<ServiceResponse[]> {
+    return firstValueFrom(
+      this.employeeApi.updateEmployeeServices(employeeId, { serviceIds: [serviceId] }),
+    );
+  }
+
+  /** removeEmployeeService — quita un servicio del empleado (soft delete en el backend) */
+  async removeEmployeeService(employeeId: number, serviceId: number): Promise<void> {
+    await firstValueFrom(this.employeeApi.removeServiceFromEmployee(employeeId, serviceId));
+  }
+
+  /** updateSchedulePermission — habilita/deshabilita la autogestión de horario */
+  async updateSchedulePermission(employeeId: number, selfManagedSchedule: boolean): Promise<EmployeeResponse> {
+    const updated = await firstValueFrom(
+      this.employeeApi.updateSchedulePermission(employeeId, { selfManagedSchedule }),
+    );
+    this.employees.update((list) =>
+      list.map((employee) => (employee.employeeId === employeeId ? updated : employee)),
+    );
+    return updated;
+  }
+
   /** fetchPlan — Plan vigente con métricas de uso */
   async fetchPlan(): Promise<void> {
     this.plan.set(await firstValueFrom(this.planApi.getCurrentPlan()));
@@ -208,6 +261,8 @@ export class SettingsStore {
         tasks.push(
           this.fetchBusiness(),
           this.fetchInvitations(),
+          this.fetchEmployees(),
+          this.fetchServices(),
           this.fetchPlan(),
           this.fetchPlanHistory(),
           this.fetchAvailablePlans(),
@@ -230,6 +285,8 @@ export class SettingsStore {
     this.authMethods.set([]);
     this.businessData.set(null);
     this.invitations.set([]);
+    this.employees.set([]);
+    this.services.set([]);
     this.plan.set(null);
     this.planHistory.set([]);
     this.availablePlans.set([]);
@@ -239,6 +296,8 @@ export class SettingsStore {
     this.profileLoaded.set(false);
     this.businessLoaded.set(false);
     this.invitationsLoaded.set(false);
+    this.employeesLoaded.set(false);
+    this.servicesLoaded.set(false);
     this.planLoaded.set(false);
     this.planHistoryLoaded.set(false);
     this.availablePlansLoaded.set(false);

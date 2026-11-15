@@ -76,13 +76,24 @@
           @case ('team') {
             <app-team-tab
               [invitations]="invitations()"
+              [employees]="teamEmployees()"
+              [services]="businessServices()"
+              [employeeServices]="employeeServices()"
+              [expandedEmployeeId]="expandedEmployeeId()"
+              [serviceBusyId]="teamServiceBusyId()"
+              [permissionBusyId]="teamPermissionBusyId()"
+              [employeeError]="teamEmployeeError()"
               [sending]="teamSending()"
               [busyId]="teamBusyId()"
               [successMessage]="teamSuccess()"
               [errorMessage]="teamError()"
               (createInvitation)="handleCreateInvitation($event)"
               (resendInvitation)="handleResendInvitation($event)"
-              (cancelInvitation)="handleCancelInvitation($event)"/>
+              (cancelInvitation)="handleCancelInvitation($event)"
+              (toggleEmployeePanel)="handleToggleEmployeePanel($event)"
+              (addEmployeeService)="handleAddEmployeeService($event)"
+              (removeEmployeeService)="handleRemoveEmployeeService($event)"
+              (schedulePermission)="handleSchedulePermission($event)"/>
           }
           @case ('profile') {
             <app-profile-tab

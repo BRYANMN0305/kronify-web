@@ -16,6 +16,7 @@ import { Permissions } from '../../../../core/auth/permissions';
 import { SettingsStore } from '../../../../core/settings/settings.store';
 import { UserChangePasswordRequest } from '../../../../core/api/openapi/model/userChangePasswordRequest';
 import { UserUpdateRequest } from '../../../../core/api/openapi/model/userUpdateRequest';
+import { ServiceResponse } from '../../../../core/api/openapi/model/serviceResponse';
 import { BusinessUpdateRequest } from '../../../../core/api/openapi/model/businessUpdateRequest';
 import { Icon, IconName } from '../../../../shared/ui/icon/icon';
 import { MyDetailsTab } from '../../ui/my-details-tab/my-details-tab';
@@ -93,6 +94,13 @@ export class SettingsPage implements OnInit {
   protected readonly teamBusyId = signal<number | null>(null);
   protected readonly teamSuccess = signal<string | null>(null);
   protected readonly teamError = signal<string | null>(null);
+  protected readonly teamEmployees = this.settings.employees;
+  protected readonly businessServices = this.settings.services;
+  protected readonly employeeServices = signal<Readonly<Record<number, readonly ServiceResponse[]>>>({});
+  protected readonly expandedEmployeeId = signal<number | null>(null);
+  protected readonly teamServiceBusyId = signal<number | null>(null);
+  protected readonly teamPermissionBusyId = signal<number | null>(null);
+  protected readonly teamEmployeeError = signal<string | null>(null);
   protected readonly business = this.settings.businessData;
   protected readonly ownerAsEmployee = this.settings.ownerAsEmployee;
   protected readonly businessSaving = signal(false);
@@ -177,11 +185,16 @@ export class SettingsPage implements OnInit {
 
   protected selectTab(tab: SettingsTab): void {
     if (tab !== 'password') this.passwordError.set(null);
-    if (tab !== 'team') this.teamError.set(null);
+    if (tab !== 'team') {
+      this.teamError.set(null);
+      this.teamEmployeeError.set(null);
+    }
     if (tab !== 'profile') this.ownerToggleError.set(null);
     if (tab !== 'plan') this.planError.set(null);
-    if (tab === 'team' && this.settings.invitationsLoaded()) {
-      void this.settings.fetchInvitations().catch(() => undefined);
+    if (tab === 'team') {
+      if (this.settings.invitationsLoaded()) void this.settings.fetchInvitations().catch(() => undefined);
+      if (this.settings.employeesLoaded()) void this.settings.fetchEmployees().catch(() => undefined);
+      if (this.settings.servicesLoaded()) void this.settings.fetchServices().catch(() => undefined);
     }
     this.activeTab.set(tab);
   }
@@ -305,6 +318,70 @@ export class SettingsPage implements OnInit {
       this.teamError.set(apiErrorMessage(error) || 'Error al cancelar la invitación');
     } finally {
       this.teamBusyId.set(null);
+    }
+  }
+
+  /** Carga (una vez) los servicios del integrante y abre su panel */
+  protected async handleToggleEmployeePanel(employeeId: number): Promise<void> {
+    if (this.expandedEmployeeId() === employeeId) {
+      this.expandedEmployeeId.set(null);
+      return;
+    }
+    this.expandedEmployeeId.set(employeeId);
+    this.teamEmployeeError.set(null);
+    if (this.employeeServices()[employeeId]) return;
+    try {
+      const services = await this.settings.fetchEmployeeServices(employeeId);
+      this.employeeServices.update((map) => ({ ...map, [employeeId]: services }));
+    } catch (error) {
+      this.teamEmployeeError.set(apiErrorMessage(error) || 'No se pudieron cargar los servicios del integrante');
+    }
+  }
+
+  protected async handleAddEmployeeService(payload: { employeeId: number; serviceId: number }): Promise<void> {
+    this.teamServiceBusyId.set(payload.serviceId);
+    this.teamEmployeeError.set(null);
+    try {
+      const services = await this.settings.addEmployeeService(payload.employeeId, payload.serviceId);
+      this.employeeServices.update((map) => ({ ...map, [payload.employeeId]: services }));
+    } catch (error) {
+      this.teamEmployeeError.set(apiErrorMessage(error) || 'No se pudo asignar el servicio');
+    } finally {
+      this.teamServiceBusyId.set(null);
+    }
+  }
+
+  protected async handleRemoveEmployeeService(payload: { employeeId: number; serviceId: number }): Promise<void> {
+    this.teamServiceBusyId.set(payload.serviceId);
+    this.teamEmployeeError.set(null);
+    try {
+      await this.settings.removeEmployeeService(payload.employeeId, payload.serviceId);
+      this.employeeServices.update((map) => ({
+        ...map,
+        [payload.employeeId]: (map[payload.employeeId] ?? []).filter((service) => service.id !== payload.serviceId),
+      }));
+    } catch (error) {
+      this.teamEmployeeError.set(apiErrorMessage(error) || 'No se pudo quitar el servicio');
+    } finally {
+      this.teamServiceBusyId.set(null);
+    }
+  }
+
+  protected async handleSchedulePermission(payload: { employeeId: number; enabled: boolean }): Promise<void> {
+    this.teamPermissionBusyId.set(payload.employeeId);
+    this.teamSuccess.set(null);
+    this.teamEmployeeError.set(null);
+    try {
+      await this.settings.updateSchedulePermission(payload.employeeId, payload.enabled);
+      this.teamSuccess.set(
+        payload.enabled
+          ? 'El integrante ya puede gestionar su jornada y sus bloqueos.'
+          : 'Se desactivó la autogestión de horario del integrante.',
+      );
+    } catch (error) {
+      this.teamEmployeeError.set(apiErrorMessage(error) || 'No se pudo actualizar el permiso de horario');
+    } finally {
+      this.teamPermissionBusyId.set(null);
     }
   }
 

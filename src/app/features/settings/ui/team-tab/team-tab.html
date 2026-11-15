@@ -2,7 +2,108 @@
   <section class="settings-section">
     <div class="settings-section-header">
       <div>
-        <h3 class="settings-section-title">Equipo</h3>
+        <h3 class="settings-section-title">Integrantes</h3>
+        <p class="settings-section-subtitle">Asigna servicios y define quién puede gestionar su propio horario</p>
+      </div>
+      <span class="status-badge status-default">{{ employees().length }} activo(s)</span>
+    </div>
+
+    @if (employeeError()) {
+      <div class="settings-alert settings-alert-error">
+        <app-icon name="alert-circle" aria-hidden="true"/>
+        <span>{{ employeeError() }}</span>
+      </div>
+    }
+
+    @if (employees().length === 0) {
+      <div class="settings-empty">Aún no hay integrantes activos. Invita a alguien para asignarle servicios.</div>
+    } @else {
+      <div class="team-member-list">
+        @for (employee of employees(); track employee.employeeId) {
+          <article class="team-member" [class.is-expanded]="expandedEmployeeId() === employee.employeeId">
+            <div class="team-member-head">
+              <span class="team-member-avatar">{{ initials(employee) }}</span>
+              <div class="team-member-info">
+                <div class="team-member-name">
+                  {{ employeeName(employee) }}
+                  @if (employee.owner) { <span class="team-tag">Dueño</span> }
+                </div>
+                <div class="team-member-email">{{ employee.email }}</div>
+              </div>
+              <div class="team-member-actions">
+                <label class="permission-toggle" [title]="employee.owner ? 'El dueño siempre gestiona su horario' : 'Permite que gestione su jornada y bloqueos'">
+                  <input type="checkbox"
+                         [checked]="employee.owner || employee.selfManagedSchedule"
+                         [disabled]="employee.owner || permissionBusyId() === employee.employeeId"
+                         (change)="permissionChanged(employee, $any($event.target).checked)">
+                  <span class="switch-slider"></span>
+                  <span class="permission-label">Autogestión de horario</span>
+                </label>
+                <button type="button"
+                        class="btn-ghost team-services-btn"
+                        [disabled]="serviceBusyId() != null"
+                        (click)="togglePanel(employee.employeeId)">
+                  <app-icon name="wrench" aria-hidden="true"/>
+                  {{ expandedEmployeeId() === employee.employeeId ? 'Ocultar servicios' : 'Servicios' }}
+                </button>
+              </div>
+            </div>
+
+            @if (expandedEmployeeId() === employee.employeeId) {
+              <div class="team-services-panel">
+                <div class="team-services-assigned">
+                  <span class="team-services-label">Asignados</span>
+                  @if (assignedServices(employee.employeeId).length) {
+                    <div class="service-chips">
+                      @for (service of assignedServices(employee.employeeId); track service.id) {
+                        <span class="service-chip">
+                          {{ service.name }}
+                          <button type="button"
+                                  class="service-chip-remove"
+                                  [attr.aria-label]="'Quitar ' + service.name"
+                                  [disabled]="serviceBusyId() === service.id"
+                                  (click)="toggleService(employee.employeeId, service.id, false)">×</button>
+                        </span>
+                      }
+                    </div>
+                  } @else {
+                    <span class="team-services-empty">{{ servicesLoaded(employee.employeeId) ? 'Sin servicios asignados.' : 'Cargando servicios…' }}</span>
+                  }
+                </div>
+
+                <div class="service-picker">
+                  <span class="team-services-label">Catálogo del negocio</span>
+                  @if (services().length === 0) {
+                    <span class="team-services-empty">Crea servicios en la sección Servicios para asignarlos.</span>
+                  } @else {
+                    <div class="service-options">
+                      @for (service of services(); track service.id) {
+                        <label class="service-option" [class.is-checked]="isAssigned(employee.employeeId, service.id)">
+                          <input type="checkbox"
+                                 [checked]="isAssigned(employee.employeeId, service.id)"
+                                 [disabled]="serviceBusyId() === service.id"
+                                 (change)="toggleService(employee.employeeId, service.id, $any($event.target).checked)">
+                          <span class="service-option-name">{{ service.name }}</span>
+                          @if (service.durationMinutes) {
+                            <span class="service-option-meta">{{ service.durationMinutes }} min</span>
+                          }
+                        </label>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </article>
+        }
+      </div>
+    }
+  </section>
+
+  <section class="settings-section">
+    <div class="settings-section-header">
+      <div>
+        <h3 class="settings-section-title">Invitaciones</h3>
         <p class="settings-section-subtitle">Invita a empleados a trabajar en tu negocio</p>
       </div>
 
