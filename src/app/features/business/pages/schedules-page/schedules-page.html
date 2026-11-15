@@ -1,14 +1,185 @@
-<main class="schedules-page"><header class="page-heading"><span class="eyebrow">NEGOCIO · DISPONIBILIDAD</span><h1>Horarios</h1><p>Organiza cuándo atiende tu negocio y define la jornada de cada profesional.</p></header>
-  @if (error()) { <p class="message error" role="alert">{{ error() }}</p> } @if (notice()) { <p class="message success" role="status">{{ notice() }}</p> }
-  <section class="schedule-card"><div class="section-heading"><span class="section-icon">◷</span><div><span class="section-kicker">HORARIO PÚBLICO</span><h2>Atención del negocio</h2><p>Estos son los horarios que verán tus clientes.</p></div><span class="schedule-badge">7 días</span></div>
-    <div class="days-list">@for (day of days; track day; let i = $index) { <div class="hours-row" [class.is-open]="openingHours()[i].startTime < openingHours()[i].endTime"><div class="day-mark">{{ day.slice(0, 2) }}</div><strong>{{ day }}</strong><label class="toggle-label"><input type="checkbox" [checked]="openingHours()[i].startTime < openingHours()[i].endTime" (change)="setOpening(i, 'startTime', $any($event.target).checked ? '09:00' : '00:00'); setOpening(i, 'endTime', $any($event.target).checked ? '18:00' : '00:00')"><span></span>{{ openingHours()[i].startTime < openingHours()[i].endTime ? 'Abierto' : 'Cerrado' }}</label><div class="time-range"><input type="time" [attr.aria-label]="'Apertura ' + day" [ngModel]="openingHours()[i].startTime" (ngModelChange)="setOpening(i, 'startTime', $event)" [name]="'business-start-'+i"><span>—</span><input type="time" [attr.aria-label]="'Cierre ' + day" [ngModel]="openingHours()[i].endTime" (ngModelChange)="setOpening(i, 'endTime', $event)" [name]="'business-end-'+i"></div></div> }</div>
-    <div class="card-footer"><span>Los cambios se reflejan en la reserva pública.</span><button class="primary" type="button" [disabled]="busy()" (click)="saveOpeningHours()">Guardar horario <span>→</span></button></div>
-  </section>
-  <section class="schedule-card staff-card"><div class="section-heading"><span class="section-icon">♙</span><div><span class="section-kicker">EQUIPO</span><h2>Jornada por profesional</h2><p>Personaliza los días y horas de cada integrante.</p></div></div>
+<main class="schedules-page">
+  <header class="page-heading">
+    <span class="eyebrow">NEGOCIO · DISPONIBILIDAD</span>
+    <h1>Horarios</h1>
+    <p>{{ isOwner() ? 'Organiza cuándo atiende tu negocio, define la jornada de cada profesional y bloquea horas puntuales.' : 'Consulta tu jornada y bloquea los horarios en los que no estarás disponible.' }}</p>
+  </header>
+
+  @if (error()) { <p class="message error" role="alert">{{ error() }}</p> }
+  @if (notice()) { <p class="message success" role="status">{{ notice() }}</p> }
+
+  @if (isOwner()) {
+    <section class="schedule-card">
+      <div class="section-heading">
+        <span class="section-icon">◷</span>
+        <div>
+          <span class="section-kicker">HORARIO PÚBLICO</span>
+          <h2>Atención del negocio</h2>
+          <p>Estos son los horarios que verán tus clientes.</p>
+        </div>
+        <span class="schedule-badge">7 días</span>
+      </div>
+      <div class="days-list">
+        @for (day of days; track day; let i = $index) {
+          <div class="hours-row" [class.is-open]="openingHours()[i].startTime < openingHours()[i].endTime">
+            <div class="day-mark">{{ day.slice(0, 2) }}</div>
+            <strong>{{ day }}</strong>
+            <label class="toggle-label">
+              <input type="checkbox"
+                     [checked]="openingHours()[i].startTime < openingHours()[i].endTime"
+                     (change)="setOpening(i, 'startTime', $any($event.target).checked ? '09:00' : '00:00'); setOpening(i, 'endTime', $any($event.target).checked ? '18:00' : '00:00')">
+              <span></span>{{ openingHours()[i].startTime < openingHours()[i].endTime ? 'Abierto' : 'Cerrado' }}
+            </label>
+            <div class="time-range">
+              <input type="time" [attr.aria-label]="'Apertura ' + day" [ngModel]="openingHours()[i].startTime" (ngModelChange)="setOpening(i, 'startTime', $event)" [name]="'business-start-'+i">
+              <span>—</span>
+              <input type="time" [attr.aria-label]="'Cierre ' + day" [ngModel]="openingHours()[i].endTime" (ngModelChange)="setOpening(i, 'endTime', $event)" [name]="'business-end-'+i">
+            </div>
+          </div>
+        }
+      </div>
+      <div class="card-footer">
+        <span>Los cambios se reflejan en la reserva pública.</span>
+        <button class="primary" type="button" [disabled]="busy()" (click)="saveOpeningHours()">Guardar horario <span>→</span></button>
+      </div>
+    </section>
+  }
+
+  <section class="schedule-card staff-card">
+    <div class="section-heading">
+      <span class="section-icon">♙</span>
+      <div>
+        <span class="section-kicker">EQUIPO</span>
+        <h2>Jornada por profesional</h2>
+        <p>{{ isOwner() ? 'Personaliza los días y horas de cada integrante.' : 'Estos son los días y horas en los que atiendes.' }}</p>
+      </div>
+    </div>
+
     @if (employees().length) {
-      <label class="employee-select"><span>Profesional seleccionado</span><select [ngModel]="employeeId()" (ngModelChange)="selectEmployee(+$event)" name="employee">@for (employee of employees(); track employee.employeeId) { <option [value]="employee.employeeId">{{ employee.name }} {{ employee.lastName }}</option> }</select></label>
-      <div class="days-list">@for (day of days; track day; let i = $index) { <div class="hours-row" [class.is-open]="employeeHours()[i].startTime < employeeHours()[i].endTime"><div class="day-mark">{{ day.slice(0, 2) }}</div><strong>{{ day }}</strong><label class="toggle-label"><input type="checkbox" [checked]="employeeHours()[i].startTime < employeeHours()[i].endTime" (change)="setEmployeeHour(i, 'startTime', $any($event.target).checked ? '09:00' : '00:00'); setEmployeeHour(i, 'endTime', $any($event.target).checked ? '18:00' : '00:00')"><span></span>{{ employeeHours()[i].startTime < employeeHours()[i].endTime ? 'Trabaja' : 'Libre' }}</label><div class="time-range"><input type="time" [attr.aria-label]="'Inicio ' + day" [ngModel]="employeeHours()[i].startTime" (ngModelChange)="setEmployeeHour(i, 'startTime', $event)" [name]="'staff-start-'+i"><span>—</span><input type="time" [attr.aria-label]="'Fin ' + day" [ngModel]="employeeHours()[i].endTime" (ngModelChange)="setEmployeeHour(i, 'endTime', $event)" [name]="'staff-end-'+i"></div></div> }</div>
-      <div class="card-footer"><span>Configura la disponibilidad individual.</span><button class="primary" type="button" [disabled]="busy()" (click)="saveEmployeeHours()">Guardar jornada <span>→</span></button></div>
-    } @else { <div class="empty-state"><span>♙</span><strong>{{ busy() ? 'Cargando equipo…' : 'Aún no hay profesionales' }}</strong><p>{{ busy() ? 'Estamos cargando la lista.' : 'Cuando agregues profesionales, podrás configurar sus jornadas aquí.' }}</p></div> }
+      @if (isOwner()) {
+        <label class="employee-select">
+          <span>Profesional seleccionado</span>
+          <select [ngModel]="employeeId()" (ngModelChange)="selectEmployee(+$event)" name="employee">
+            @for (employee of employees(); track employee.employeeId) {
+              <option [value]="employee.employeeId">{{ employee.name }} {{ employee.lastName }}</option>
+            }
+          </select>
+        </label>
+      } @else {
+        <div class="employee-self">
+          <span class="day-mark">{{ (employees()[0]?.name ?? 'E').slice(0, 2).toUpperCase() }}</span>
+          <div>
+            <strong>{{ employees()[0]?.name }} {{ employees()[0]?.lastName }}</strong>
+            <p>Jornada personal</p>
+          </div>
+        </div>
+      }
+
+      @if (!canEditSchedule()) {
+        <p class="message warning" role="status">
+          El dueño del negocio aún no habilitó tu autogestión de horario. Cuando la active podrás consultar tu jornada, editarla y crear bloqueos.
+        </p>
+      }
+
+      @if (isOwner() || canEditSchedule()) {
+        <div class="days-list">
+        @for (day of days; track day; let i = $index) {
+          <div class="hours-row" [class.is-open]="employeeHours()[i].startTime < employeeHours()[i].endTime">
+            <div class="day-mark">{{ day.slice(0, 2) }}</div>
+            <strong>{{ day }}</strong>
+            <label class="toggle-label">
+              <input type="checkbox"
+                     [checked]="employeeHours()[i].startTime < employeeHours()[i].endTime"
+                     [disabled]="!canEditSchedule()"
+                     (change)="setEmployeeHour(i, 'startTime', $any($event.target).checked ? '09:00' : '00:00'); setEmployeeHour(i, 'endTime', $any($event.target).checked ? '18:00' : '00:00')">
+              <span></span>{{ employeeHours()[i].startTime < employeeHours()[i].endTime ? 'Trabaja' : 'Libre' }}
+            </label>
+            <div class="time-range">
+              <input type="time" [attr.aria-label]="'Inicio ' + day" [ngModel]="employeeHours()[i].startTime" (ngModelChange)="setEmployeeHour(i, 'startTime', $event)" [name]="'staff-start-'+i" [disabled]="!canEditSchedule()">
+              <span>—</span>
+              <input type="time" [attr.aria-label]="'Fin ' + day" [ngModel]="employeeHours()[i].endTime" (ngModelChange)="setEmployeeHour(i, 'endTime', $event)" [name]="'staff-end-'+i" [disabled]="!canEditSchedule()">
+            </div>
+          </div>
+        }
+      </div>
+      <div class="card-footer">
+        <span>Configura la disponibilidad individual.</span>
+        <button class="primary" type="button" [disabled]="busy() || !canEditSchedule()" (click)="saveEmployeeHours()">Guardar jornada <span>→</span></button>
+      </div>
+      }
+    } @else {
+      <div class="empty-state">
+        <span>♙</span>
+        <strong>{{ busy() ? 'Cargando equipo…' : 'Aún no hay profesionales' }}</strong>
+        <p>{{ busy() ? 'Estamos cargando la lista.' : 'Cuando agregues profesionales, podrás configurar sus jornadas aquí.' }}</p>
+      </div>
+    }
+  </section>
+
+  <section class="schedule-card blocks-card">
+    <div class="section-heading">
+      <span class="section-icon">⊘</span>
+      <div>
+        <span class="section-kicker">BLOQUEOS</span>
+        <h2>Horarios no disponibles</h2>
+        <p>Días libres, almuerzos, citas personales o cualquier hora que no quieras ofrecer.</p>
+      </div>
+      <span class="schedule-badge">{{ blocks().length }} bloqueo(s)</span>
+    </div>
+
+    @if (employeeId() == null) {
+      <div class="empty-state">
+        <span>⊘</span>
+        <strong>Selecciona un profesional</strong>
+        <p>Los bloqueos se crean sobre la agenda de un integrante del equipo.</p>
+      </div>
+    } @else {
+      <div class="block-form">
+        <label>
+          <span>Fecha</span>
+          <input type="date" [ngModel]="blockDate()" (ngModelChange)="setBlock('blockDate', $event)" name="blockDate" [disabled]="!canEditSchedule()">
+        </label>
+        <label>
+          <span>Desde</span>
+          <input type="time" [ngModel]="blockStart()" (ngModelChange)="setBlock('blockStart', $event)" name="blockStart" [disabled]="!canEditSchedule()">
+        </label>
+        <label>
+          <span>Hasta</span>
+          <input type="time" [ngModel]="blockEnd()" (ngModelChange)="setBlock('blockEnd', $event)" name="blockEnd" [disabled]="!canEditSchedule()">
+        </label>
+        <label class="block-reason">
+          <span>Motivo (opcional)</span>
+          <input type="text" maxlength="80" placeholder="Almuerzo, cita médica…" [ngModel]="blockReason()" (ngModelChange)="setBlock('blockReason', $event)" name="blockReason" [disabled]="!canEditSchedule()">
+        </label>
+        <button class="primary block-submit" type="button" [disabled]="blockBusy() || !canEditSchedule()" (click)="createBlock()">
+          {{ blockBusy() ? 'Guardando…' : 'Bloquear horario' }}
+        </button>
+      </div>
+
+      @if (blockError()) { <p class="message error" role="alert">{{ blockError() }}</p> }
+
+      @if (blocks().length === 0) {
+        <div class="blocks-empty">Este profesional no tiene bloqueos registrados.</div>
+      } @else {
+        <div class="blocks-list">
+          @for (block of blocks(); track block.scheduleBlockId) {
+            <div class="block-row">
+              <span class="block-mark">⊘</span>
+              <div class="block-info">
+                <strong>{{ blockLabel(block.startAt) }} — {{ blockLabel(block.endAt) }}</strong>
+                <span>{{ block.reason || 'Sin motivo indicado' }}</span>
+              </div>
+              <button type="button" class="block-delete" [disabled]="blockBusy() || !canEditSchedule()" (click)="deleteBlock(block.scheduleBlockId)">
+                Eliminar
+              </button>
+            </div>
+          }
+        </div>
+      }
+
+      <div class="card-footer">
+        <span>Un bloqueo impide que la página pública ofrezca citas en ese rango.</span>
+      </div>
+    }
   </section>
 </main>

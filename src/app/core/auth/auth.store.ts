@@ -20,6 +20,8 @@ export interface JwtClaims {
   lastName?: string;
   profileType?: 'BUSINESS' | 'CLIENT';
   exp?: number;
+  /** id interno del negocio (claim del JWT cuando ya existe el negocio) */
+  businessId?: number;
   /** slug público del negocio (claim del JWT cuando ya existe el negocio) */
   slug?: string;
   [key: string]: unknown;
@@ -185,6 +187,19 @@ export class AuthStore {
 
   /** completeOAuthProfile — primer login OAuth: guarda el tipo de perfil y renueva el JWT */
   async completeOAuthProfile(profileType: OAuthProfileRequest['profileType']): Promise<void> {
+    const token = await firstValueFrom(this.authApi.selectOAuthProfile({ profileType } as OAuthProfileRequest));
+    this.setAuth(token.accessToken ?? '');
+  }
+
+  /**
+   * refreshSession — Reemite el JWT con los claims actuales del usuario.
+   * Tras crear un negocio, el token emitido al registrarse todavía no incluye
+   * businessId/slug; el calendario resuelve la disponibilidad por negocio y
+   * necesita esos claims sin obligar al usuario a cerrar sesión.
+   */
+  async refreshSession(): Promise<void> {
+    const profileType = this.user()?.profileType;
+    if (!profileType) return;
     const token = await firstValueFrom(this.authApi.selectOAuthProfile({ profileType } as OAuthProfileRequest));
     this.setAuth(token.accessToken ?? '');
   }
