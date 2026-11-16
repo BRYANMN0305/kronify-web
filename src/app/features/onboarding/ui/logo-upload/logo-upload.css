@@ -7,7 +7,7 @@
   width: 140px;
   height: 140px;
   border: 1px dashed rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -43,7 +43,7 @@
 }
 
 .logo-placeholder span {
-  font-size: 0.7rem;
+  font-size: var(--text-xs);
   line-height: 1.3;
 }
 
@@ -63,7 +63,7 @@
   border: none;
   background: rgba(0, 0, 0, 0.6);
   color: #fff;
-  font-size: 1rem;
+  font-size: var(--text-lg);
   line-height: 1;
   display: flex;
   align-items: center;

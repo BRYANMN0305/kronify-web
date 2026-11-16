@@ -7,6 +7,7 @@
 @import "./styles/sidebar.css";
 @import "./styles/auth.css";
 @import "./styles/schedules.css";
+@import "./styles/responsive.css";
 
 /* Tipografía base de toda la aplicación: la misma del login. */
 body,
@@ -15,4 +16,161 @@ input,
 select,
 textarea {
   font-family: var(--font-ui);
+}
+
+/* ============================================================
+   Pulido global: foco, cursores, scroll y movimiento.
+   ============================================================ */
+
+/* Botones siempre interactivos al cursor; deshabilitados no. */
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* Acciones: una única firma visual en toda la aplicación.
+   Se excluyen tabs, selectores y botones de cierre porque son controles de
+   navegación/selección, no llamadas a la acción. */
+button.btn-primary,
+button.btn-kronify,
+button.btn-kronify-outline,
+button.primary,
+button.secondary,
+button.btn-edit,
+button.btn-ghost,
+button.btn-action,
+button.plan-card-btn,
+button.team-services-btn,
+button.refresh-button,
+button.agenda-today-btn,
+button.agenda-clear,
+button.btn-ghost-inline,
+button.schedules-mode-btn,
+button.schedules-tab-btn {
+  min-height: 42px;
+  border: 1px solid var(--btn-border);
+  border-radius: var(--btn-radius);
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  box-shadow: var(--btn-shadow);
+  font-family: var(--font-ui);
+  font-weight: 700;
+  transition: background 0.18s, border-color 0.18s, box-shadow 0.18s,
+    transform 0.12s;
+}
+
+button.btn-primary:hover:not(:disabled),
+button.btn-kronify:hover:not(:disabled),
+button.btn-kronify-outline:hover:not(:disabled),
+button.primary:hover:not(:disabled),
+button.secondary:hover:not(:disabled),
+button.btn-edit:hover:not(:disabled),
+button.btn-ghost:hover:not(:disabled),
+button.btn-action:hover:not(:disabled),
+button.plan-card-btn:hover:not(:disabled),
+button.team-services-btn:hover:not(:disabled),
+button.refresh-button:hover:not(:disabled),
+button.agenda-today-btn:hover:not(:disabled),
+button.agenda-clear:hover:not(:disabled),
+button.btn-ghost-inline:hover:not(:disabled),
+button.schedules-mode-btn:hover:not(:disabled),
+button.schedules-tab-btn:hover:not(:disabled) {
+  border-color: var(--neon);
+  background: var(--btn-bg-hover);
+  color: var(--btn-text);
+  box-shadow: var(--btn-shadow-hover);
+  transform: translateY(-1px);
+}
+
+button.btn-primary:active:not(:disabled),
+button.btn-kronify:active:not(:disabled),
+button.btn-kronify-outline:active:not(:disabled),
+button.primary:active:not(:disabled),
+button.secondary:active:not(:disabled),
+button.btn-edit:active:not(:disabled),
+button.btn-ghost:active:not(:disabled),
+button.btn-action:active:not(:disabled),
+button.plan-card-btn:active:not(:disabled),
+button.team-services-btn:active:not(:disabled),
+button.refresh-button:active:not(:disabled),
+button.agenda-today-btn:active:not(:disabled),
+button.agenda-clear:active:not(:disabled),
+button.btn-ghost-inline:active:not(:disabled),
+button.schedules-mode-btn:active:not(:disabled),
+button.schedules-tab-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: var(--btn-shadow);
+}
+
+/* Las acciones destructivas comparten geometría y comportamiento, pero
+   conservan rojo para que su intención siga siendo inequívoca. */
+button.danger,
+button.btn-action-danger,
+button.day-action--danger,
+button.block-delete,
+button.settings-logout-btn {
+  min-height: 42px;
+  border-radius: var(--btn-radius);
+  box-shadow: var(--btn-shadow);
+  font-family: var(--font-ui);
+  font-weight: 700;
+}
+
+/* Foco visible por teclado en cualquier control interactivo. */
+a:focus-visible,
+button:focus-visible,
+select:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--neon);
+  outline-offset: 2px;
+}
+
+/* Selección de texto con el acento del tema. */
+::selection {
+  background: rgba(63, 225, 255, 0.28);
+  color: #fff;
+}
+
+/* Scrollbars finas y acordes al tema en toda la app. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2b4d57 transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: var(--radius-pill);
+  background: #2b4d57;
+  background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #3b8493;
+  background-clip: padding-box;
+}
+
+/* Respeta la preferencia de menos movimiento. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

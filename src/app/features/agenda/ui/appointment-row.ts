@@ -24,6 +24,7 @@ import { AppointmentStatusClassPipe } from './appointment-status.pipe';
           <span [class]="'status-pill ' + (appointment().status | appointmentStatusClass)">{{ appointment().status }}</span>
           @if (appointment().origin === 'PUBLIC') { <span class="origin-badge">Reserva en línea</span> }
           @if (phoneLabel(); as phone) { <a class="row-phone" [href]="'tel:' + appointment().phone">{{ phone }}</a> }
+          @if (appointment().email) { <a class="row-phone row-email" [href]="'mailto:' + appointment().email">{{ appointment().email }}</a> }
         </div>
       </div>
 
@@ -35,9 +36,16 @@ import { AppointmentStatusClassPipe } from './appointment-status.pipe';
             <span aria-label="Precio no disponible">—</span>
           }
         </strong>
-        @if (actionLabel(); as label) {
-          <button type="button" class="btn-kronify row-action" (click)="advance()">{{ label }}</button>
-        }
+        <div class="row-actions">
+          @if (actionLabel(); as label) {
+            <button type="button" class="btn-kronify row-action" (click)="advance()">{{ label }}</button>
+          }
+          @if (canManage()) {
+            <button type="button" class="btn-kronify-outline row-action row-action--muted" (click)="reschedule.emit()">Reprogramar</button>
+            <button type="button" class="btn-kronify-outline row-action row-action--danger" (click)="statusChange.emit('Cancelada')">Cancelar</button>
+            <button type="button" class="btn-kronify-outline row-action row-action--muted" (click)="statusChange.emit('No asistió')">No asistió</button>
+          }
+        </div>
       </div>
     </article>
   `,
@@ -48,7 +56,7 @@ import { AppointmentStatusClassPipe } from './appointment-status.pipe';
       grid-template-columns: 78px 40px minmax(0, 1fr) auto;
       align-items: start;
       column-gap: 14px;
-      border-radius: 12px;
+      border-radius: var(--radius-lg);
       padding: 15px 6px;
       transition: background 0.2s, box-shadow 0.2s;
     }
@@ -57,34 +65,41 @@ import { AppointmentStatusClassPipe } from './appointment-status.pipe';
       box-shadow: inset 0 0 0 1px #2c5b66;
     }
     .row-time { display: grid; gap: 1px; }
-    .row-time strong { color: #f2fbfd; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
-    .row-time span { color: #88a5ad; font-size: 11px; }
+    .row-time strong { color: #f2fbfd; font-size: var(--text-2xl); font-weight: 700; letter-spacing: -0.01em; }
+    .row-time span { color: #88a5ad; font-size: var(--text-xs); }
     .avatar {
       display: grid; width: 40px; height: 40px; place-items: center;
       border-radius: 50%; background: #1e4550; color: #68d9ed;
-      font-size: 12px; font-weight: 700; letter-spacing: 0.02em;
+      font-size: var(--text-sm); font-weight: 700; letter-spacing: 0.02em;
     }
     .row-body { display: grid; min-width: 0; gap: 2px; }
-    .row-name { overflow: hidden; color: #eaf8fa; font-size: 15px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
-    .row-service { overflow: hidden; color: #91aeb5; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+    .row-name { overflow: hidden; color: #eaf8fa; font-size: var(--text-lg); font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+    .row-service { overflow: hidden; color: #91aeb5; font-size: var(--text-sm); text-overflow: ellipsis; white-space: nowrap; }
     .row-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-top: 7px; }
-    .status-pill { border-radius: 999px; padding: 4px 10px; font-size: 10px; font-weight: 700; white-space: nowrap; }
+    .status-pill { border-radius: var(--radius-pill); padding: 4px 10px; font-size: var(--text-2xs); font-weight: 700; white-space: nowrap; }
     .status-confirmed { background: #153b36; color: #6fe0b7; }
     .status-pending { background: #41351d; color: #f3cb73; }
     .status-completed { background: #263451; color: #9abaff; }
     .status-cancelled { background: #45262b; color: #ff9da5; }
-    .origin-badge { color: #9cb5bb; font-size: 11px; }
-    .row-phone { color: #79deeb; font-size: 11px; font-weight: 600; text-decoration: none; white-space: nowrap; }
+    .status-no-show { background: #3d2a33; color: #ffb3c2; }
+    .origin-badge { color: #9cb5bb; font-size: var(--text-xs); }
+    .row-phone { color: #79deeb; font-size: var(--text-xs); font-weight: 600; text-decoration: none; white-space: nowrap; }
     .row-phone:hover { text-decoration: underline; }
+    .row-email { max-width: 190px; overflow: hidden; text-overflow: ellipsis; }
     .row-end { display: grid; justify-items: end; gap: 8px; }
-    .row-price { color: #eaf8fa; font-size: 15px; font-weight: 700; white-space: nowrap; }
-    .row-action { min-height: 34px; padding: 0 15px; font-size: 12px; }
+    .row-price { color: #eaf8fa; font-size: var(--text-lg); font-weight: 700; white-space: nowrap; }
+    .row-actions { display: flex; max-width: 300px; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+    .row-action { min-height: 34px; padding: 0 13px; font-size: var(--text-xs); white-space: nowrap; }
+    .row-action--danger { border-color: #8d4c55; color: #ffb5bc; }
+    .row-action--danger:hover { border-color: #ff8b95; color: #ffd7da; }
+    .row-action--muted { color: #a9c4cb; }
     @media (max-width: 640px) {
       .appointment-row { grid-template-columns: 60px 34px minmax(0, 1fr); column-gap: 10px; padding: 13px 2px; }
-      .row-time strong { font-size: 17px; }
-      .avatar { width: 34px; height: 34px; font-size: 11px; }
-      .row-name { font-size: 14px; }
+      .row-time strong { font-size: var(--text-lg); }
+      .avatar { width: 34px; height: 34px; font-size: var(--text-xs); }
+      .row-name { font-size: var(--text-md); }
       .row-end { grid-column: 2 / -1; grid-row: 2; justify-items: start; margin-top: 10px; }
+      .row-actions { justify-content: flex-start; }
     }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -93,6 +108,12 @@ export class AppointmentRow {
   readonly appointment = input.required<Appointment>();
   readonly flagged = input(false);
   readonly statusChange = output<AppointmentStatus>();
+  readonly reschedule = output<void>();
+
+  protected canManage(): boolean {
+    const status = this.appointment().status;
+    return status === 'Pendiente' || status === 'Confirmada';
+  }
 
   protected initials(): string {
     return this.appointment().client.split(' ').slice(0, 2).map((part) => part[0]).join('').toUpperCase();

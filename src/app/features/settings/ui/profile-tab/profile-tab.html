@@ -40,8 +40,8 @@
     @if (!editing()) {
       <div class="settings-profile-header">
         <span class="settings-profile-avatar">
-          @if (business()?.logoUrl) {
-            <img [src]="business()?.logoUrl" alt="Logo del negocio"/>
+          @if (profileLogo(); as logo) {
+            <img [src]="logo" alt="Logo del negocio" (error)="onLogoError()"/>
           } @else {
             {{ businessInitial() }}
           }

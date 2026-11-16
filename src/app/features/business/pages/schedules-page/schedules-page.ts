@@ -1,12 +1,14 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { BusinessControllerService } from '../../../../core/api/openapi/api/businessController.service';
 import { EmployeeControllerService } from '../../../../core/api/openapi/api/employeeController.service';
+import { ServiceControllerService } from '../../../../core/api/openapi/api/serviceController.service';
 import type { EmployeeResponse } from '../../../../core/api/openapi/model/employeeResponse';
 import type { OpeningHourRequest } from '../../../../core/api/openapi/model/openingHourRequest';
 import type { OpeningHourResponse } from '../../../../core/api/openapi/model/openingHourResponse';
 import type { ScheduleBlockResponse } from '../../../../core/api/openapi/model/scheduleBlockResponse';
+import type { ServiceResponse } from '../../../../core/api/openapi/model/serviceResponse';
 import type { WeeklyScheduleRequest } from '../../../../core/api/openapi/model/weeklyScheduleRequest';
 import type { WeeklyScheduleResponse } from '../../../../core/api/openapi/model/weeklyScheduleResponse';
 import { Permissions } from '../../../../core/auth/permissions';
@@ -29,6 +31,7 @@ const CLOSED = '00:00';
 export class SchedulesPage implements OnInit {
   private readonly businessApi = inject(BusinessControllerService);
   private readonly employeeApi = inject(EmployeeControllerService);
+  private readonly servicesApi = inject(ServiceControllerService);
   private readonly permissions = inject(Permissions);
   private readonly datetime = inject(DatetimeService);
 
@@ -52,6 +55,82 @@ export class SchedulesPage implements OnInit {
   protected readonly blockReason = signal('');
   protected readonly blockBusy = signal(false);
   protected readonly blockError = signal<string | null>(null);
+
+  // ── Servicios vinculados al profesional ─────────────────────────────────
+  protected readonly activeTab = signal<'weekly' | 'blocks' | 'services'>('weekly');
+  protected readonly catalog = signal<readonly ServiceResponse[]>([]);
+  protected readonly catalogLoaded = signal(false);
+  protected readonly assignedServiceIds = signal<readonly number[]>([]);
+  protected readonly selectedServiceIds = signal<readonly number[]>([]);
+  protected readonly servicesBusy = signal(false);
+  protected readonly servicesError = signal<string | null>(null);
+
+  // ── Búsqueda reactiva ───────────────────────────────────────────────────
+  protected readonly employeeQuery = signal('');
+  protected readonly serviceQuery = signal('');
+
+  // ── Validación en vivo del formulario de bloqueos ───────────────────────
+  protected readonly blockErrors = computed<string[]>(() => {
+    const errors: string[] = [];
+    const date = this.blockDate();
+    const start = this.blockStart();
+    const end = this.blockEnd();
+    if (!date) errors.push('Selecciona la fecha del bloqueo.');
+    if (!start || !end) {
+      errors.push('Indica la hora de inicio y de fin.');
+    } else if (start >= end) {
+      errors.push('La hora de inicio debe ser anterior a la de fin.');
+    }
+    if (date && date < this.datetime.now().format('YYYY-MM-DD')) {
+      errors.push('La fecha no puede ser anterior a hoy.');
+    }
+    return errors;
+  });
+  protected readonly blockDateInvalid = computed(() => {
+    const date = this.blockDate();
+    return !date || date < this.datetime.now().format('YYYY-MM-DD');
+  });
+  protected readonly blockTimeInvalid = computed(() => {
+    const start = this.blockStart();
+    const end = this.blockEnd();
+    return !start || !end || start >= end;
+  });
+
+  protected readonly filteredEmployees = computed(() => {
+    const query = this.employeeQuery().trim().toLowerCase();
+    const list = this.employees();
+    if (!query) return list;
+    return list.filter((employee) =>
+      `${employee.name ?? ''} ${employee.lastName ?? ''} ${employee.email ?? ''}`.toLowerCase().includes(query));
+  });
+
+  protected readonly filteredServices = computed(() => {
+    const query = this.serviceQuery().trim().toLowerCase();
+    const list = this.catalog().filter((service) => service.active !== false && service.id != null);
+    if (!query) return list;
+    return list.filter((service) => (service.name ?? '').toLowerCase().includes(query));
+  });
+
+  protected readonly pendingServiceChanges = computed(() => {
+    const wanted = new Set(this.selectedServiceIds());
+    const current = new Set(this.assignedServiceIds());
+    return {
+      adds: [...wanted].filter((id) => !current.has(id)),
+      removes: [...current].filter((id) => !wanted.has(id)),
+    };
+  });
+  protected readonly hasServiceChanges = computed(() => {
+    const { adds, removes } = this.pendingServiceChanges();
+    return adds.length > 0 || removes.length > 0;
+  });
+  protected readonly pendingChangesLabel = computed(() => {
+    const { adds, removes } = this.pendingServiceChanges();
+    if (adds.length === 0 && removes.length === 0) return 'Todo sincronizado con el servidor.';
+    const parts: string[] = [];
+    if (adds.length > 0) parts.push(`${adds.length} por asignar`);
+    if (removes.length > 0) parts.push(`${removes.length} por quitar`);
+    return `${parts.join(' · ')} — cambios sin guardar`;
+  });
 
   ngOnInit(): void { void this.load(); }
 
@@ -103,7 +182,7 @@ export class SchedulesPage implements OnInit {
   }
 
   protected async selectEmployee(id: number): Promise<void> {
-    this.error.set(null); this.notice.set(null); this.busy.set(true);
+    this.error.set(null); this.notice.set(null); this.servicesError.set(null); this.busy.set(true);
     try { await this.loadEmployeeData(id); }
     catch { this.error.set('No se pudo cargar la jornada guardada del profesional.'); }
     finally { this.busy.set(false); }
@@ -144,14 +223,10 @@ export class SchedulesPage implements OnInit {
 
   protected async createBlock(): Promise<void> {
     const id = this.employeeId();
-    if (id == null || !this.canEditSchedule()) return;
+    if (id == null || !this.canEditSchedule() || this.blockErrors().length > 0) return;
     const date = this.blockDate();
     const start = this.blockStart();
     const end = this.blockEnd();
-    if (!date || !start || !end || start >= end) {
-      this.blockError.set('Indica una fecha y un rango de horas válido (el inicio debe ser menor que el fin).');
-      return;
-    }
     this.blockBusy.set(true); this.blockError.set(null); this.notice.set(null);
     try {
       await firstValueFrom(this.employeeApi.createScheduleBlock(id, {
@@ -184,6 +259,60 @@ export class SchedulesPage implements OnInit {
     }
   }
 
+  // ── Pestañas y servicios del profesional ────────────────────────────────
+  protected openTab(tab: 'weekly' | 'blocks' | 'services'): void {
+    this.activeTab.set(tab);
+    if (tab === 'services' && !this.catalogLoaded() && !this.servicesBusy()) {
+      void this.loadCatalog();
+    }
+  }
+
+  protected isSelected(serviceId?: number): boolean {
+    return serviceId != null && this.selectedServiceIds().includes(serviceId);
+  }
+
+  protected toggleService(serviceId: number | undefined, checked: boolean): void {
+    if (serviceId == null) return;
+    this.selectedServiceIds.update((ids) =>
+      checked ? [...ids, serviceId] : ids.filter((id) => id !== serviceId));
+  }
+
+  protected async saveServices(): Promise<void> {
+    const id = this.employeeId();
+    if (id == null || !this.permissions.isOwner()) return;
+    const { adds, removes } = this.pendingServiceChanges();
+    if (adds.length === 0 && removes.length === 0) return;
+    this.servicesBusy.set(true); this.servicesError.set(null); this.notice.set(null);
+    try {
+      // El backend agrega los ids enviados y conserva los existentes; las
+      // bajas van una a una por el endpoint dedicado.
+      if (adds.length > 0) await firstValueFrom(this.employeeApi.updateEmployeeServices(id, { serviceIds: adds }));
+      for (const serviceId of removes) await firstValueFrom(this.employeeApi.removeServiceFromEmployee(id, serviceId));
+      const services = (await firstValueFrom(this.employeeApi.listEmployeeServices(id))) ?? [];
+      this.setAssignedServices(services);
+      this.notice.set('Servicios del profesional actualizados.');
+    } catch (error) {
+      this.servicesError.set(apiErrorMessage(error) || 'No se pudieron guardar los servicios.');
+    } finally {
+      this.servicesBusy.set(false);
+    }
+  }
+
+  protected serviceMeta(service: ServiceResponse): string {
+    const parts: string[] = [];
+    if (service.durationMinutes != null) parts.push(`${service.durationMinutes} min`);
+    if (service.price != null) {
+      parts.push(new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(service.price));
+    }
+    return parts.join(' · ') || '—';
+  }
+
+  protected employeeInitials(employee: EmployeeResponse): string {
+    const first = employee.name?.trim()[0] ?? '';
+    const last = employee.lastName?.trim()[0] ?? '';
+    return (first + last).toUpperCase() || 'E';
+  }
+
   protected blockLabel(value?: string): string {
     if (!value) return '—';
     const date = new Date(value);
@@ -192,9 +321,10 @@ export class SchedulesPage implements OnInit {
   }
 
   private async loadEmployeeData(id: number): Promise<void> {
-    const [schedules, blocks] = await Promise.all([
+    const [schedules, blocks, services] = await Promise.all([
       firstValueFrom(this.employeeApi.listWeeklySchedules(id)),
       firstValueFrom(this.employeeApi.listScheduleBlocks(id)),
+      firstValueFrom(this.employeeApi.listEmployeeServices(id)),
     ]);
     this.employeeId.set(id);
     this.existing.set(schedules ?? []);
@@ -203,13 +333,40 @@ export class SchedulesPage implements OnInit {
       const saved = (schedules ?? []).find((item) => item.dayOfWeek === dayOfWeek);
       return { dayOfWeek, startTime: saved?.startTime ?? CLOSED, endTime: saved?.endTime ?? CLOSED };
     }));
-    this.blocks.set(blocks ?? []);
+    this.blocks.set(this.sortBlocks(blocks ?? []));
+    this.setAssignedServices(services ?? []);
     const employee = this.employees().find((item) => item.employeeId === id);
     this.canEditSchedule.set(this.permissions.isOwner() || employee?.selfManagedSchedule === true);
   }
 
   private async loadBlocks(id: number): Promise<void> {
-    this.blocks.set((await firstValueFrom(this.employeeApi.listScheduleBlocks(id))) ?? []);
+    const blocks = (await firstValueFrom(this.employeeApi.listScheduleBlocks(id))) ?? [];
+    this.blocks.set(this.sortBlocks(blocks));
+  }
+
+  /** Bloqueos ordenados por fecha de inicio ascendente (los próximos primero). */
+  private sortBlocks(blocks: readonly ScheduleBlockResponse[]): readonly ScheduleBlockResponse[] {
+    return blocks.slice().sort((left, right) => (left.startAt ?? '').localeCompare(right.startAt ?? ''));
+  }
+
+  private setAssignedServices(services: readonly ServiceResponse[]): void {
+    const ids = services.map((service) => service.id).filter((id): id is number => id != null);
+    this.assignedServiceIds.set(ids);
+    this.selectedServiceIds.set([...ids]);
+  }
+
+  /** Catálogo del negocio para la pestaña de servicios (se pide una sola vez). */
+  private async loadCatalog(): Promise<void> {
+    this.servicesBusy.set(true);
+    this.servicesError.set(null);
+    try {
+      this.catalog.set((await firstValueFrom(this.servicesApi.listServices())) ?? []);
+      this.catalogLoaded.set(true);
+    } catch {
+      this.servicesError.set('No se pudo cargar el catálogo de servicios. Vuelve a abrir la pestaña para reintentar.');
+    } finally {
+      this.servicesBusy.set(false);
+    }
   }
 
   private mapOpeningHours(hours: readonly OpeningHourResponse[]): OpeningHourRequest[] {

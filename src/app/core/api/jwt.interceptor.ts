@@ -1,7 +1,8 @@
 import { HttpErrorResponse, HttpContextToken, HttpInterceptorFn } from '@angular/common/http';
-import { inject } from '@angular/core';
+import { inject, Injector } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
+import { AuthStore } from '../auth/auth.store';
 import { TokenStorage } from '../auth/token.storage';
 import { environment } from '../../../environments/environment';
 
@@ -31,10 +32,21 @@ function isApiRequest(url: string): boolean {
   }
 }
 
-/** Adjunta el JWT al API propio y cierra una sesión que el servidor rechaza con 401. */
+/**
+ * Adjunta el JWT al API propio y cierra una sesión que el servidor rechaza con 401.
+ *
+ * El cierre debe tocar TAMBIÉN las señales en memoria de AuthStore: si solo se borra
+ * localStorage, los guards siguen viendo `isAuthenticated() === true` y rebotan entre
+ * /iniciar-sesion y /calendario repitiendo los 401 en un bucle sin fin.
+ *
+ * AuthStore se resuelve con el Injector en el momento del error (no con inject directo)
+ * porque inyectarlo al construir el interceptor crearía el ciclo
+ * AuthStore → AuthControllerService → HttpClient → interceptores.
+ */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const storage = inject(TokenStorage);
   const router = inject(Router);
+  const injector = inject(Injector);
   const token = storage.getToken();
 
   const authed =
@@ -45,9 +57,14 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(authed).pipe(
     catchError((error: unknown) => {
       if (error instanceof HttpErrorResponse && error.status === 401 && token && isApiRequest(req.url)) {
-        storage.clear();
-        if (!router.url.startsWith('/iniciar-sesion')) {
-          router.navigate(['/iniciar-sesion']);
+        const auth = injector.get(AuthStore);
+        // Con varias peticiones en vuelo solo la primera necesita cerrar y navegar;
+        // el resto ya ve la sesión apagada y solo propaga el error.
+        if (auth.isAuthenticated()) {
+          auth.logout();
+          if (!router.url.startsWith('/iniciar-sesion')) {
+            void router.navigate(['/iniciar-sesion'], { replaceUrl: true });
+          }
         }
         return throwError(() => new SessionExpiredError());
       }

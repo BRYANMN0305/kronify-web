@@ -25,6 +25,44 @@
         "Noto Sans", "Liberation Sans", Arial, sans-serif;
     --font-display: var(--font-ui);
 
+    /* ---- Escala tipográfica ----
+       Única escala de la app: micro (badges/eyebrows), meta, hints,
+       cuerpo, títulos de tarjeta/panel y cifras. */
+    --text-2xs: 0.65rem;   /* ~10px  — badges, eyebrows, micro etiquetas */
+    --text-xs: 0.7rem;     /* ~11px  — meta pequeña */
+    --text-sm: 0.75rem;    /* 12px   — hints, meta, pastillas de estado */
+    --text-base: 0.8rem;   /* ~13px  — texto secundario, labels */
+    --text-md: 0.875rem;   /* 14px   — cuerpo, datos, botones */
+    --text-lg: 1rem;       /* 16px   — títulos de tarjeta, subtítulos */
+    --text-xl: 1.125rem;   /* 18px   — títulos enfatizados */
+    --text-2xl: 1.3125rem; /* 21px   — títulos de panel y diálogo (h2) */
+    --text-3xl: 1.5rem;    /* 24px   — cifras y números destacados */
+    --text-h1: clamp(28px, 3vw, 38px); /* títulos de página */
+
+    /* ---- Radios ----
+       Jerarquía única: controles pequeños, alertas y UN SOLO radio
+       para tarjetas, paneles y diálogos en toda la app. */
+    --radius-xs: 6px;      /* micro decorativo */
+    --radius-sm: 8px;      /* chips, controles pequeños */
+    --radius-md: 10px;     /* botones, inputs, selects, alertas */
+    --radius-lg: 16px;     /* radio único: tarjetas, paneles, diálogos */
+    --radius-xl: var(--radius-lg); /* alias del radio de paneles */
+    --radius-pill: 999px;  /* pastillas y badges redondos */
+
+    /* ---- Anchos ----
+       Las páginas autenticadas van estiradas de borde a borde
+       (full-bleed); los diálogos comparten tres anchos. */
+    --modal-sm: 520px;
+    --modal-md: 640px;
+    --modal-lg: 820px;
+    --modal-xl: 940px;
+
+    /* ---- Capas ---- */
+    --z-modal: 1060;
+
+    /* ---- Foco ---- */
+    --focus-ring: 0 0 0 3px rgba(var(--color-primary-rgb), 0.25);
+
     /* ---- Fondo ---- */
     --color-bg: var(--acero-1);
     --color-bg-dark: var(--acero-1);
@@ -50,17 +88,17 @@
     --color-text-dim: var(--acero-3);
 
     /* ---- Botones ----
-       Un solo estilo para toda la app, tomado del botón
-       "Actualizar plan" del sidebar (acero + borde neón + glow). */
-    --btn-bg: #38515a;
-    --btn-bg-hover: #43626e;
-    --btn-border: var(--neon-dim);
+       Superficie acero mate, borde cian preciso y profundidad contenida.
+       El acento luminoso queda en el borde y los iconos, no en un glow. */
+    --btn-bg: #28535e;
+    --btn-bg-hover: #326470;
+    --btn-border: #26c9e7;
     --btn-text: #ffffff;
-    --btn-radius: 10px;
+    --btn-radius: var(--radius-md);
     --btn-padding: 0.6rem 1.25rem;
-    --btn-font-size: 0.85rem;
-    --btn-shadow: 0 0 10px rgba(var(--color-primary-rgb), 0.2);
-    --btn-shadow-hover: 0 0 18px rgba(var(--color-primary-rgb), 0.45);
+    --btn-font-size: var(--text-md);
+    --btn-shadow: 0 7px 16px rgba(0, 0, 0, 0.22);
+    --btn-shadow-hover: 0 9px 20px rgba(0, 0, 0, 0.3);
 
     /* ---- Estado ---- */
     --color-error: #ff6b6b;

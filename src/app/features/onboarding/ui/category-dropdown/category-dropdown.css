@@ -7,7 +7,7 @@
   align-items: center;
   background: #1a2632;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
@@ -33,7 +33,7 @@
   outline: none !important;
   box-shadow: none !important;
   color: var(--color-text);
-  font-size: 0.875rem;
+  font-size: var(--text-md);
   padding: 0.7rem 0.5rem 0.7rem 0.9rem;
 }
 
@@ -68,7 +68,7 @@
   right: 0;
   background: #1a2632;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   max-height: 220px;
   overflow-y: auto;
   z-index: 20;
@@ -96,9 +96,9 @@
   background: none;
   border: none;
   color: var(--color-text);
-  font-size: 0.825rem;
+  font-size: var(--text-base);
   padding: 0.5rem 0.75rem;
-  border-radius: 6px;
+  border-radius: var(--radius-xs);
   cursor: pointer;
   transition: background 0.15s;
 }
@@ -116,5 +116,5 @@
   padding: 0.75rem;
   text-align: center;
   color: var(--color-text-muted);
-  font-size: 0.75rem;
+  font-size: var(--text-sm);
 }

@@ -21,7 +21,7 @@
 
 .slug-prefix {
   color: var(--color-text-dim);
-  font-size: 0.875rem;
+  font-size: var(--text-md);
   padding: 0.7rem 0.6rem 0.7rem 0.9rem;
 }
 
@@ -69,7 +69,7 @@
   }
 
   .slug-prefix {
-    font-size: 0.78rem;
+    font-size: var(--text-base);
     padding: 0.55rem 0.9rem 0.25rem;
   }
 }

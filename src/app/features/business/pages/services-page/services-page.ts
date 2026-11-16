@@ -1,5 +1,5 @@
 import { CurrencyPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { ServiceControllerService } from '../../../../core/api/openapi/api/serviceController.service';
@@ -15,11 +15,22 @@ import type { ServiceResponse } from '../../../../core/api/openapi/model/service
 export class ServicesPage implements OnInit {
   private readonly api = inject(ServiceControllerService);
   protected readonly services = signal<readonly ServiceResponse[]>([]);
+  protected readonly search = signal('');
   protected readonly form = signal({ name: '', description: '', durationMinutes: 30, bufferMinutes: 0, price: 0 });
   protected readonly editingId = signal<number | null>(null);
+  protected readonly pendingDelete = signal<ServiceResponse | null>(null);
   protected readonly busy = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly notice = signal<string | null>(null);
+
+  /** Catálogo filtrado por nombre o descripción, igual que el buscador de la versión Vue. */
+  protected readonly filteredServices = computed(() => {
+    const term = this.search().trim().toLowerCase();
+    if (!term) return this.services();
+    return this.services().filter((service) =>
+      (service.name ?? '').toLowerCase().includes(term)
+      || (service.description ?? '').toLowerCase().includes(term));
+  });
 
   ngOnInit(): void { void this.load(); }
   protected async load(): Promise<void> {
@@ -65,5 +76,26 @@ export class ServicesPage implements OnInit {
       this.notice.set('Servicio eliminado.');
     } catch { this.error.set('No se pudo eliminar el servicio.'); }
     finally { this.busy.set(false); }
+  }
+
+  protected requestDelete(service: ServiceResponse): void {
+    if (service.id == null) return;
+    this.pendingDelete.set(service);
+  }
+
+  /** Cierra el modal solo cuando el clic cae fuera del panel. */
+  protected onDeleteBackdrop(event: MouseEvent): void {
+    if (event.target === event.currentTarget) this.closeDelete();
+  }
+
+  protected closeDelete(): void {
+    this.pendingDelete.set(null);
+  }
+
+  protected async confirmDelete(): Promise<void> {
+    const target = this.pendingDelete();
+    if (target?.id == null) return;
+    await this.remove(target.id);
+    this.pendingDelete.set(null);
   }
 }
