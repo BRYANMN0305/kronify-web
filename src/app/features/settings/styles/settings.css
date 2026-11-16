@@ -1366,8 +1366,13 @@
 }
 
 .permission-toggle input:checked + .switch-slider {
-  background: var(--color-primary);
-  border-color: var(--neon-dim);
+  background: var(--neon-dim);
+  border-color: var(--neon);
+  box-shadow: 0 0 0 3px rgba(63, 225, 255, 0.12);
+}
+
+.permission-toggle:hover input:not(:disabled) + .switch-slider {
+  border-color: var(--neon);
 }
 
 .permission-toggle input:checked + .switch-slider::before {
