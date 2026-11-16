@@ -1,9 +1,8 @@
-import { ChangeDetectionStrategy, Component, effect, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { EmployeeResponse } from '../../../../core/api/openapi/model/employeeResponse';
 import { InvitationResponse } from '../../../../core/api/openapi/model/invitationResponse';
-import { ServiceResponse } from '../../../../core/api/openapi/model/serviceResponse';
 import { DateFmtPipe } from '../../../../shared/pipes/date-fmt.pipe';
 import { Icon } from '../../../../shared/ui/icon/icon';
 
@@ -14,7 +13,10 @@ const STATUS_META: Record<string, { readonly label: string; readonly cls: string
   EXPIRED: { label: 'Expirada', cls: 'status-expired' },
 };
 
-/** Gestión presentacional del equipo; el padre ejecuta las operaciones del API. */
+type MemberAction = 'deactivate' | 'delete';
+
+/** Gestión presentacional del equipo; el padre ejecuta las operaciones del API.
+ *  Los servicios de cada integrante se asignan en la vista Horarios (pestaña Servicios). */
 @Component({
   selector: 'app-team-tab',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -24,10 +26,6 @@ const STATUS_META: Record<string, { readonly label: string; readonly cls: string
 export class TeamTab {
   readonly invitations = input.required<readonly InvitationResponse[]>();
   readonly employees = input<readonly EmployeeResponse[]>([]);
-  readonly services = input<readonly ServiceResponse[]>([]);
-  readonly employeeServices = input<Readonly<Record<number, readonly ServiceResponse[]>>>({});
-  readonly expandedEmployeeId = input<number | null>(null);
-  readonly serviceBusyId = input<number | null>(null);
   readonly permissionBusyId = input<number | null>(null);
   readonly employeeError = input<string | null>(null);
   readonly sending = input(false);
@@ -38,14 +36,30 @@ export class TeamTab {
   readonly createInvitation = output<string>();
   readonly resendInvitation = output<number>();
   readonly cancelInvitation = output<number>();
-  readonly toggleEmployeePanel = output<number>();
-  readonly addEmployeeService = output<{ employeeId: number; serviceId: number }>();
-  readonly removeEmployeeService = output<{ employeeId: number; serviceId: number }>();
   readonly schedulePermission = output<{ employeeId: number; enabled: boolean }>();
+  readonly deactivateEmployee = output<number>();
+  readonly reactivateEmployee = output<number>();
+  readonly deleteEmployee = output<number>();
 
   protected readonly showForm = signal(false);
   protected readonly email = signal('');
   protected readonly emailError = signal('');
+  // Búsqueda reactiva de integrantes
+  protected readonly memberQuery = signal('');
+  // Confirmación en dos pasos para acciones destructivas
+  protected readonly confirming = signal<{ id: number; action: MemberAction } | null>(null);
+
+  protected readonly activeCount = computed(
+    () => this.employees().filter((employee) => employee.active !== false).length,
+  );
+
+  protected readonly filteredMembers = computed(() => {
+    const query = this.memberQuery().trim().toLowerCase();
+    const list = this.employees();
+    if (!query) return list;
+    return list.filter((employee) =>
+      `${employee.name ?? ''} ${employee.lastName ?? ''} ${employee.email ?? ''}`.toLowerCase().includes(query));
+  });
 
   constructor() {
     effect(() => {
@@ -53,6 +67,7 @@ export class TeamTab {
         this.email.set('');
         this.emailError.set('');
         this.showForm.set(false);
+        this.confirming.set(null);
       }
     });
   }
@@ -91,32 +106,35 @@ export class TeamTab {
     return (first + last).toUpperCase() || 'E';
   }
 
-  protected assignedServices(employeeId?: number): readonly ServiceResponse[] {
-    if (employeeId == null) return [];
-    return this.employeeServices()[employeeId] ?? [];
-  }
-
-  protected isAssigned(employeeId: number | undefined, serviceId: number | undefined): boolean {
-    if (employeeId == null || serviceId == null) return false;
-    return this.assignedServices(employeeId).some((service) => service.id === serviceId);
-  }
-
-  protected servicesLoaded(employeeId?: number): boolean {
-    return employeeId != null && this.employeeServices()[employeeId] !== undefined;
-  }
-
-  protected togglePanel(employeeId?: number): void {
-    if (employeeId != null) this.toggleEmployeePanel.emit(employeeId);
-  }
-
-  protected toggleService(employeeId: number | undefined, serviceId: number | undefined, checked: boolean): void {
-    if (employeeId == null || serviceId == null) return;
-    if (checked) this.addEmployeeService.emit({ employeeId, serviceId });
-    else this.removeEmployeeService.emit({ employeeId, serviceId });
+  protected isActive(employee: EmployeeResponse): boolean {
+    return employee.active !== false;
   }
 
   protected permissionChanged(employee: EmployeeResponse, checked: boolean): void {
     if (employee.employeeId == null || employee.owner) return;
     this.schedulePermission.emit({ employeeId: employee.employeeId, enabled: checked });
+  }
+
+  /** Primer clic arma la confirmación; el segundo emite la acción al padre. */
+  protected requestConfirm(employee: EmployeeResponse, action: MemberAction): void {
+    if (employee.employeeId == null) return;
+    const current = this.confirming();
+    if (current?.id === employee.employeeId && current.action === action) {
+      this.confirming.set(null);
+      if (action === 'deactivate') this.deactivateEmployee.emit(employee.employeeId);
+      else this.deleteEmployee.emit(employee.employeeId);
+      return;
+    }
+    this.confirming.set({ id: employee.employeeId, action });
+  }
+
+  protected cancelConfirm(): void {
+    this.confirming.set(null);
+  }
+
+  protected isConfirming(employeeId: number | undefined, action: MemberAction): boolean {
+    if (employeeId == null) return false;
+    const current = this.confirming();
+    return current?.id === employeeId && current.action === action;
   }
 }

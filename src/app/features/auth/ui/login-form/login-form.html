@@ -29,7 +29,7 @@
       <div class="invalid-feedback">{{ errors().password }}</div>
     </div>
 
-    <button type="submit" class="btn btn-primary w-100" [disabled]="loading()">
+    <button type="submit" class="btn btn-primary w-100 btn-reference" [disabled]="loading()">
       @if (loading()) {
         <span class="spinner-border spinner-border-sm me-2" role="status"></span>
       }

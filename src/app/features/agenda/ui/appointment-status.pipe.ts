@@ -10,6 +10,7 @@ export class AppointmentStatusClassPipe implements PipeTransform {
       case 'Pendiente': return 'status-pending';
       case 'Completada': return 'status-completed';
       case 'Cancelada': return 'status-cancelled';
+      case 'No asistió': return 'status-no-show';
     }
   }
 }

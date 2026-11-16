@@ -1,7 +1,7 @@
-<div class="create-dialog-backdrop" (click)="cancel()">
-  <section class="create-appointment-page" role="dialog" aria-modal="true" aria-labelledby="create-appointment-title" (click)="$event.stopPropagation()">
+<div class="create-dialog-backdrop" (click)="onBackdropClick($event)" (keydown.escape)="cancel()" tabindex="-1">
+  <section class="create-appointment-page" role="dialog" aria-modal="true" aria-labelledby="create-appointment-title">
     <header class="create-dialog-heading">
-      <div><span class="create-eyebrow">AGENDA</span><h1 id="create-appointment-title">Nueva cita</h1><p>Elige un horario disponible y agrega los datos del cliente.</p></div>
+      <div><h1 id="create-appointment-title">Nueva cita</h1><p>Elige un horario disponible y agrega los datos del cliente.</p></div>
       <button class="dialog-close" type="button" aria-label="Cerrar" (click)="cancel()">×</button>
     </header>
 
@@ -24,7 +24,7 @@
       </div>
 
       <section class="appointment-picker" aria-label="Selecciona la fecha y hora de la cita">
-        <div class="picker-title"><div><span class="create-eyebrow">DISPONIBILIDAD</span><h2>Fecha y hora</h2></div><p>Los horarios se consultan en tiempo real.</p></div>
+        <div class="picker-title"><div><h2>Fecha y hora</h2></div><p>Los horarios se consultan en tiempo real.</p></div>
         <div class="picker-layout">
           <section class="date-picker-card" aria-label="Calendario de fechas">
             <div class="calendar-heading"><button type="button" aria-label="Mes anterior" [disabled]="!canGoPrevious()" (click)="previousMonth()">‹</button><h3>{{ monthLabel() | titlecase }}</h3><button type="button" aria-label="Mes siguiente" (click)="nextMonth()">›</button></div>

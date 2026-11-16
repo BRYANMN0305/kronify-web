@@ -1,0 +1,42 @@
+﻿<section class="client-calendar-page">
+  <header class="client-calendar-head">
+    <div>
+      <h1>Calendario</h1>
+    </div>
+    <div class="month-switcher">
+      <button class="month-arrow" type="button" aria-label="Mes anterior" (click)="previousMonth()">‹</button>
+      <h2>{{ monthLabel() | titlecase }}</h2>
+      <button class="month-arrow" type="button" aria-label="Mes siguiente" (click)="nextMonth()">›</button>
+    </div>
+  </header>
+
+  @if (store.loading()) {
+    <p class="client-calendar-state">Cargando tus citas…</p>
+  } @else if (store.error()) {
+    <p class="client-calendar-state error" role="alert">{{ store.error() }}</p>
+  } @else if (!monthAppointments().length) {
+    <p class="client-calendar-note">No tienes citas agendadas este mes. Cuando reserves, aparecerán en tu calendario.</p>
+  }
+
+  <app-calendar-grid
+    [weeks]="calendarWeeks()"
+    [selectedKey]="selectedDayKey()"
+    [labelMode]="'service'"
+    (daySelected)="selectDay($event)" />
+</section>
+
+@if (dayDialogOpen()) {
+  <app-client-day-dialog
+    [date]="selectedDate().toDate()"
+    [appointments]="dayAppointments()"
+    (closed)="closeDayDialog()"
+    (dayShift)="shiftDay($event)"
+    (selected)="openDetail($event)" />
+}
+
+@if (selectedAppointment(); as appointment) {
+  <app-client-appointment-detail
+    [appointment]="appointment"
+    (closed)="closeDetail()"
+    (updated)="detailUpdated($event)" />
+}

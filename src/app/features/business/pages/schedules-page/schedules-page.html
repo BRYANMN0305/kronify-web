@@ -1,6 +1,5 @@
 <main class="schedules-page">
   <header class="page-heading">
-    <span class="eyebrow">NEGOCIO · DISPONIBILIDAD</span>
     <h1>Horarios</h1>
     <p>{{ isOwner() ? 'Organiza cuándo atiende tu negocio, define la jornada de cada profesional y bloquea horas puntuales.' : 'Consulta tu jornada y bloquea los horarios en los que no estarás disponible.' }}</p>
   </header>
@@ -13,7 +12,6 @@
       <div class="section-heading">
         <span class="section-icon">◷</span>
         <div>
-          <span class="section-kicker">HORARIO PÚBLICO</span>
           <h2>Atención del negocio</h2>
           <p>Estos son los horarios que verán tus clientes.</p>
         </div>
@@ -49,22 +47,30 @@
     <div class="section-heading">
       <span class="section-icon">♙</span>
       <div>
-        <span class="section-kicker">EQUIPO</span>
-        <h2>Jornada por profesional</h2>
-        <p>{{ isOwner() ? 'Personaliza los días y horas de cada integrante.' : 'Estos son los días y horas en los que atiendes.' }}</p>
+        <h2>Disponibilidad por profesional</h2>
+        <p>{{ isOwner() ? 'Jornada semanal, bloqueos puntuales y servicios de cada integrante.' : 'Estos son los días y horas en los que atiendes.' }}</p>
       </div>
     </div>
 
     @if (employees().length) {
       @if (isOwner()) {
-        <label class="employee-select">
-          <span>Profesional seleccionado</span>
-          <select [ngModel]="employeeId()" (ngModelChange)="selectEmployee(+$event)" name="employee">
-            @for (employee of employees(); track employee.employeeId) {
-              <option [value]="employee.employeeId">{{ employee.name }} {{ employee.lastName }}</option>
+        <div class="employee-picker">
+          <label class="picker-label" for="employee-search">Profesional</label>
+          <input id="employee-search" class="search-input" type="search" name="employeeSearch" placeholder="Buscar por nombre o correo…" [ngModel]="employeeQuery()" (ngModelChange)="employeeQuery.set($event)">
+          <div class="employee-choices">
+            @for (employee of filteredEmployees(); track employee.employeeId) {
+              <button type="button" class="employee-choice" [class.is-selected]="employee.employeeId === employeeId()" (click)="selectEmployee(employee.employeeId!)">
+                <span class="choice-avatar" aria-hidden="true">{{ employeeInitials(employee) }}</span>
+                <span class="choice-copy">
+                  <strong>{{ employee.name }} {{ employee.lastName }}</strong>
+                  <small>{{ employee.email }}</small>
+                </span>
+              </button>
+            } @empty {
+              <div class="picker-empty">Sin resultados para “{{ employeeQuery() }}”.</div>
             }
-          </select>
-        </label>
+          </div>
+        </div>
       } @else {
         <div class="employee-self">
           <span class="day-mark">{{ (employees()[0]?.name ?? 'E').slice(0, 2).toUpperCase() }}</span>
@@ -82,109 +88,141 @@
       }
 
       @if (isOwner() || canEditSchedule()) {
-        <div class="days-list">
-        @for (day of days; track day; let i = $index) {
-          <div class="hours-row" [class.is-open]="employeeHours()[i].startTime < employeeHours()[i].endTime">
-            <div class="day-mark">{{ day.slice(0, 2) }}</div>
-            <strong>{{ day }}</strong>
-            <label class="toggle-label">
-              <input type="checkbox"
-                     [checked]="employeeHours()[i].startTime < employeeHours()[i].endTime"
-                     [disabled]="!canEditSchedule()"
-                     (change)="setEmployeeHour(i, 'startTime', $any($event.target).checked ? '09:00' : '00:00'); setEmployeeHour(i, 'endTime', $any($event.target).checked ? '18:00' : '00:00')">
-              <span></span>{{ employeeHours()[i].startTime < employeeHours()[i].endTime ? 'Trabaja' : 'Libre' }}
-            </label>
-            <div class="time-range">
-              <input type="time" [attr.aria-label]="'Inicio ' + day" [ngModel]="employeeHours()[i].startTime" (ngModelChange)="setEmployeeHour(i, 'startTime', $event)" [name]="'staff-start-'+i" [disabled]="!canEditSchedule()">
-              <span>—</span>
-              <input type="time" [attr.aria-label]="'Fin ' + day" [ngModel]="employeeHours()[i].endTime" (ngModelChange)="setEmployeeHour(i, 'endTime', $event)" [name]="'staff-end-'+i" [disabled]="!canEditSchedule()">
-            </div>
+        <div class="detail-tabs" role="tablist" aria-label="Configuración del profesional">
+          <button type="button" class="detail-tab" [class.is-active]="activeTab() === 'weekly'" (click)="openTab('weekly')">Jornada semanal</button>
+          <button type="button" class="detail-tab" [class.is-active]="activeTab() === 'blocks'" (click)="openTab('blocks')">Bloqueos <span class="tab-count">{{ blocks().length }}</span></button>
+          @if (isOwner()) {
+            <button type="button" class="detail-tab" [class.is-active]="activeTab() === 'services'" (click)="openTab('services')">Servicios <span class="tab-count">{{ assignedServiceIds().length }}</span></button>
+          }
+        </div>
+
+        @if (employeeId() === null) {
+          <div class="empty-state">
+            <span>♙</span>
+            <strong>Selecciona un profesional</strong>
+            <p>Elige a alguien del equipo para editar su jornada, sus bloqueos o sus servicios.</p>
           </div>
+        } @else {
+          @switch (activeTab()) {
+            @case ('weekly') {
+              <div class="days-list">
+                @for (day of days; track day; let i = $index) {
+                  <div class="hours-row" [class.is-open]="employeeHours()[i].startTime < employeeHours()[i].endTime">
+                    <div class="day-mark">{{ day.slice(0, 2) }}</div>
+                    <strong>{{ day }}</strong>
+                    <label class="toggle-label">
+                      <input type="checkbox"
+                             [checked]="employeeHours()[i].startTime < employeeHours()[i].endTime"
+                             [disabled]="!canEditSchedule()"
+                             (change)="setEmployeeHour(i, 'startTime', $any($event.target).checked ? '09:00' : '00:00'); setEmployeeHour(i, 'endTime', $any($event.target).checked ? '18:00' : '00:00')">
+                      <span></span>{{ employeeHours()[i].startTime < employeeHours()[i].endTime ? 'Trabaja' : 'Libre' }}
+                    </label>
+                    <div class="time-range">
+                      <input type="time" [attr.aria-label]="'Inicio ' + day" [ngModel]="employeeHours()[i].startTime" (ngModelChange)="setEmployeeHour(i, 'startTime', $event)" [name]="'staff-start-'+i" [disabled]="!canEditSchedule()">
+                      <span>—</span>
+                      <input type="time" [attr.aria-label]="'Fin ' + day" [ngModel]="employeeHours()[i].endTime" (ngModelChange)="setEmployeeHour(i, 'endTime', $event)" [name]="'staff-end-'+i" [disabled]="!canEditSchedule()">
+                    </div>
+                  </div>
+                }
+              </div>
+              <div class="card-footer">
+                <span>Configura la disponibilidad individual.</span>
+                <button class="primary btn-reference" type="button" [disabled]="busy() || !canEditSchedule()" (click)="saveEmployeeHours()">Guardar jornada <span>→</span></button>
+              </div>
+            }
+            @case ('blocks') {
+              <p class="tab-hint">La jornada semanal define el horario fijo; los bloqueos tapan ausencias puntuales (almuerzos, citas, vacaciones). Las horas bloqueadas no se ofrecen en la reserva pública.</p>
+              <div class="block-form">
+                <label>
+                  <span>Fecha</span>
+                  <input type="date" [ngModel]="blockDate()" (ngModelChange)="setBlock('blockDate', $event)" name="blockDate" [class.is-invalid]="blockDateInvalid()" [disabled]="!canEditSchedule()">
+                </label>
+                <label>
+                  <span>Desde</span>
+                  <input type="time" [ngModel]="blockStart()" (ngModelChange)="setBlock('blockStart', $event)" name="blockStart" [class.is-invalid]="blockTimeInvalid()" [disabled]="!canEditSchedule()">
+                </label>
+                <label>
+                  <span>Hasta</span>
+                  <input type="time" [ngModel]="blockEnd()" (ngModelChange)="setBlock('blockEnd', $event)" name="blockEnd" [class.is-invalid]="blockTimeInvalid()" [disabled]="!canEditSchedule()">
+                </label>
+                <label class="block-reason">
+                  <span>Motivo (opcional)</span>
+                  <input type="text" maxlength="80" placeholder="Almuerzo, cita médica…" [ngModel]="blockReason()" (ngModelChange)="setBlock('blockReason', $event)" name="blockReason" [disabled]="!canEditSchedule()">
+                </label>
+                <button class="primary block-submit" type="button" [disabled]="blockBusy() || !canEditSchedule() || blockErrors().length > 0" (click)="createBlock()">
+                  {{ blockBusy() ? 'Guardando…' : 'Bloquear horario' }}
+                </button>
+              </div>
+
+              @if (blockErrors().length > 0) {
+                <ul class="form-errors">
+                  @for (message of blockErrors(); track message) { <li>{{ message }}</li> }
+                </ul>
+              }
+              @if (blockError()) { <p class="message error" role="alert">{{ blockError() }}</p> }
+
+              @if (blocks().length === 0) {
+                <div class="blocks-empty">Este profesional no tiene bloqueos registrados.</div>
+              } @else {
+                <div class="blocks-list">
+                  @for (block of blocks(); track block.scheduleBlockId) {
+                    <div class="block-row">
+                      <span class="block-mark">⊘</span>
+                      <div class="block-info">
+                        <strong>{{ blockLabel(block.startAt) }} — {{ blockLabel(block.endAt) }}</strong>
+                        <span>{{ block.reason || 'Sin motivo indicado' }}</span>
+                      </div>
+                      <button type="button" class="block-delete" [disabled]="blockBusy() || !canEditSchedule()" (click)="deleteBlock(block.scheduleBlockId)">
+                        Eliminar
+                      </button>
+                    </div>
+                  }
+                </div>
+              }
+              <div class="card-footer">
+                <span>Los bloqueos afectan solo a este profesional; el resto del equipo sigue disponible.</span>
+              </div>
+            }
+            @case ('services') {
+              <p class="tab-hint">Marca los servicios que este profesional puede realizar: la reserva pública solo ofrecerá esas combinaciones.</p>
+              <div class="services-toolbar">
+                <input class="search-input" type="search" name="serviceSearch" placeholder="Buscar servicio…" [ngModel]="serviceQuery()" (ngModelChange)="serviceQuery.set($event)">
+                <span class="services-count">{{ assignedServiceIds().length }} asignado(s)</span>
+              </div>
+
+              @if (servicesError()) { <p class="message error" role="alert">{{ servicesError() }}</p> }
+
+              @if (!catalogLoaded()) {
+                <div class="blocks-empty">@if (servicesBusy()) { Cargando catálogo de servicios… } @else { El catálogo de servicios no está disponible. }</div>
+                @if (!servicesBusy()) { <button class="primary" type="button" (click)="openTab('services')">Reintentar</button> }
+              } @else if (filteredServices().length === 0) {
+                <div class="blocks-empty">{{ serviceQuery() ? 'Sin servicios que coincidan con “' + serviceQuery() + '”.' : 'Aún no hay servicios creados. Créalos en la sección Servicios del menú para poder vincularlos.' }}</div>
+              } @else {
+                <div class="services-list">
+                  @for (service of filteredServices(); track service.id) {
+                    <label class="service-item" [class.is-checked]="isSelected(service.id)">
+                      <input type="checkbox" [checked]="isSelected(service.id)" [disabled]="servicesBusy()" (change)="toggleService(service.id, $any($event.target).checked)">
+                      <span class="service-name">{{ service.name }}</span>
+                      <span class="service-meta">{{ serviceMeta(service) }}</span>
+                    </label>
+                  }
+                </div>
+                <div class="save-bar">
+                  <span class="save-hint">{{ pendingChangesLabel() }}</span>
+                  <button class="primary" type="button" [disabled]="servicesBusy() || !hasServiceChanges()" (click)="saveServices()">
+                    {{ servicesBusy() ? 'Guardando…' : 'Guardar cambios' }} <span>→</span>
+                  </button>
+                </div>
+              }
+            }
+          }
         }
-      </div>
-      <div class="card-footer">
-        <span>Configura la disponibilidad individual.</span>
-        <button class="primary" type="button" [disabled]="busy() || !canEditSchedule()" (click)="saveEmployeeHours()">Guardar jornada <span>→</span></button>
-      </div>
       }
     } @else {
       <div class="empty-state">
         <span>♙</span>
         <strong>{{ busy() ? 'Cargando equipo…' : 'Aún no hay profesionales' }}</strong>
         <p>{{ busy() ? 'Estamos cargando la lista.' : 'Cuando agregues profesionales, podrás configurar sus jornadas aquí.' }}</p>
-      </div>
-    }
-  </section>
-
-  <section class="schedule-card blocks-card">
-    <div class="section-heading">
-      <span class="section-icon">⊘</span>
-      <div>
-        <span class="section-kicker">BLOQUEOS</span>
-        <h2>Horarios no disponibles</h2>
-        <p>Días libres, almuerzos, citas personales o cualquier hora que no quieras ofrecer.</p>
-      </div>
-      <span class="schedule-badge">{{ blocks().length }} bloqueo(s)</span>
-    </div>
-
-    @if (employeeId() == null) {
-      <div class="empty-state">
-        <span>⊘</span>
-        <strong>Selecciona un profesional</strong>
-        <p>Los bloqueos se crean sobre la agenda de un integrante del equipo.</p>
-      </div>
-    } @else if (!canEditSchedule()) {
-      <div class="empty-state">
-        <span>⊘</span>
-        <strong>Bloqueos no disponibles</strong>
-        <p>El dueño debe habilitar tu autogestión de horario para que puedas bloquear horas.</p>
-      </div>
-    } @else {
-      <div class="block-form">
-        <label>
-          <span>Fecha</span>
-          <input type="date" [ngModel]="blockDate()" (ngModelChange)="setBlock('blockDate', $event)" name="blockDate" [disabled]="!canEditSchedule()">
-        </label>
-        <label>
-          <span>Desde</span>
-          <input type="time" [ngModel]="blockStart()" (ngModelChange)="setBlock('blockStart', $event)" name="blockStart" [disabled]="!canEditSchedule()">
-        </label>
-        <label>
-          <span>Hasta</span>
-          <input type="time" [ngModel]="blockEnd()" (ngModelChange)="setBlock('blockEnd', $event)" name="blockEnd" [disabled]="!canEditSchedule()">
-        </label>
-        <label class="block-reason">
-          <span>Motivo (opcional)</span>
-          <input type="text" maxlength="80" placeholder="Almuerzo, cita médica…" [ngModel]="blockReason()" (ngModelChange)="setBlock('blockReason', $event)" name="blockReason" [disabled]="!canEditSchedule()">
-        </label>
-        <button class="primary block-submit" type="button" [disabled]="blockBusy() || !canEditSchedule()" (click)="createBlock()">
-          {{ blockBusy() ? 'Guardando…' : 'Bloquear horario' }}
-        </button>
-      </div>
-
-      @if (blockError()) { <p class="message error" role="alert">{{ blockError() }}</p> }
-
-      @if (blocks().length === 0) {
-        <div class="blocks-empty">Este profesional no tiene bloqueos registrados.</div>
-      } @else {
-        <div class="blocks-list">
-          @for (block of blocks(); track block.scheduleBlockId) {
-            <div class="block-row">
-              <span class="block-mark">⊘</span>
-              <div class="block-info">
-                <strong>{{ blockLabel(block.startAt) }} — {{ blockLabel(block.endAt) }}</strong>
-                <span>{{ block.reason || 'Sin motivo indicado' }}</span>
-              </div>
-              <button type="button" class="block-delete" [disabled]="blockBusy() || !canEditSchedule()" (click)="deleteBlock(block.scheduleBlockId)">
-                Eliminar
-              </button>
-            </div>
-          }
-        </div>
-      }
-
-      <div class="card-footer">
-        <span>Un bloqueo impide que la página pública ofrezca citas en ese rango.</span>
       </div>
     }
   </section>

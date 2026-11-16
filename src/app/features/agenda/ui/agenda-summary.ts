@@ -9,7 +9,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
       <article class="summary-card appointments-card">
         <span class="summary-icon appointments-icon" aria-hidden="true">◷</span>
         <div class="summary-copy">
-          <span class="summary-label">CITAS DEL MES</span>
+          <span class="summary-label">{{ periodLabel() }}</span>
           <strong>{{ total() }}</strong>
           <span class="summary-caption">Agendadas en el periodo visible</span>
         </div>
@@ -47,4 +47,6 @@ export class AgendaSummary {
   readonly confirmed = input.required<number>();
   readonly pending = input.required<number>();
   readonly completed = input.required<number>();
+  /** Etiqueta de la primera tarjeta; la página la ajusta según la vista (día/semana). */
+  readonly periodLabel = input<string>('CITAS DEL PERIODO');
 }

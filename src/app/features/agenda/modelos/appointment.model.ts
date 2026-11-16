@@ -1,9 +1,12 @@
 /** Estados que entiende la interfaz; el store adapta los valores técnicos del backend. */
-export type AppointmentStatus = 'Confirmada' | 'Pendiente' | 'Completada' | 'Cancelada';
+export type AppointmentStatus = 'Confirmada' | 'Pendiente' | 'Completada' | 'Cancelada' | 'No asistió';
 
 /** Cita preparada para mostrar en calendario, lista y métricas. */
 export interface Appointment {
   readonly id: number;
+  readonly businessId?: number;
+  readonly serviceId?: number;
+  readonly employeeId?: number;
   readonly client: string;
   readonly phone?: string;
   readonly email?: string;
@@ -13,6 +16,7 @@ export interface Appointment {
   readonly time: string;
   readonly endTime?: string;
   readonly dateKey?: string;
+  readonly startAt?: string;
   readonly durationMinutes: number;
   readonly price?: number;
   readonly status: AppointmentStatus;

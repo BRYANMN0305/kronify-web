@@ -22,8 +22,8 @@ const NUMBER = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 1 });
   selector: 'app-day-appointments-dialog', standalone: true,
   imports: [AppointmentRow],
   template: `
-    <div class="day-dialog-backdrop" (click)="closed.emit()">
-      <section class="day-dialog" role="dialog" aria-modal="true" aria-labelledby="day-dialog-title" (click)="$event.stopPropagation()">
+    <div class="day-dialog-backdrop" (click)="onBackdropClick($event)" (keydown.escape)="closed.emit()" tabindex="-1">
+      <section class="day-dialog" role="dialog" aria-modal="true" aria-labelledby="day-dialog-title">
         <header class="day-dialog-head">
           <div class="day-dialog-heading">
             <span class="day-dialog-eyebrow">Citas del día</span>
@@ -59,7 +59,8 @@ const NUMBER = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 1 });
             <app-appointment-row
               [appointment]="appointment"
               [flagged]="flaggedIds().has(appointment.id)"
-              (statusChange)="statusChange.emit({ id: appointment.id, status: $event })" />
+              (statusChange)="statusChange.emit({ id: appointment.id, status: $event })"
+              (reschedule)="reschedule.emit(appointment)" />
           } @empty {
             <p class="day-dialog-empty">No hay citas para este día.</p>
           }
@@ -74,42 +75,42 @@ const NUMBER = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 1 });
   `,
   styles: [`
     :host { font-family: var(--font-ui); }
-    .day-dialog-backdrop { position: fixed; inset: 0; z-index: 1040; display: grid; place-items: center; background: #061115cc; padding: 18px; backdrop-filter: blur(3px); }
-    .day-dialog { display: flex; width: min(100%, 820px); max-height: 90vh; flex-direction: column; overflow: hidden; border: 1px solid #31535d; border-radius: 18px; background: #10252c; color: #eff9fb; box-shadow: 0 24px 80px #0008; animation: day-dialog-in 0.2s ease both; }
+    .day-dialog-backdrop { position: fixed; inset: 0; z-index: var(--z-modal); display: grid; place-items: center; background: #061115d1; padding: 18px; backdrop-filter: blur(3px); overscroll-behavior: contain; }
+    .day-dialog { display: flex; width: min(100%, var(--modal-lg)); max-height: 90vh; flex-direction: column; overflow: hidden; border: 1px solid #31535d; border-radius: var(--radius-xl); background: #10252c; color: #eff9fb; box-shadow: 0 24px 80px #0008; animation: day-dialog-in 0.2s ease both; }
     @keyframes day-dialog-in { from { opacity: 0; transform: translateY(10px) scale(0.985); } to { opacity: 1; transform: none; } }
 
     .day-dialog-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; border-bottom: 1px solid #23414b; padding: 22px 24px; }
     .day-dialog-heading { display: grid; gap: 3px; min-width: 0; }
-    .day-dialog-eyebrow { color: #39d6f1; font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
-    .day-dialog h2 { margin: 2px 0 0; color: #fff; font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
-    .day-dialog-meta { margin: 0; color: #9cb5bb; font-size: 12px; }
+    .day-dialog-eyebrow { color: #39d6f1; font-size: var(--text-2xs); font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+    .day-dialog h2 { margin: 2px 0 0; color: #fff; font-size: var(--text-2xl); font-weight: 700; letter-spacing: -0.01em; }
+    .day-dialog-meta { margin: 0; color: #9cb5bb; font-size: var(--text-sm); }
     .day-dialog-meta span { margin: 0 2px; color: #4d7681; }
 
     .day-dialog-nav { display: flex; flex: none; align-items: center; gap: 8px; }
-    .day-dialog-nav-btn { display: grid; width: 36px; height: 36px; place-items: center; padding: 0; font-size: 22px; line-height: 1; }
-    .day-dialog-close { display: grid; width: 36px; height: 36px; flex: none; place-items: center; border: 1px solid var(--btn-border); border-radius: var(--btn-radius); background: transparent; color: var(--neon); font-size: 24px; line-height: 1; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+    .day-dialog-nav-btn { display: grid; width: 36px; height: 36px; place-items: center; padding: 0; font-size: var(--text-2xl); line-height: 1; }
+    .day-dialog-close { display: grid; width: 36px; height: 36px; flex: none; place-items: center; border: 1px solid var(--btn-border); border-radius: var(--btn-radius); background: transparent; color: var(--neon); font-size: var(--text-3xl); line-height: 1; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
     .day-dialog-close:hover { border-color: var(--neon); background: rgba(var(--color-primary-rgb), 0.22); }
 
-    .day-dialog-warning { display: flex; align-items: center; gap: 12px; margin: 16px 24px 0; border: 1px solid #6b5a2a; border-radius: 12px; background: #2c2717; padding: 12px 14px; }
-    .day-dialog-warning-icon { display: grid; width: 26px; height: 26px; flex: none; place-items: center; border-radius: 50%; background: #4a3d1a; color: #f3cb73; font-size: 13px; font-weight: 800; }
+    .day-dialog-warning { display: flex; align-items: center; gap: 12px; margin: 16px 24px 0; border: 1px solid #6b5a2a; border-radius: var(--radius-lg); background: #2c2717; padding: 12px 14px; }
+    .day-dialog-warning-icon { display: grid; width: 26px; height: 26px; flex: none; place-items: center; border-radius: 50%; background: #4a3d1a; color: #f3cb73; font-size: var(--text-base); font-weight: 800; }
     .day-dialog-warning p { display: grid; flex: 1; gap: 1px; margin: 0; min-width: 0; }
-    .day-dialog-warning strong { color: #f3cb73; font-size: 12px; font-weight: 700; }
-    .day-dialog-warning span { color: #b9a97f; font-size: 11px; }
-    .day-dialog-review { min-height: 32px; padding: 0 13px; font-size: 11px; white-space: nowrap; }
+    .day-dialog-warning strong { color: #f3cb73; font-size: var(--text-sm); font-weight: 700; }
+    .day-dialog-warning span { color: #b9a97f; font-size: var(--text-xs); }
+    .day-dialog-review { min-height: 32px; padding: 0 13px; font-size: var(--text-xs); white-space: nowrap; }
 
-    .day-dialog-list { flex: 1; min-height: 0; overflow: auto; padding: 8px 24px; }
+    .day-dialog-list { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; padding: 8px 24px; }
     .day-dialog-list app-appointment-row + app-appointment-row { border-top: 1px solid #1d3841; }
     .day-dialog-empty { padding: 32px 0; color: #9cb5bb; text-align: center; }
 
     .day-dialog-foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; border-top: 1px solid #23414b; background: #0d2128; padding: 16px 24px; }
-    .day-dialog-foot-label { color: #8aa8b0; font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
-    .day-dialog-foot-total { color: #fff; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
+    .day-dialog-foot-label { color: #8aa8b0; font-size: var(--text-2xs); font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+    .day-dialog-foot-total { color: #fff; font-size: var(--text-2xl); font-weight: 700; letter-spacing: -0.01em; }
 
-    @media (max-width: 600px) {
+    @media (max-width: 640px) {
       .day-dialog-backdrop { padding: 10px; }
       .day-dialog { max-height: 94vh; }
       .day-dialog-head { flex-wrap: wrap; padding: 16px; }
-      .day-dialog h2 { font-size: 19px; }
+      .day-dialog h2 { font-size: var(--text-xl); }
       .day-dialog-warning { margin: 12px 16px 0; flex-wrap: wrap; }
       .day-dialog-list { padding: 6px 14px; }
       .day-dialog-foot { padding: 13px 16px; }
@@ -123,6 +124,7 @@ export class DayAppointmentsDialog {
   readonly closed = output<void>();
   readonly dayShift = output<number>();
   readonly statusChange = output<{ id: number; status: AppointmentStatus }>();
+  readonly reschedule = output<Appointment>();
 
   protected readonly reviewing = signal(false);
 
@@ -136,7 +138,7 @@ export class DayAppointmentsDialog {
 
   protected readonly totalPrice = computed(() =>
     this.appointments()
-      .filter((appointment) => appointment.status !== 'Cancelada')
+      .filter((appointment) => appointment.status !== 'Cancelada' && appointment.status !== 'No asistió')
       .reduce((sum, appointment) => sum + (appointment.price ?? 0), 0));
 
   protected readonly totalLabel = computed(() => MONEY.format(this.totalPrice()));
@@ -151,7 +153,7 @@ export class DayAppointmentsDialog {
   protected readonly duplicateGroups = computed(() => {
     const groups = new Map<string, number[]>();
     for (const appointment of this.appointments()) {
-      if (appointment.status === 'Cancelada') continue;
+      if (appointment.status === 'Cancelada' || appointment.status === 'No asistió') continue;
       const key = `${appointment.client.trim().toLowerCase()}|${appointment.service.trim().toLowerCase()}`;
       const ids = groups.get(key) ?? [];
       ids.push(appointment.id);
@@ -177,6 +179,11 @@ export class DayAppointmentsDialog {
 
   protected toggleReview(): void {
     this.reviewing.update((value) => !value);
+  }
+
+  /** Cierra solo cuando el clic cae fuera del panel. */
+  protected onBackdropClick(event: MouseEvent): void {
+    if (event.target === event.currentTarget) this.closed.emit();
   }
 
   @HostListener('document:keydown.escape')

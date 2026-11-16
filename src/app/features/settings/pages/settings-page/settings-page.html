@@ -77,10 +77,6 @@
             <app-team-tab
               [invitations]="invitations()"
               [employees]="teamEmployees()"
-              [services]="businessServices()"
-              [employeeServices]="employeeServices()"
-              [expandedEmployeeId]="expandedEmployeeId()"
-              [serviceBusyId]="teamServiceBusyId()"
               [permissionBusyId]="teamPermissionBusyId()"
               [employeeError]="teamEmployeeError()"
               [sending]="teamSending()"
@@ -90,10 +86,10 @@
               (createInvitation)="handleCreateInvitation($event)"
               (resendInvitation)="handleResendInvitation($event)"
               (cancelInvitation)="handleCancelInvitation($event)"
-              (toggleEmployeePanel)="handleToggleEmployeePanel($event)"
-              (addEmployeeService)="handleAddEmployeeService($event)"
-              (removeEmployeeService)="handleRemoveEmployeeService($event)"
-              (schedulePermission)="handleSchedulePermission($event)"/>
+              (schedulePermission)="handleSchedulePermission($event)"
+              (deactivateEmployee)="handleDeactivateEmployee($event)"
+              (reactivateEmployee)="handleReactivateEmployee($event)"
+              (deleteEmployee)="handleDeleteEmployee($event)"/>
           }
           @case ('profile') {
             <app-profile-tab

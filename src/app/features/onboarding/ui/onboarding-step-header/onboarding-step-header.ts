@@ -16,7 +16,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   styles: `
     .step-counter {
       color: var(--neon-dim);
-      font-size: 0.7rem;
+      font-size: var(--text-xs);
       letter-spacing: 0.1em;
     }
 

@@ -69,6 +69,8 @@ export class SettingsStore {
   readonly availablePlansLoaded = signal(false);
   readonly ownerAsEmployeeLoaded = signal(false);
 
+  private readonly inactiveEmployeesStoragePrefix = 'kronify:inactive-employees:';
+
   private lastToken: string | null = this.authStore.token();
 
   constructor() {
@@ -170,7 +172,8 @@ export class SettingsStore {
 
   /** fetchEmployees — Integrantes activos del negocio (solo dueño) */
   async fetchEmployees(): Promise<void> {
-    this.employees.set(await firstValueFrom(this.employeeApi.listEmployees()));
+    const activeEmployees = await firstValueFrom(this.employeeApi.listEmployees());
+    this.employees.set(this.mergeInactiveEmployees(activeEmployees ?? []));
     this.employeesLoaded.set(true);
   }
 
@@ -181,25 +184,26 @@ export class SettingsStore {
     this.servicesLoaded.set(true);
   }
 
-  /** fetchEmployeeServices — Servicios que puede realizar un empleado */
-  async fetchEmployeeServices(employeeId: number): Promise<ServiceResponse[]> {
-    return firstValueFrom(this.employeeApi.listEmployeeServices(employeeId));
+  /** deactivateEmployee — desactiva (soft delete) a un integrante del equipo */
+  async deactivateEmployee(employeeId: number): Promise<EmployeeResponse> {
+    const employee = await firstValueFrom(this.employeeApi.deactivateEmployee(employeeId));
+    const inactiveEmployee = { ...employee, active: false };
+    this.replaceEmployee(inactiveEmployee);
+    this.saveInactiveEmployee(inactiveEmployee);
+    return inactiveEmployee;
   }
 
-  /**
-   * addEmployeeService — PATCH /business/employees/{id}/services.
-   * El backend agrega los ids enviados y conserva los existentes, por lo que
-   * se envía solo el servicio nuevo.
-   */
-  async addEmployeeService(employeeId: number, serviceId: number): Promise<ServiceResponse[]> {
-    return firstValueFrom(
-      this.employeeApi.updateEmployeeServices(employeeId, { serviceIds: [serviceId] }),
-    );
+  /** reactivateEmployee — PATCH /edit { active: true } para volver a habilitarlo */
+  async reactivateEmployee(employeeId: number): Promise<EmployeeResponse> {
+    const employee = await firstValueFrom(this.employeeApi.updateEmployee(employeeId, { active: true }));
+    this.replaceEmployee(employee);
+    this.removeInactiveEmployee(employeeId);
+    return employee;
   }
 
-  /** removeEmployeeService — quita un servicio del empleado (soft delete en el backend) */
-  async removeEmployeeService(employeeId: number, serviceId: number): Promise<void> {
-    await firstValueFrom(this.employeeApi.removeServiceFromEmployee(employeeId, serviceId));
+  /** deleteEmployee — elimina definitivamente a un integrante del negocio */
+  async deleteEmployee(employeeId: number): Promise<void> {
+    await firstValueFrom(this.employeeApi.deleteEmployee(employeeId));
   }
 
   /** updateSchedulePermission — habilita/deshabilita la autogestión de horario */
@@ -211,6 +215,48 @@ export class SettingsStore {
       list.map((employee) => (employee.employeeId === employeeId ? updated : employee)),
     );
     return updated;
+  }
+
+  /** Actualiza solo el integrante afectado y conserva los inactivos en la vista.
+   * Algunos despliegues del API listan únicamente integrantes activos. */
+  private replaceEmployee(updated: EmployeeResponse): void {
+    if (updated.employeeId == null) return;
+    this.employees.update((list) =>
+      list.map((employee) => (employee.employeeId === updated.employeeId ? updated : employee)),
+    );
+  }
+
+  /** El endpoint de listado actual omite inactivos. Los conservamos localmente
+   * por negocio para que sigan apareciendo y puedan reactivarse tras recargar. */
+  private mergeInactiveEmployees(activeEmployees: EmployeeResponse[]): EmployeeResponse[] {
+    const activeIds = new Set(activeEmployees.map((employee) => employee.employeeId));
+    return [...activeEmployees, ...this.readInactiveEmployees().filter((employee) => !activeIds.has(employee.employeeId))];
+  }
+
+  private saveInactiveEmployee(employee: EmployeeResponse): void {
+    if (employee.employeeId == null) return;
+    const stored = this.readInactiveEmployees().filter((item) => item.employeeId !== employee.employeeId);
+    localStorage.setItem(this.inactiveEmployeesStorageKey(), JSON.stringify([...stored, employee]));
+  }
+
+  private removeInactiveEmployee(employeeId: number): void {
+    const remaining = this.readInactiveEmployees().filter((employee) => employee.employeeId !== employeeId);
+    localStorage.setItem(this.inactiveEmployeesStorageKey(), JSON.stringify(remaining));
+  }
+
+  private readInactiveEmployees(): EmployeeResponse[] {
+    try {
+      const value = JSON.parse(localStorage.getItem(this.inactiveEmployeesStorageKey()) ?? '[]') as unknown;
+      return Array.isArray(value)
+        ? value.filter((item): item is EmployeeResponse => typeof item === 'object' && item !== null && 'employeeId' in item)
+        : [];
+    } catch {
+      return [];
+    }
+  }
+
+  private inactiveEmployeesStorageKey(): string {
+    return `${this.inactiveEmployeesStoragePrefix}${this.authStore.user()?.businessId ?? 'default'}`;
   }
 
   /** fetchPlan — Plan vigente con métricas de uso */

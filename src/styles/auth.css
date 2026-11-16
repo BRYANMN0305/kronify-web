@@ -15,7 +15,7 @@ body {
 
 /* ---- Texto decorativo bajo el reloj ---- */
 .chrono-eyebrow {
-    font-size: 0.7rem;
+    font-size: var(--text-xs);
     letter-spacing: 4px;
     text-transform: uppercase;
     color: var(--neon);
@@ -59,7 +59,7 @@ body {
 /* ---- Subtítulo del formulario ---- */
 .auth-subtitle {
     color: var(--color-text-muted);
-    font-size: 1rem;
+    font-size: var(--text-lg);
     margin-bottom: 2rem;
     text-align: center;
 }
@@ -70,9 +70,9 @@ body {
     background: #1a2632;
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: var(--color-text);
-    font-size: 0.875rem;
+    font-size: var(--text-md);
     padding: 0.7rem 0.9rem;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     box-shadow: none;
     transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 }
@@ -108,7 +108,7 @@ body {
 .auth-card .form-label,
 .onboarding-form .form-label {
     color: var(--color-text-label);
-    font-size: 0.8rem;
+    font-size: var(--text-base);
     font-weight: 600;
     letter-spacing: 0.02em;
     margin-bottom: 0.4rem;
@@ -148,7 +148,7 @@ body {
 
 .auth-card .form-check-label {
     color: var(--color-text-muted);
-    font-size: 0.8rem;
+    font-size: var(--text-base);
 }
 
 /* ---- Divisor "o" ---- */
@@ -157,7 +157,7 @@ body {
     align-items: center;
     gap: 1rem;
     color: var(--color-text-dim);
-    font-size: 0.75rem;
+    font-size: var(--text-sm);
     text-transform: uppercase;
     letter-spacing: 0.1em;
 }
@@ -176,23 +176,23 @@ body {
     background: var(--color-error-bg);
     color: var(--color-error);
     border: 1px solid var(--color-error-border);
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     padding: 0.5rem 0.75rem;
-    font-size: 0.8rem;
+    font-size: var(--text-base);
     margin-top: 0.75rem;
 }
 
 /* ---- Texto del footer ---- */
 .auth-footer-text {
     color: var(--color-text);
-    font-size: 0.8rem;
+    font-size: var(--text-base);
 }
 
 /* ---- Feedback de error de validación ---- */
 .auth-card .invalid-feedback,
 .onboarding-form .invalid-feedback {
     color: var(--color-error);
-    font-size: 0.75rem;
+    font-size: var(--text-sm);
     margin-top: 0.2rem;
 }
 
