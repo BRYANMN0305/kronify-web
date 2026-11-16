@@ -16,7 +16,6 @@ import { Permissions } from '../../../../core/auth/permissions';
 import { SettingsStore } from '../../../../core/settings/settings.store';
 import { UserChangePasswordRequest } from '../../../../core/api/openapi/model/userChangePasswordRequest';
 import { UserUpdateRequest } from '../../../../core/api/openapi/model/userUpdateRequest';
-import { ServiceResponse } from '../../../../core/api/openapi/model/serviceResponse';
 import { BusinessUpdateRequest } from '../../../../core/api/openapi/model/businessUpdateRequest';
 import { Icon, IconName } from '../../../../shared/ui/icon/icon';
 import { MyDetailsTab } from '../../ui/my-details-tab/my-details-tab';
@@ -95,10 +94,6 @@ export class SettingsPage implements OnInit {
   protected readonly teamSuccess = signal<string | null>(null);
   protected readonly teamError = signal<string | null>(null);
   protected readonly teamEmployees = this.settings.employees;
-  protected readonly businessServices = this.settings.services;
-  protected readonly employeeServices = signal<Readonly<Record<number, readonly ServiceResponse[]>>>({});
-  protected readonly expandedEmployeeId = signal<number | null>(null);
-  protected readonly teamServiceBusyId = signal<number | null>(null);
   protected readonly teamPermissionBusyId = signal<number | null>(null);
   protected readonly teamEmployeeError = signal<string | null>(null);
   protected readonly business = this.settings.businessData;
@@ -194,7 +189,6 @@ export class SettingsPage implements OnInit {
     if (tab === 'team') {
       if (this.settings.invitationsLoaded()) void this.settings.fetchInvitations().catch(() => undefined);
       if (this.settings.employeesLoaded()) void this.settings.fetchEmployees().catch(() => undefined);
-      if (this.settings.servicesLoaded()) void this.settings.fetchServices().catch(() => undefined);
     }
     this.activeTab.set(tab);
   }
@@ -321,49 +315,49 @@ export class SettingsPage implements OnInit {
     }
   }
 
-  /** Carga (una vez) los servicios del integrante y abre su panel */
-  protected async handleToggleEmployeePanel(employeeId: number): Promise<void> {
-    if (this.expandedEmployeeId() === employeeId) {
-      this.expandedEmployeeId.set(null);
-      return;
-    }
-    this.expandedEmployeeId.set(employeeId);
-    this.teamEmployeeError.set(null);
-    if (this.employeeServices()[employeeId]) return;
+  /** Desactiva (soft delete) un integrante y refresca la lista del equipo. */
+  protected async handleDeactivateEmployee(employeeId: number): Promise<void> {
+    this.teamBusyId.set(employeeId);
+    this.teamSuccess.set(null);
+    this.teamError.set(null);
     try {
-      const services = await this.settings.fetchEmployeeServices(employeeId);
-      this.employeeServices.update((map) => ({ ...map, [employeeId]: services }));
+      await this.settings.deactivateEmployee(employeeId);
+      this.teamSuccess.set('Integrante desactivado. Aparece como inactivo y puedes reactivarlo.');
     } catch (error) {
-      this.teamEmployeeError.set(apiErrorMessage(error) || 'No se pudieron cargar los servicios del integrante');
+      this.teamError.set(apiErrorMessage(error) || 'No se pudo desactivar al integrante');
+    } finally {
+      this.teamBusyId.set(null);
     }
   }
 
-  protected async handleAddEmployeeService(payload: { employeeId: number; serviceId: number }): Promise<void> {
-    this.teamServiceBusyId.set(payload.serviceId);
-    this.teamEmployeeError.set(null);
+  /** Reactiva a un integrante desactivado (PATCH /edit con active: true). */
+  protected async handleReactivateEmployee(employeeId: number): Promise<void> {
+    this.teamBusyId.set(employeeId);
+    this.teamSuccess.set(null);
+    this.teamError.set(null);
     try {
-      const services = await this.settings.addEmployeeService(payload.employeeId, payload.serviceId);
-      this.employeeServices.update((map) => ({ ...map, [payload.employeeId]: services }));
+      await this.settings.reactivateEmployee(employeeId);
+      this.teamSuccess.set('Integrante reactivado.');
     } catch (error) {
-      this.teamEmployeeError.set(apiErrorMessage(error) || 'No se pudo asignar el servicio');
+      this.teamError.set(apiErrorMessage(error) || 'No se pudo reactivar al integrante');
     } finally {
-      this.teamServiceBusyId.set(null);
+      this.teamBusyId.set(null);
     }
   }
 
-  protected async handleRemoveEmployeeService(payload: { employeeId: number; serviceId: number }): Promise<void> {
-    this.teamServiceBusyId.set(payload.serviceId);
-    this.teamEmployeeError.set(null);
+  /** Elimina definitivamente a un integrante del negocio. */
+  protected async handleDeleteEmployee(employeeId: number): Promise<void> {
+    this.teamBusyId.set(employeeId);
+    this.teamSuccess.set(null);
+    this.teamError.set(null);
     try {
-      await this.settings.removeEmployeeService(payload.employeeId, payload.serviceId);
-      this.employeeServices.update((map) => ({
-        ...map,
-        [payload.employeeId]: (map[payload.employeeId] ?? []).filter((service) => service.id !== payload.serviceId),
-      }));
+      await this.settings.deleteEmployee(employeeId);
+      await this.settings.fetchEmployees();
+      this.teamSuccess.set('Integrante eliminado del equipo.');
     } catch (error) {
-      this.teamEmployeeError.set(apiErrorMessage(error) || 'No se pudo quitar el servicio');
+      this.teamError.set(apiErrorMessage(error) || 'No se pudo eliminar al integrante');
     } finally {
-      this.teamServiceBusyId.set(null);
+      this.teamBusyId.set(null);
     }
   }
 

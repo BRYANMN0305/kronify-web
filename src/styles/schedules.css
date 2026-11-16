@@ -27,7 +27,7 @@
 
 .schedules-title {
     color: #fff;
-    font-size: 1.25rem;
+    font-size: var(--text-2xl);
     font-weight: 700;
     letter-spacing: -0.01em;
     margin: 0;
@@ -35,7 +35,7 @@
 
 .schedules-subtitle {
     color: rgba(255, 255, 255, 0.5);
-    font-size: 0.8rem;
+    font-size: var(--text-base);
     margin: 0.15rem 0 0;
 }
 
@@ -48,7 +48,7 @@
     align-items: flex-start;
     background: rgba(16, 37, 44, 0.72);
     border: 1px solid rgba(255, 107, 107, 0.24);
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     display: flex;
     gap: 0.9rem;
     padding: 1rem;
@@ -58,7 +58,7 @@
     align-items: center;
     background: rgba(255, 107, 107, 0.12);
     border: 1px solid rgba(255, 107, 107, 0.22);
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     color: #ff8585;
     display: inline-flex;
     flex-shrink: 0;
@@ -74,14 +74,14 @@
 
 .schedules-access-card h2 {
     color: var(--color-text);
-    font-size: 1rem;
+    font-size: var(--text-lg);
     font-weight: 800;
     margin: 0 0 0.25rem;
 }
 
 .schedules-access-card p {
     color: rgba(213, 240, 247, 0.7);
-    font-size: 0.86rem;
+    font-size: var(--text-md);
     line-height: 1.45;
     margin: 0;
 }
@@ -114,7 +114,7 @@
     gap: 0.5rem;
     background: var(--color-surface);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
+    border-radius: var(--radius-lg);
     padding: 0.3rem;
     max-width: calc(100% - 3rem);
     overflow: hidden;
@@ -124,10 +124,10 @@
     background: transparent;
     border: none;
     color: rgba(255, 255, 255, 0.55);
-    font-size: 0.8rem;
+    font-size: var(--text-base);
     font-weight: 600;
     padding: 0.45rem 1rem;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
     transition: color 0.2s, background 0.2s;
     white-space: nowrap;
@@ -150,12 +150,12 @@
     top: 1.5rem;
     background: var(--color-surface);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
+    border-radius: var(--radius-lg);
     padding: 0.6rem;
 }
 
 .schedules-panel-title {
-    font-size: 0.65rem;
+    font-size: var(--text-2xs);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -165,7 +165,7 @@
 
 .schedules-empty-panel {
     color: rgba(255, 255, 255, 0.5);
-    font-size: 0.82rem;
+    font-size: var(--text-base);
     padding: 0.75rem 0.75rem;
 }
 
@@ -174,7 +174,7 @@
     align-items: center;
     gap: 0.6rem;
     padding: 0.55rem 0.75rem;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     border-left: 2px solid transparent;
     cursor: pointer;
     background: transparent;
@@ -200,7 +200,7 @@
 }
 
 .schedules-emp-name {
-    font-size: 0.82rem;
+    font-size: var(--text-base);
     font-weight: 600;
     color: #fff;
     display: flex;
@@ -212,7 +212,7 @@
 }
 
 .schedules-emp-email {
-    font-size: 0.72rem;
+    font-size: var(--text-sm);
     color: rgba(255, 255, 255, 0.45);
     white-space: nowrap;
     overflow: hidden;
@@ -220,9 +220,9 @@
 }
 
 .schedules-owner-badge {
-    font-size: 0.58rem;
+    font-size: var(--text-2xs);
     padding: 0.12rem 0.35rem;
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     background: rgba(63, 225, 255, 0.15);
     color: var(--neon);
     text-transform: uppercase;
@@ -237,7 +237,7 @@
 }
 
 .schedules-implicit {
-    font-size: 0.62rem;
+    font-size: var(--text-2xs);
     font-style: italic;
     letter-spacing: 0.02em;
     color: rgba(63, 225, 255, 0.8);
@@ -251,7 +251,7 @@
     background: var(--color-surface);
     border: 1px solid rgba(255, 255, 255, 0.08);
     padding: 0.25rem;
-    border-radius: 10px;
+    border-radius: var(--radius-lg);
     margin-bottom: 1rem;
 }
 
@@ -261,8 +261,8 @@
     background: transparent;
     color: rgba(255, 255, 255, 0.55);
     padding: 0.5rem;
-    border-radius: 8px;
-    font-size: 0.82rem;
+    border-radius: var(--radius-sm);
+    font-size: var(--text-base);
     font-weight: 600;
     cursor: pointer;
     transition: background 0.15s, color 0.15s;
@@ -281,7 +281,7 @@
 /* ---- Tablas (mismo patrón que invitations-table) ---- */
 .schedules-table {
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     overflow-x: auto;
     margin-top: 0.75rem;
 }
@@ -292,7 +292,7 @@
     gap: 0.75rem;
     align-items: center;
     padding: 0.65rem 1rem;
-    font-size: 0.82rem;
+    font-size: var(--text-base);
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     transition: background 0.15s;
 }
@@ -318,7 +318,7 @@
 .schedules-week-head,
 .schedules-blocks-head {
     color: rgba(255, 255, 255, 0.55);
-    font-size: 0.7rem;
+    font-size: var(--text-xs);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -384,13 +384,13 @@
     align-items: baseline;
     gap: 0.5rem;
     color: rgba(255, 255, 255, 0.9);
-    font-size: 0.82rem;
+    font-size: var(--text-base);
     cursor: pointer;
 }
 
 .schedules-service-meta {
     color: rgba(255, 255, 255, 0.45);
-    font-size: 0.72rem;
+    font-size: var(--text-sm);
 }
 
 .schedules-save-bar {
@@ -399,7 +399,7 @@
 
 .schedules-empty-note {
     color: rgba(255, 255, 255, 0.5);
-    font-size: 0.82rem;
+    font-size: var(--text-base);
     margin-top: 0.5rem;
 }
 
@@ -538,7 +538,7 @@ input[type='datetime-local']:hover::-webkit-inner-spin-button {
     }
 
     .schedules-mode-btn {
-        font-size: 0.72rem;
+        font-size: var(--text-sm);
         padding: 0.4rem 0.6rem;
     }
 

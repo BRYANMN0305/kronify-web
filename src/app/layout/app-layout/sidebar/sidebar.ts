@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 
+import { environment } from '../../../../environments/environment';
 import { AuthStore } from '../../../core/auth/auth.store';
 import { Permissions } from '../../../core/auth/permissions';
 import { SettingsStore } from '../../../core/settings/settings.store';
@@ -51,7 +52,7 @@ export class Sidebar {
       items.push({ path: '/resenas', label: 'Reseñas', icon: ICONS.users });
     }
     if (!this.auth.isBusiness()) {
-      items.push({ path: '/negocios-recientes', label: 'Negocios recientes', icon: ICONS.clock });
+      items.push({ path: '/mis-citas', label: 'Mis citas', icon: ICONS.clock });
     }
     items.push({ path: '/configuracion', label: 'Configuración', icon: ICONS.settings });
     return items;
@@ -67,6 +68,21 @@ export class Sidebar {
       logoUrl: business.logoUrl || '',
     };
   });
+
+  /** URL de logos que el navegador no pudo cargar; evita repetir el intento con la misma. */
+  private readonly failedLogoUrl = signal<string | null>(null);
+
+  /** businessLogo — logo resuelto (URL relativa → API) o null para mostrar la inicial. */
+  readonly businessLogo = computed<string | null>(() => {
+    const raw = this.sidebarBusiness()?.logoUrl ?? '';
+    if (!raw || this.failedLogoUrl() === raw) return null;
+    if (/^(https?:|data:|blob:)/i.test(raw)) return raw;
+    return raw.startsWith('/') ? `${environment.apiUrl}${raw}` : raw;
+  });
+
+  protected onLogoError(): void {
+    this.failedLogoUrl.set(this.sidebarBusiness()?.logoUrl ?? null);
+  }
 
   readonly businessInitial = computed(() => {
     const name = this.settings.businessData()?.name || '';

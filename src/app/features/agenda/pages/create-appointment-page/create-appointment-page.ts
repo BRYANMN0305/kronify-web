@@ -112,6 +112,11 @@ export class CreateAppointmentDialog implements OnInit {
   }
   protected cancel(): void { if (!this.busy()) this.closed.emit(); }
 
+  /** Cierra solo cuando el clic cae fuera del panel. */
+  protected onBackdropClick(event: MouseEvent): void {
+    if (event.target === event.currentTarget) this.cancel();
+  }
+
   protected async loadAvailability(): Promise<void> {
     const requestId = ++this.availabilityRequestId;
     this.loadingAvailability.set(false);

@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
+import { environment } from '../../../../../environments/environment';
 import { BusinessSettingsResponse } from '../../../../core/api/openapi/model/businessSettingsResponse';
 import { BusinessUpdateRequest } from '../../../../core/api/openapi/model/businessUpdateRequest';
 import { CategoryDropdown } from '../../../onboarding/ui/category-dropdown/category-dropdown';
@@ -69,6 +70,21 @@ export class ProfileTab {
     const initial = this.business()?.name?.trim()[0] ?? '';
     return initial.toUpperCase() || 'N';
   });
+
+  /** URL de logos que el navegador no pudo cargar; evita repetir el intento con la misma. */
+  private readonly failedLogoUrl = signal<string | null>(null);
+
+  /** profileLogo — logo resuelto (URL relativa → API) o null para mostrar la inicial. */
+  protected readonly profileLogo = computed<string | null>(() => {
+    const raw = this.business()?.logoUrl ?? '';
+    if (!raw || this.failedLogoUrl() === raw) return null;
+    if (/^(https?:|data:|blob:)/i.test(raw)) return raw;
+    return raw.startsWith('/') ? `${environment.apiUrl}${raw}` : raw;
+  });
+
+  protected onLogoError(): void {
+    this.failedLogoUrl.set(this.business()?.logoUrl ?? null);
+  }
 
   private readonly ownerToggleRef = viewChild<ElementRef<HTMLInputElement>>('ownerToggle');
 

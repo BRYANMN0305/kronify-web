@@ -5,11 +5,11 @@
 .btn-ghost-inline {
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   color: rgba(255, 255, 255, 0.7);
   padding: 0.7rem;
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: var(--text-md);
   transition: color 0.2s, border-color 0.2s;
 }
 

@@ -1,38 +1,189 @@
 <section class="agenda-page">
-  <div class="agenda-kicker">CALENDARIO OPERATIVO</div>
   <header class="agenda-toolbar">
     <div class="agenda-title-group">
       <h1>Calendario</h1>
-      <div class="month-switcher">
-        <button type="button" class="month-arrow" (click)="previousMonth()" aria-label="Mes anterior">‹</button>
-        <h2>{{ monthLabel() | titlecase }}</h2>
-        <button type="button" class="month-arrow" (click)="nextMonth()" aria-label="Mes siguiente">›</button>
+      <div class="period-nav">
+        <button type="button" class="period-arrow" (click)="previousPeriod()" aria-label="Periodo anterior">‹</button>
+        <h2>{{ periodTitle() }}</h2>
+        <button type="button" class="period-arrow" (click)="nextPeriod()" aria-label="Periodo siguiente">›</button>
+        @if (!isViewingToday()) {
+          <button type="button" class="agenda-today-btn" (click)="goToday()">Hoy</button>
+        }
       </div>
     </div>
     <div class="agenda-controls">
-      @if (isDemo()) { <button class="btn-kronify agenda-new-button" type="button" disabled><span>＋</span> Nueva cita</button> } @else { <button class="btn-kronify agenda-new-button" type="button" (click)="openCreateDialog()"><span>＋</span> Nueva cita</button> }
+      <div class="view-switch" role="group" aria-label="Vista del calendario">
+        <button type="button" class="view-option" [class.is-active]="view() === 'day'" (click)="setView('day')">Día</button>
+        <button type="button" class="view-option" [class.is-active]="view() === 'week'" (click)="setView('week')">Semana</button>
+        <button type="button" class="view-option" [class.is-active]="view() === 'month'" (click)="setView('month')">Mes</button>
+      </div>
+      <button class="btn-kronify agenda-new-button" type="button" (click)="openCreateDialog()"><span>＋</span> Nueva cita</button>
     </div>
   </header>
+
+  <div class="agenda-filters" role="group" aria-label="Filtros de la agenda">
+    <label class="agenda-filter">
+      <span>Empleado</span>
+      <select [value]="store.filters().employeeId ?? ''" (change)="filterByEmployee($any($event.target).value)" [disabled]="store.filterOptionsLoading()">
+        <option value="">Todos los empleados</option>
+        @for (employee of store.employees(); track $index) {
+          <option [value]="employee.employeeId">{{ employee.name || 'Empleado' }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="agenda-filter">
+      <span>Servicio</span>
+      <select [value]="store.filters().serviceId ?? ''" (change)="filterByService($any($event.target).value)" [disabled]="store.filterOptionsLoading()">
+        <option value="">Todos los servicios</option>
+        @for (service of store.services(); track $index) {
+          <option [value]="service.id">{{ service.name }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="agenda-filter">
+      <span>Estado</span>
+      <select [value]="store.filters().status ?? ''" (change)="filterByStatus($any($event.target).value)">
+        <option value="">Todos los estados</option>
+        @for (option of statusOptions; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+    </label>
+
+    @if (store.hasActiveFilters()) {
+      <button class="btn-kronify-outline agenda-clear" type="button" (click)="clearFilters()">Limpiar filtros</button>
+    }
+  </div>
 
   <app-agenda-summary
     [total]="store.appointmentCount()"
     [confirmed]="store.confirmedCount()"
     [pending]="store.pendingCount()"
-    [completed]="store.completedCount()" />
+    [completed]="store.completedCount()"
+    [periodLabel]="summaryPeriod()" />
 
   @if (storeError()) {
     <div class="agenda-api-alert" role="status"><span class="alert-icon">!</span><div><strong>No se pudo conectar con la agenda</strong><p>{{ storeError() }}</p></div></div>
-  } @else if (isDemo()) {
-    <div class="agenda-demo-alert" role="status">Vista de demostración · datos de ejemplo</div>
   }
 
-  <app-calendar-grid [weeks]="calendarWeeks()" [selectedKey]="selectedDayKey()" (daySelected)="selectDay($event)" />
+  @switch (view()) {
+    @case ('day') {
+      @if (dayAppointments().length === 0) {
+        <div class="day-empty-note" role="status">
+          @if (loading()) {
+            Consultando la agenda del servidor…
+          } @else {
+            Sin citas para {{ periodTitle() }} · Usa «Nueva cita» para agendar la primera.
+          }
+        </div>
+      }
+      <div class="day-timeline" aria-label="Línea de tiempo del día">
+        @for (hour of dayHours(); track hour) {
+          <div class="timeline-row" [class.is-now]="isCurrentHour(hour)">
+            <div class="timeline-hour"><strong>{{ hourLabel(hour) }}</strong></div>
+            <div class="timeline-cells">
+              @for (appointment of appointmentsAtHour(hour); track appointment.id) {
+                <article class="day-event" (click)="openAppointment(appointment)">
+                  <span class="day-event-stripe" [class]="'day-event-stripe ' + (appointment.status | appointmentStatusClass)" aria-hidden="true"></span>
+                  <span class="day-event-avatar" aria-hidden="true">{{ appointmentInitials(appointment) }}</span>
+                  <div class="day-event-body">
+                    <div class="day-event-head">
+                      <strong class="day-event-client">{{ appointment.client }}</strong>
+                      <span class="day-event-range">{{ eventRange(appointment) }}</span>
+                      <span [class]="'status-pill ' + (appointment.status | appointmentStatusClass)">{{ appointment.status }}</span>
+                      @if (appointment.origin === 'PUBLIC') { <span class="day-event-origin">Reserva en línea</span> }
+                    </div>
+                    <span class="day-event-service">{{ appointment.service }} · {{ appointment.employee }}</span>
+                    <div class="day-event-meta">
+                      @if (phoneLabel(appointment); as phone) {
+                        <a [href]="'tel:' + appointment.phone">{{ phone }}</a>
+                      }
+                      @if (appointment.email) {
+                        <a [href]="'mailto:' + appointment.email">{{ appointment.email }}</a>
+                      }
+                      @if (appointment.price !== undefined) {
+                        <span class="day-event-price">{{ appointment.price | currency:'COP':'symbol':'1.0-0':'es-CO' }}</span>
+                      }
+                    </div>
+                  </div>
+                  <div class="day-event-actions">
+                    <button type="button" class="btn-kronify-outline day-action day-detail-action" (click)="$event.stopPropagation(); openAppointment(appointment)">Ver detalle <span aria-hidden="true">→</span></button>
+                  </div>
+                </article>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+    @case ('week') {
+      <div class="week-wrap" aria-label="Citas de la semana">
+      <div class="week-scroll" #weekScroll>
+        <div class="week-head">
+          <div class="week-gutter-spacer"></div>
+          @for (column of weekColumns(); track column.key) {
+            <button type="button" class="week-head-day" [class.is-today]="column.isToday" (click)="openDay(column.date)">
+              <span class="week-head-name">{{ column.name }}</span>
+              <strong class="week-head-number">{{ column.dayNumber }}</strong>
+            </button>
+          }
+        </div>
+        <div class="week-canvas" [style.height.px]="weekCanvasHeight()">
+          <div class="week-gutter">
+            @for (hour of weekHours(); track hour) {
+              <div class="week-gutter-hour"><span>{{ hourLabel(hour) }}</span></div>
+            }
+            @if (isViewingToday()) {
+              <span class="week-now-label" [style.top.px]="nowPx()">{{ nowLabel() }}</span>
+            }
+          </div>
+          @for (column of weekColumns(); track column.key) {
+            <div class="week-col" [class.is-today]="column.isToday" [class.is-weekend]="column.isWeekend">
+              @for (block of blocksForDay(column.key); track block.appointment.id) {
+                <button type="button"
+                        class="week-event"
+                        [class]="'week-event ' + (block.appointment.status | appointmentStatusClass)"
+                        [class.is-compact]="block.compact"
+                        [class.is-tiny]="block.tiny"
+                        [style.top.px]="block.topPx"
+                        [style.height.px]="block.heightPx"
+                        [style.left]="block.leftStyle"
+                        [style.width]="block.widthStyle"
+                        [title]="eventRange(block.appointment) + ' · ' + block.appointment.client"
+                        (click)="openAppointment(block.appointment)">
+                  <strong class="week-event-time">{{ eventRange(block.appointment) }}</strong>
+                  <span class="week-event-client">{{ block.appointment.client }}</span>
+                  <span class="week-event-service">{{ block.appointment.service }}</span>
+                </button>
+              }
+              @if (column.isToday) {
+                <div class="week-now-line" [style.top.px]="nowPx()"></div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+    }
+    @case ('month') {
+      <app-calendar-grid [weeks]="monthWeeks()" [selectedKey]="viewDateKey()" (daySelected)="openDayFromGrid($event)" />
+    }
+  }
 
 </section>
 
-@if (dayDialogOpen()) {
-  <app-day-appointments-dialog [date]="selectedDate().toDate()" [appointments]="visibleAppointments()" (closed)="closeDayDialog()" (dayShift)="shiftDay($event)" (statusChange)="updateAppointmentStatus($event)" />
-}
 @if (createDialogOpen()) {
   <app-create-appointment-dialog (closed)="closeCreateDialog()" (created)="appointmentCreated()" />
+}
+@if (rescheduling(); as appointment) {
+  <app-reschedule-dialog [appointment]="appointment" (closed)="closeReschedule()" (rescheduled)="appointmentRescheduled()" />
+}
+@if (selectedAppointment(); as appointment) {
+  <app-appointment-detail-dialog
+    [appointment]="appointment"
+    (closed)="closeAppointment()"
+    (statusChange)="updateSelectedAppointment($event)"
+    (reschedule)="openReschedule(appointment)" />
 }

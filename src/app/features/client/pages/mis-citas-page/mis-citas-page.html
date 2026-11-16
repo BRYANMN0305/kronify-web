@@ -1,0 +1,121 @@
+﻿<main class="client-page">
+  <header class="client-header">
+    <div>
+      <h1>Mis citas</h1>
+      <p>Consulta tus reservas, reprograma horarios y comparte tu experiencia.</p>
+    </div>
+    <button class="btn-kronify-outline client-refresh" type="button" (click)="reload()">Actualizar</button>
+  </header>
+
+  @if (showRecent()) {
+    <section class="recent-section" aria-labelledby="recent-title">
+      <div class="recent-head">
+        <div>
+          <h2 id="recent-title">Negocios recientes</h2>
+        </div>
+        @if (recentBusinesses().length) { <span class="count-pill">{{ recentBusinesses().length }}</span> }
+      </div>
+
+      @if (store.recentLoading()) {
+        <p class="client-state compact">Cargando negocios recientes…</p>
+      } @else if (store.recentError()) {
+        <p class="client-state compact error" role="status">{{ store.recentError() }}</p>
+      } @else if (recentBusinesses().length) {
+        <div class="recent-grid">
+          @for (business of recentBusinesses(); track business.businessId) {
+            <button class="recent-card" type="button" (click)="openBusiness(business)">
+              <span class="recent-logo">
+                @if (logoUrl(business); as logo) {
+                  <img [src]="logo" [alt]="business.name">
+                } @else {
+                  {{ initials(business.name) }}
+                }
+              </span>
+              <span class="recent-body">
+                <strong>{{ business.name }}</strong>
+                <span class="recent-meta">
+                  @if (business.category) { <span>{{ business.category }}</span> }
+                  @if (business.address) { <span>{{ business.address }}</span> }
+                </span>
+                <span class="recent-last">Última cita: {{ lastVisitLabel(business) }}</span>
+              </span>
+              <span class="recent-action" aria-hidden="true">→</span>
+            </button>
+          }
+        </div>
+      } @else {
+        <p class="recent-empty">Aún no tienes negocios recientes. Cuando reserves una cita aparecerá aquí para volver a agendar fácilmente.</p>
+      }
+    </section>
+  }
+
+  <section class="history-section" aria-labelledby="history-title">
+    <div class="history-head">
+      <div>
+        <h2 id="history-title">Tus reservas</h2>
+      </div>
+      <span class="count-pill">{{ appointments().length }}</span>
+    </div>
+
+    @if (store.loading()) {
+      <p class="client-state">Cargando tus citas…</p>
+    } @else if (store.error()) {
+      <p class="client-state error" role="alert">{{ store.error() }}</p>
+    } @else if (!appointments().length) {
+      <div class="client-empty">
+        <span aria-hidden="true">◷</span>
+        <strong>Aún no tienes citas</strong>
+        <p>Cuando reserves con un negocio, tu historial aparecerá aquí.</p>
+      </div>
+    } @else {
+      <div class="client-list">
+        @for (appointment of appointments(); track appointment.id) {
+          <article class="client-card">
+            <div class="client-card-main">
+              <div class="client-card-time">
+                <strong>{{ timeLabel(appointment.startAt) }}</strong>
+                <span>{{ dateLabel(appointment.startAt) }}</span>
+              </div>
+              <div class="client-card-copy">
+                <strong class="client-card-service">{{ appointment.serviceName }}</strong>
+                <span class="client-card-meta">{{ appointment.employeeName }} · {{ appointment.serviceDurationMinutes }} min</span>
+                <span class="client-status" [class]="statusClass(appointment.status)">{{ statusLabel(appointment.status) }}</span>
+              </div>
+            </div>
+            <div class="client-card-actions">
+              @if (canManage(appointment)) {
+                <button class="btn-kronify-outline client-action" type="button" [disabled]="isBusy(appointment)" (click)="openDetail(appointment)">
+                  {{ isBusy(appointment) ? 'Procesando…' : 'Reprogramar' }}
+                </button>
+                <button class="btn-kronify-outline client-action danger" type="button" [disabled]="isBusy(appointment)" (click)="cancel(appointment)">
+                  Cancelar
+                </button>
+              } @else {
+                <button class="btn-kronify-outline client-action" type="button" (click)="openDetail(appointment)">Ver detalle</button>
+              }
+              @if (canReview(appointment)) {
+                <button class="btn-kronify client-action" type="button" (click)="openReview(appointment)">Reseñar</button>
+              } @else if (appointment.status === 'COMPLETED' && store.reviewedIds().has(appointment.id)) {
+                <span class="reviewed-note">Reseña enviada</span>
+              }
+            </div>
+          </article>
+        }
+      </div>
+    }
+  </section>
+</main>
+
+@if (selectedAppointment(); as appointment) {
+  <app-client-appointment-detail
+    [appointment]="appointment"
+    (closed)="closeDetail()"
+    (updated)="detailUpdated($event)" />
+}
+
+@if (reviewAppointment(); as appointment) {
+  <app-client-review-dialog
+    [appointment]="appointment"
+    (closed)="closeReview()"
+    (created)="closeReview()" />
+}
