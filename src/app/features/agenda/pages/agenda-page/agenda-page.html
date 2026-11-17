@@ -85,7 +85,10 @@
             <div class="timeline-hour"><strong>{{ hourLabel(hour) }}</strong></div>
             <div class="timeline-cells">
               @for (appointment of appointmentsAtHour(hour); track appointment.id) {
-                <article class="day-event" (click)="openAppointment(appointment)">
+                <article class="day-event" role="button" tabindex="0"
+                         (click)="openAppointment(appointment)"
+                         (keydown.enter)="openAppointment(appointment)"
+                         (keydown.space)="openAppointment(appointment); $event.preventDefault()">
                   <span class="day-event-stripe" [class]="'day-event-stripe ' + (appointment.status | appointmentStatusClass)" aria-hidden="true"></span>
                   <span class="day-event-avatar" aria-hidden="true">{{ appointmentInitials(appointment) }}</span>
                   <div class="day-event-body">

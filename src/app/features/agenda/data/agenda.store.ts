@@ -9,7 +9,7 @@ import type { AppointmentStatusUpdateRequest } from '../../../core/api/openapi/m
 import type { DayAvailabilityResponse } from '../../../core/api/openapi/model/dayAvailabilityResponse';
 import type { EmployeeResponse } from '../../../core/api/openapi/model/employeeResponse';
 import type { ServiceResponse } from '../../../core/api/openapi/model/serviceResponse';
-import { AuthStore } from '../../../core/auth/auth.store';
+import { AuthStore, apiErrorMessage } from '../../../core/auth/auth.store';
 import { SessionExpiredError } from '../../../core/api/jwt.interceptor';
 import { DatetimeService } from '../../../core/datetime/datetime.service';
 import type { Appointment, AppointmentStatus } from '../modelos/appointment.model';
@@ -158,9 +158,21 @@ export class AgendaStore {
     await this.loadRange(start.format('YYYY-MM-DD'), start.format('YYYY-MM-DD'));
   }
 
-  async updateStatus(id: number, status: AppointmentStatus): Promise<void> {
+  /**
+   * Cambia el estado de una cita. Devuelve `false` cuando la operación no se
+   * aplicó, para que la vista pueda mantener abierto el detalle y mostrar el motivo.
+   */
+  async updateStatus(id: number, status: AppointmentStatus): Promise<boolean> {
     const appointment = this.appointmentsState().find((item) => item.id === id);
-    if (!appointment) return;
+    if (!appointment) return false;
+    this.errorState.set(null);
+
+    // Refuerzo local de la regla del backend: una cita que ya empezó no se confirma.
+    // Al servidor no se envía nada para no depender de la latencia de la red.
+    if (status === 'Confirmada' && this.datetime.hasPassed(appointment.startAt)) {
+      this.errorState.set('No se puede confirmar una cita que ya pasó. Reprográmala para un horario futuro.');
+      return false;
+    }
 
     const apiStatus: AppointmentStatusUpdateRequest['status'] = {
       Confirmada: 'CONFIRMED', Pendiente: 'PENDING', Completada: 'COMPLETED',
@@ -171,8 +183,10 @@ export class AgendaStore {
       this.replaceOne(this.fromApi(updated));
       // Con un filtro de estado activo, una cita que cambia de estado puede dejar de pertenecer a la lista.
       if (this.filtersState().status && this.filtersState().status !== updated.status) this.reloadRange();
-    } catch {
-      this.errorState.set('No se pudo actualizar el estado en el servidor. Intenta de nuevo.');
+      return true;
+    } catch (error) {
+      this.errorState.set(apiErrorMessage(error));
+      return false;
     }
   }
 

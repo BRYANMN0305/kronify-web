@@ -6,9 +6,9 @@
 }
 
 .settings-header {
-  margin-left: 1.5rem;
-  margin-right: 1.5rem;
-  padding: 1.5rem 0 0;
+  margin-left: 40px;
+  margin-right: 40px;
+  padding: 42px 0 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -56,9 +56,9 @@
 
 /* ---- Layout: sidebar + contenido ---- */
 .settings-layout {
-  margin-left: 1.5rem;
-  margin-right: 1.5rem;
-  padding: 1.25rem 0 3rem;
+  margin-left: 40px;
+  margin-right: 40px;
+  padding: 1.75rem 0 3rem;
   display: grid;
   grid-template-columns: 230px minmax(0, 1fr);
   gap: 1.5rem;
@@ -1128,14 +1128,15 @@
 @media (max-width: 768px) {
   .settings-layout {
     grid-template-columns: 1fr;
-    margin-left: 1rem;
-    margin-right: 1rem;
-    padding: 1.25rem 1rem 3rem;
+    margin-left: 22px;
+    margin-right: 22px;
+    padding: 1.25rem 0 2.5rem;
   }
 
   .settings-header {
-    margin-left: 1rem;
-    margin-right: 1rem;
+    margin-left: 22px;
+    margin-right: 22px;
+    padding: 30px 0 0;
   }
 
   .settings-section {
@@ -1218,9 +1219,17 @@
 
 @media (max-width: 640px) {
   .settings-header {
-    padding: 1.5rem 1rem 0;
+    padding: 24px 0 0;
     flex-direction: column;
     align-items: flex-start;
+    margin-left: 14px;
+    margin-right: 14px;
+  }
+
+  .settings-layout {
+    margin-left: 14px;
+    margin-right: 14px;
+    padding: 1rem 0 2rem;
   }
 }
 

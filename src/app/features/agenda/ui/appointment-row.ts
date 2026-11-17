@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, output } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
+import { DatetimeService } from '../../../core/datetime/datetime.service';
 import type { Appointment, AppointmentStatus } from '../modelos/appointment.model';
 import { AppointmentStatusClassPipe } from './appointment-status.pipe';
 
@@ -105,6 +106,7 @@ import { AppointmentStatusClassPipe } from './appointment-status.pipe';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppointmentRow {
+  private readonly datetime = inject(DatetimeService);
   readonly appointment = input.required<Appointment>();
   readonly flagged = input(false);
   readonly statusChange = output<AppointmentStatus>();
@@ -141,13 +143,20 @@ export class AppointmentRow {
 
   protected actionLabel(): string | null {
     switch (this.appointment().status) {
-      case 'Pendiente': return 'Confirmar';
+      case 'Pendiente':
+        // Si ya empezó no se confirma: se ofrece registrar la asistencia real.
+        return this.datetime.hasPassed(this.appointment().startAt) ? 'Completar' : 'Confirmar';
       case 'Confirmada': return 'Completar';
       default: return null;
     }
   }
 
   protected advance(): void {
-    this.statusChange.emit(this.appointment().status === 'Pendiente' ? 'Confirmada' : 'Completada');
+    const appointment = this.appointment();
+    if (appointment.status === 'Pendiente' && !this.datetime.hasPassed(appointment.startAt)) {
+      this.statusChange.emit('Confirmada');
+      return;
+    }
+    this.statusChange.emit('Completada');
   }
 }

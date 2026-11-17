@@ -40,10 +40,13 @@ import type { Appointment, AppointmentStatus } from '../modelos/appointment.mode
         </div>
 
         <footer class="appointment-detail-actions">
-          @if (appointment().status === 'Pendiente') {
+          @if (isPastPending()) {
+            <p class="appointment-detail-lock" role="status">La cita ya pasó y no se puede confirmar. Registra si el cliente asistió o no.</p>
+          }
+          @if (canConfirm()) {
             <button class="btn-kronify" type="button" (click)="statusChange.emit('Confirmada')">Confirmar cita</button>
           }
-          @if (appointment().status === 'Confirmada') {
+          @if (canComplete()) {
             <button class="btn-kronify" type="button" (click)="statusChange.emit('Completada')">Marcar completada</button>
           }
           @if (canManage()) {
@@ -66,6 +69,7 @@ import type { Appointment, AppointmentStatus } from '../modelos/appointment.mode
     .appointment-detail-body{padding:20px 23px}.appointment-detail-status{display:flex;gap:8px;margin-bottom:18px}.appointment-detail-origin{border:1px solid #2b6471;border-radius:999px;padding:4px 8px;color:#8bddea;font-size:var(--text-xs);font-weight:700}
     .appointment-detail-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 20px;margin:0}.appointment-detail-list div{min-width:0}.appointment-detail-list dt{margin-bottom:3px;color:#83a5ad;font-size:var(--text-xs)}.appointment-detail-list dd{margin:0;color:#f1fbfc;font-size:var(--text-md);font-weight:650;overflow-wrap:anywhere}.appointment-detail-list a{color:#71dceb}
     .appointment-detail-note{margin:18px 0 0;border-left:2px solid #35bfd7;padding-left:11px;color:#abc5ca;font-size:var(--text-sm);line-height:1.5}.appointment-detail-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;border-top:1px solid #244650;padding:16px 23px}.appointment-detail-actions button{min-height:40px;font-size:var(--text-sm)}.appointment-detail-danger{border-color:#b35c67;color:#ffc1c7}
+    .appointment-detail-lock{flex:1 1 100%;margin:0;color:#f3cb73;font-size:var(--text-sm);line-height:1.45}
     @media(max-width:560px){.appointment-detail-backdrop{padding:10px}.appointment-detail-head,.appointment-detail-body{padding-inline:16px}.appointment-detail-list{grid-template-columns:1fr}.appointment-detail-actions{padding:14px 16px}.appointment-detail-actions button{width:100%}}
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -81,10 +85,26 @@ export class AppointmentDetailDialog {
     return this.appointment().status === 'Pendiente' || this.appointment().status === 'Confirmada';
   }
 
-  /** Solo una cita confirmada y ya vencida puede marcarse como no asistida. */
+  /** Solo una cita pendiente cuya hora de inicio siga en el futuro puede confirmarse. */
+  protected canConfirm(): boolean {
+    return this.appointment().status === 'Pendiente' && !this.isPastPending();
+  }
+
+  /** Cita pendiente que ya empezó: se informa el motivo en vez de ofrecer una acción inválida. */
+  protected isPastPending(): boolean {
+    const appointment = this.appointment();
+    return appointment.status === 'Pendiente' && this.datetime.hasPassed(appointment.startAt);
+  }
+
+  /** Registra la asistencia real: una confirmada siempre, una pendiente solo si ya pasó. */
+  protected canComplete(): boolean {
+    return this.appointment().status === 'Confirmada' || this.isPastPending();
+  }
+
+  /** Solo una cita que ya terminó puede marcarse como no asistida (confirmada o pendiente vencida). */
   protected canMarkNoShow(): boolean {
     const appointment = this.appointment();
-    if (appointment.status !== 'Confirmada' || !appointment.startAt) return false;
+    if ((appointment.status !== 'Confirmada' && appointment.status !== 'Pendiente') || !appointment.startAt) return false;
 
     const startsAt = this.datetime.fromLocal(appointment.startAt);
     let endsAt = startsAt.add(appointment.durationMinutes > 0 ? appointment.durationMinutes : 0, 'minute');

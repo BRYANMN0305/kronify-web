@@ -39,6 +39,16 @@ export class DatetimeService {
       : dayjs(iso).tz(this.tz, true);
   }
 
+  /**
+   * Indica si una hora de pared ya se alcanzó. Se usa para bloquear acciones que
+   * solo tienen sentido antes de que la cita empiece, como confirmarla.
+   * Sin fecha válida se considera vencida: nunca se habilita una acción a ciegas.
+   */
+  hasPassed(iso?: string): boolean {
+    if (!iso) return true;
+    return !this.fromLocal(iso).isAfter(this.now());
+  }
+
   /** construye un dayjs en la zona del navegador a partir de campos sueltos */
   at(year: number, monthIndex: number, day = 1): Dayjs {
     return dayjs().year(year).month(monthIndex).date(day).tz(this.tz, true);
