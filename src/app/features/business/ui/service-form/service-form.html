@@ -1,0 +1,112 @@
+<form class="service-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  <label class="name-field">
+    Nombre del servicio
+    <input
+      type="text"
+      formControlName="name"
+      maxlength="100"
+      placeholder="Ej. Corte clásico"
+      autocomplete="off"
+      [class.is-invalid]="showError(form.controls.name)" />
+    @if (showError(form.controls.name)) {
+      <small class="field-error">
+        @if (form.controls.name.hasError('required')) {
+          El nombre es obligatorio.
+        } @else if (form.controls.name.hasError('minlength')) {
+          Escribe al menos 3 caracteres.
+        } @else if (form.controls.name.hasError('maxlength')) {
+          Máximo 100 caracteres.
+        }
+      </small>
+    }
+  </label>
+
+  <label>
+    Duración
+    <input
+      type="number"
+      formControlName="durationMinutes"
+      min="1"
+      max="600"
+      [class.is-invalid]="showError(form.controls.durationMinutes)" />
+    <span class="field-hint">Minutos</span>
+    @if (showError(form.controls.durationMinutes)) {
+      <small class="field-error">
+        @if (form.controls.durationMinutes.hasError('required')) {
+          La duración es obligatoria.
+        } @else if (form.controls.durationMinutes.hasError('min')) {
+          La duración mínima es 1 minuto.
+        } @else if (form.controls.durationMinutes.hasError('max')) {
+          La duración máxima es 600 minutos.
+        }
+      </small>
+    }
+  </label>
+
+  <label>
+    Precio
+    <input
+      type="number"
+      formControlName="price"
+      min="0"
+      max="1000000"
+      [class.is-invalid]="showError(form.controls.price)" />
+    <span class="field-hint">COP</span>
+    @if (showError(form.controls.price)) {
+      <small class="field-error">
+        @if (form.controls.price.hasError('required')) {
+          El precio es obligatorio.
+        } @else if (form.controls.price.hasError('min')) {
+          El precio no puede ser negativo.
+        } @else if (form.controls.price.hasError('max')) {
+          El precio máximo es 1.000.000 COP.
+        } @else if (form.controls.price.hasError('multipleOf1000')) {
+          El precio debe ser múltiplo de 1.000 COP.
+        }
+      </small>
+    }
+  </label>
+
+  <label>
+    Descanso entre citas
+    <input
+      type="number"
+      formControlName="bufferMinutes"
+      min="0"
+      max="180"
+      [class.is-invalid]="showError(form.controls.bufferMinutes)" />
+    <span class="field-hint">Minutos</span>
+    @if (showError(form.controls.bufferMinutes)) {
+      <small class="field-error">
+        @if (form.controls.bufferMinutes.hasError('min')) {
+          El descanso no puede ser negativo.
+        } @else if (form.controls.bufferMinutes.hasError('max')) {
+          El descanso máximo es 180 minutos.
+        }
+      </small>
+    }
+  </label>
+
+  <label class="wide">
+    Descripción
+    <textarea
+      rows="3"
+      formControlName="description"
+      maxlength="500"
+      placeholder="Cuéntale al cliente qué incluye…"
+      [class.is-invalid]="showError(form.controls.description)"></textarea>
+    @if (showError(form.controls.description)) {
+      <small class="field-error">
+        @if (form.controls.description.hasError('maxlength')) {
+          Máximo 500 caracteres.
+        }
+      </small>
+    }
+  </label>
+
+  <div class="form-actions">
+    <button class="btn-kronify" type="submit" [disabled]="form.invalid || saving()">
+      {{ saving() ? 'Guardando…' : (initial() ? 'Guardar cambios' : '＋ Crear servicio') }}
+    </button>
+  </div>
+</form>

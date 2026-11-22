@@ -44,7 +44,8 @@ export const routes: Routes = [
       // Ruta histórica del menú: se conserva como alias para no romper enlaces guardados.
       { path: 'negocios-recientes', pathMatch: 'full', redirectTo: 'mis-citas' },
 
-      { path: 'servicios', data: { title: 'Servicios' }, loadComponent: () => import('./features/business/pages/services-page/services-page').then(m => m.ServicesPage) },
+      { path: 'servicios', pathMatch: 'full', data: { title: 'Servicios' }, loadComponent: () => import('./features/business/pages/services-page/services-page').then(m => m.ServicesPage) },
+      { path: 'servicios/:id', data: { title: 'Detalle del servicio' }, loadComponent: () => import('./features/business/pages/service-detail-page/service-detail-page').then(m => m.ServiceDetailPage) },
       { path: 'horarios', data: { title: 'Horarios' }, loadComponent: () => import('./features/business/pages/schedules-page/schedules-page').then(m => m.SchedulesPage) },
 
       ...SETTINGS_ROUTES,
@@ -52,5 +53,7 @@ export const routes: Routes = [
       { path: 'resenas', data: { title: 'Reseñas' }, loadComponent: () => import('./features/business/pages/reviews-page/reviews-page').then(m => m.ReviewsPage) },
     ] },
 
-  { path: '**', redirectTo: '/calendario' },
+  { path: 'no-encontrado', data: { title: 'Página no encontrada' }, loadComponent: () => import('./features/business/pages/not-found-page/not-found-page').then(m => m.NotFoundPage) },
+
+  { path: '**', data: { title: 'Página no encontrada' }, loadComponent: () => import('./features/business/pages/not-found-page/not-found-page').then(m => m.NotFoundPage) },
 ];

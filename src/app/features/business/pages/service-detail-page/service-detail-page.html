@@ -1,0 +1,59 @@
+<main class="detail-page">
+  <nav class="detail-breadcrumb" aria-label="Ruta de navegación">
+    <a routerLink="/servicios">Servicios</a>
+    <span aria-hidden="true">/</span>
+    <span>Detalle</span>
+  </nav>
+
+  @if (loading()) {
+    <p class="detail-state" role="status">Cargando servicio…</p>
+  } @else if (notFound()) {
+    <section class="detail-state-card" role="alert">
+      <span class="detail-state-icon" aria-hidden="true">!</span>
+      <h1>Servicio no encontrado</h1>
+      <p>No existe un servicio con el identificador <strong>#{{ id() }}</strong>.</p>
+      <a class="btn-kronify" routerLink="/servicios">Volver al listado</a>
+    </section>
+  } @else if (error()) {
+    <section class="detail-state-card" role="alert">
+      <span class="detail-state-icon" aria-hidden="true">!</span>
+      <h1>Algo salió mal</h1>
+      <p>{{ error() }}</p>
+      <a class="btn-kronify-outline" routerLink="/servicios">Volver al listado</a>
+    </section>
+  } @else if (service(); as item) {
+    <header class="detail-heading">
+      <div>
+        <span class="detail-eyebrow">Servicio #{{ item.id }}</span>
+        <h1>{{ item.name }}</h1>
+        <p>{{ item.description || 'Sin descripción registrada.' }}</p>
+      </div>
+      <span class="detail-status" [class.is-inactive]="item.active === false">
+        {{ item.active === false ? 'Inactivo' : 'Activo' }}
+      </span>
+    </header>
+
+    <section class="detail-grid" aria-label="Datos del servicio">
+      <article class="detail-card">
+        <span class="detail-card-label">Precio</span>
+        <strong>{{ item.price | currency:'COP':'symbol':'1.0-0':'es-CO' }}</strong>
+      </article>
+      <article class="detail-card">
+        <span class="detail-card-label">Duración</span>
+        <strong>{{ item.durationMinutes }} min</strong>
+      </article>
+      <article class="detail-card">
+        <span class="detail-card-label">Descanso entre citas</span>
+        <strong>{{ item.bufferMinutes ?? 0 }} min</strong>
+      </article>
+      <article class="detail-card">
+        <span class="detail-card-label">Identificador de ruta</span>
+        <strong>{{ id() }}</strong>
+      </article>
+    </section>
+
+    <div class="detail-actions">
+      <a class="btn-kronify" routerLink="/servicios">Volver al listado</a>
+    </div>
+  }
+</main>

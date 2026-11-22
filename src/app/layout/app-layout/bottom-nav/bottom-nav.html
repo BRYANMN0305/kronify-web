@@ -3,7 +3,7 @@
     <a class="bottom-nav-item"
        [routerLink]="item.path"
        routerLinkActive="is-active"
-       [routerLinkActiveOptions]="{ exact: true }"
+       [routerLinkActiveOptions]="{ exact: item.path !== '/servicios' }"
        ariaCurrentWhenActive="page">
       <span class="bottom-nav-icon">
         <app-icon [name]="item.icon" aria-hidden="true"/>
