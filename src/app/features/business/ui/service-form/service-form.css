@@ -1,0 +1,105 @@
+:host {
+  display: block;
+}
+
+.service-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 17px 13px;
+}
+
+.service-form label {
+  position: relative;
+  display: grid;
+  gap: 8px;
+  color: #bfd2d6;
+  font-size: var(--text-sm);
+  font-weight: 750;
+}
+
+.service-form input,
+.service-form textarea {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid #315763;
+  border-radius: var(--radius-md);
+  background: #17343e;
+  padding: 10px 12px;
+  color: #f2fbfd;
+  font: inherit;
+  font-size: var(--text-base);
+  outline: none;
+  transition: border-color .16s, box-shadow .16s, background .16s;
+}
+
+.service-form input:focus,
+.service-form textarea:focus {
+  border-color: #39d6f1;
+  background: #193c46;
+  box-shadow: 0 0 0 3px #39d6f120;
+}
+
+.service-form textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.service-form .name-field,
+.service-form .wide {
+  grid-column: 1 / -1;
+}
+
+.field-hint {
+  position: absolute;
+  right: 12px;
+  bottom: 14px;
+  color: #78969d;
+  font-size: var(--text-2xs);
+  font-weight: 600;
+}
+
+.service-form label:has(.field-hint) input {
+  padding-right: 65px;
+}
+
+.field-error {
+  color: #ff9da5;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.service-form input.is-invalid,
+.service-form textarea.is-invalid {
+  border-color: #b45762;
+  box-shadow: 0 0 0 2px #b4576220;
+}
+
+.form-actions {
+  display: flex;
+  grid-column: 1 / -1;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.form-actions .btn-kronify {
+  min-height: 44px;
+  padding: 0 18px;
+}
+
+.service-form input[type=number] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.service-form input[type=number]::-webkit-inner-spin-button,
+.service-form input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .service-form {
+    grid-template-columns: 1fr;
+  }
+}
