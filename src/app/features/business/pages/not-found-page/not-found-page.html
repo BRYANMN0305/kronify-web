@@ -1,0 +1,13 @@
+<main class="not-found-page">
+  <section class="not-found-card" role="alert">
+    <span class="not-found-code" aria-hidden="true">404</span>
+    <h1>Página no encontrada</h1>
+    <p>
+      La ruta <code>/{{ attemptedPath }}</code> no existe o fue movida.
+    </p>
+    <div class="not-found-actions">
+      <button class="btn-kronify-outline" type="button" (click)="goBack()">Volver atrás</button>
+      <a class="btn-kronify" routerLink="/servicios">Ir a servicios</a>
+    </div>
+  </section>
+</main>
