@@ -1,6 +1,6 @@
 # Kronify Web
 
-Presentación del frontend de Kronify a Angular 22 con componentes standalone, signals y
+Presentación del frontend de Kronify realizado con angular, junto a componentes standalone, signals y
 `ChangeDetectionStrategy.OnPush`. La interfaz usa Bootstrap 5 (solo CSS: grid, utilidades,
 formularios y botones); el CSS propio queda para tokens, temas y animaciones. La aplicación
 cubre autenticación, invitaciones de equipo, onboarding, el shell de la zona autenticada, la
