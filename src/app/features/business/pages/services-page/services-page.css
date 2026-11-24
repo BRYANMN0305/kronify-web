@@ -19,3 +19,9 @@
 .delete-confirm{border-color:#b45762;background:#8d3a44;color:#ffe8ea}
 .delete-confirm:hover{border-color:#ff8b95;background:#a8434f;color:#fff}
 @media (max-width:640px){.delete-actions{flex-direction:column-reverse}.delete-cancel,.delete-confirm{width:100%}}
+
+.cancel-edit{margin-top:12px;width:100%;justify-content:center}
+.catalog-card-bottom{flex-wrap:wrap}
+.row-actions{flex-wrap:wrap;justify-content:flex-end}
+.row-actions a{display:inline-flex;align-items:center;min-height:32px;padding:6px 9px;font-size: var(--text-2xs);font-weight:800;text-decoration:none}
+
