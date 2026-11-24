@@ -4,8 +4,9 @@ Migración del frontend de Kronify a Angular 22 con componentes standalone, sign
 `ChangeDetectionStrategy.OnPush`. La interfaz usa Bootstrap 5 (solo CSS: grid, utilidades,
 formularios y botones); el CSS propio queda para tokens, temas y animaciones. La aplicación
 cubre autenticación, invitaciones de equipo, onboarding, el shell de la zona autenticada, la
-agenda de citas y la configuración completa de cuenta y negocio (datos, contraseña, perfil,
-plan con gráficas de Chart.js y equipo).
+agenda de citas, el catálogo de servicios (listado, detalle y alta con formulario reactivo) y
+la configuración completa de cuenta y negocio (datos, contraseña, perfil, plan con gráficas de
+Chart.js y equipo).
 
 ## Enlaces
 
@@ -48,17 +49,50 @@ La URL del backend se configura en `src/environments/environment.ts`.
 
 ## Rutas
 
-| Ruta | Acceso | Descripción |
-| --- | --- | --- |
-| `/iniciar-sesion` | Público | Login con credenciales u OAuth |
-| `/registro` | Público | Registro de cliente o negocio |
-| `/oauth/callback` | Público | Finalización del login OAuth |
-| `/invitacion/aceptar` | Público | Aceptación de invitaciones de empleado, con o sin sesión |
-| `/onboarding-negocio` | Autenticado | Wizard de creación del negocio |
-| `/calendario` | Autenticado | Agenda de citas; destino posterior al login |
-| `/demo-calendario` | Público | Vista previa de la agenda con datos locales |
-| `/configuracion` | Autenticado | Configuración de cuenta y negocio con todas las pestañas funcionales |
-| `**` | — | Redirección a `/calendario` |
+| Ruta | Vista | Parámetro | Acceso y descripción |
+| --- | --- | --- | --- |
+| `/iniciar-sesion` | `AuthPage` | — | Público. Login con credenciales u OAuth |
+| `/registro` | `AuthPage` | — | Público. Registro de cliente o negocio |
+| `/oauth/callback` | `OAuthCallbackPage` | — | Público. Finalización del login OAuth |
+| `/invitacion/aceptar` | `InvitationAcceptPage` | — | Público. Aceptación de invitaciones de empleado |
+| `/onboarding-negocio` | `OnboardingBusinessPage` | — | Autenticado. Wizard de creación del negocio |
+| `/calendario` | `CalendarPage` | — | Autenticado. Agenda de citas; destino posterior al login |
+| `/servicios` | `ServicesPage` | — | Autenticado. Listado, búsqueda, alta y edición del catálogo |
+| `/servicios/:id` | `ServiceDetailPage` | `id` (`number`, recibido con `input()`) | Autenticado. Detalle de un servicio por identificador |
+| `/no-encontrado` | `NotFoundPage` | — | Público. Vista 404 explícita |
+| `**` | `NotFoundPage` | — | Público. Cualquier ruta inexistente muestra la vista 404 |
+| `/configuracion` | `SettingsPage` | — | Autenticado. Cuenta y negocio con todas las pestañas |
+
+Las vistas del catálogo se cargan con `loadComponent` (carga diferida por ruta) y el detalle
+recibe el `:id` como texto de la URL; `ServiceDetailPage` lo convierte a número con
+`numberAttribute` mediante `input.required<number, string>()`. La ruta `servicios/:id` se
+declara antes del comodín `**`, de modo que un identificador inexistente llega al detalle y
+muestra “Servicio no encontrado”, mientras que una ruta desconocida cae en la vista 404.
+
+## ¿Por qué el alta usa formulario reactivo?
+
+El alta de servicios usa `FormBuilder.nonNullable.group` y no un formulario basado en
+plantillas porque el estado del formulario, las validaciones y el botón de envío se
+necesitan en el componente, no solo en la vista. Un formulario reactivo permite:
+
+- **Tipado del modelo de formulario.** `ServiceFormValue` declara los cinco campos con sus
+  tipos (`string` o `number`) y `nonNullable.group` elimina los `null` implícitos, de modo
+  que la conversión al modelo de datos `ServiceRequest` es explícita y verificada por
+  TypeScript.
+- **Validación declarativa y reutilizable.** Las reglas `required`, `minLength`, `maxLength`,
+  `min`, `max` y el validador propio `priceMultipleOf1000` viven en el control, no en
+  atributos HTML dispersos. Así la misma regla se prueba y se mantiene en un solo lugar.
+- **Estado observable para la interfaz.** `form.invalid`, `control.touched` y `control.dirty`
+  permiten mostrar cada mensaje solo cuando el usuario interactuó con el campo y deshabilitar
+  el envío mientras el formulario sea inválido, sin lógica manual de eventos `input`/`blur`.
+- **Integración con el servicio.** El componente emite un `ServiceRequest` ya convertido por
+  `output()`; la página decide si llama a `createService` o `updateService` y reinicia el
+  formulario con `reset()`. Un formulario de plantilla acoplaría la vista al objeto de
+  petición y dificultaría reutilizar el mismo formulario para alta y edición.
+
+La búsqueda del listado también es reactiva: `FormControl.valueChanges` pasa por
+`debounceTime(300)`, `distinctUntilChanged()` y `takeUntilDestroyed()`, y alimenta una señal
+de la que depende el `computed` del catálogo filtrado. No queda ninguna suscripción abierta.
 
 ## Flujo de autenticación
 
@@ -102,6 +136,10 @@ App
         │   │   ├── AgendaSummary
         │   │   ├── CalendarGrid
         │   │   └── AppointmentRow
+        │   ├── ServicesPage
+        │   │   └── ServiceFormComponent
+        │   ├── ServiceDetailPage
+        │   ├── NotFoundPage
         │   └── SettingsPage
         │       ├── MyDetailsTab
         │       ├── PasswordTab
@@ -128,6 +166,10 @@ App
 | `CalendarGrid` | `weeks`, `selectedKey` (requeridos) | `daySelected: Date` | Presenta el mes y emite el día seleccionado |
 | `AppointmentRow` | `appointment` (requerido) | `statusChange: AppointmentStatus` | Presenta una cita y emite el cambio de estado |
 | `AgendaSummary` | `confirmed`, `total`, `revenue` (requeridos) | — | Presenta indicadores derivados de la agenda |
+| `ServicesPage` | — | — | Listado, búsqueda con debounce, alta/edición y eliminación de servicios |
+| `ServiceFormComponent` | `initial` (`ServiceResponse \| null`), `saving` | `save: ServiceRequest` | Formulario reactivo tipado con validadores y reinicio controlado por el padre |
+| `ServiceDetailPage` | `id` (requerido, convertido desde el `:id` de la ruta) | — | Consulta el servicio y muestra “Servicio no encontrado” ante un 404 |
+| `NotFoundPage` | — | — | Vista 404 para `/no-encontrado` y para el comodín `**` |
 | `SettingsPage` | — | — | Coordina las pestañas, los datos de `SettingsStore`, el guardado y el logout |
 | `MyDetailsTab` | `profile`, `authMethods`, `role`, `saving`, `errorMessage`, `saveCompleted` | `editStarted`, `saveProfile: UserUpdateRequest`, `logout` | Perfil, edición de datos personales y métodos de autenticación |
 | `PasswordTab` | `saving`, `errorMessage`, `saveCompleted` | `savePassword: UserChangePasswordRequest` | Cambio de contraseña con validación local |
@@ -211,8 +253,29 @@ y dejan las peticiones HTTP en `SettingsStore`.
 `AgendaStore` es dueño del listado de citas, carga, error y modo demo. Mantiene signals
 privadas y cambia datos mediante `loadDemo`, `loadRange` y `updateStatus`. La agenda consulta
 `AppointmentControllerService` y `ServiceControllerService` usando el token de la sesión.
-`/demo-calendario` fuerza los datos locales; `/calendario` requiere autenticación y es el
-destino posterior al login.
+`/calendario` requiere autenticación y es el destino posterior al login. El modo demo se
+conserva como `input` del componente para pruebas, pero ya no se publica como ruta.
+
+## Servicios
+
+`ServicesPage` consulta el catálogo con `ServiceControllerService` y lo presenta en tarjetas.
+La búsqueda usa un `FormControl` reactivo: `valueChanges` pasa por `debounceTime(300)`,
+`distinctUntilChanged()` y `takeUntilDestroyed()`, y el resultado se guarda en una señal
+privada que alimenta el `computed` `filteredServices`. De este modo tres teclas seguidas
+producen una sola filtración, 300 ms después de la última.
+
+El alta y la edición comparten `ServiceFormComponent`, un formulario reactivo construido con
+`FormBuilder.nonNullable.group`. Sus controles son `name`, `description`, `durationMinutes`,
+`bufferMinutes` y `price`; combinan `required`, `minLength`, `maxLength`, `min`, `max` y el
+validador propio `priceMultipleOf1000`. Los mensajes aparecen solo con `touched || dirty` y el
+botón se deshabilita con `form.invalid || saving()`. Al emitir `save`, la página llama a
+`createService` o `updateService`, recarga el listado sin cambiar de ruta y reinicia el
+formulario con `reset()`.
+
+El detalle vive en `/servicios/:id`. `ServiceDetailPage` recibe el identificador con
+`input.required<number, string>({ transform: numberAttribute })`, consulta `getService(id)` y,
+si el API responde 404, muestra “Servicio no encontrado” con un enlace de vuelta al listado.
+Las rutas desconocidas y `/no-encontrado` muestran `NotFoundPage`.
 
 La interfaz `Appointment` está en
 `src/app/features/agenda/modelos/appointment.model.ts`; los ocho registros locales de respaldo
