@@ -22,25 +22,28 @@
   </header>
 
   <div class="agenda-filters" role="group" aria-label="Filtros de la agenda">
-    <label class="agenda-filter">
-      <span>Empleado</span>
-      <select [value]="store.filters().employeeId ?? ''" (change)="filterByEmployee($any($event.target).value)" [disabled]="store.filterOptionsLoading()">
-        <option value="">Todos los empleados</option>
-        @for (employee of store.employees(); track $index) {
-          <option [value]="employee.employeeId">{{ employee.name || 'Empleado' }}</option>
-        }
-      </select>
-    </label>
+    <!-- El dueño consulta a todo el equipo; un empleado solo puede ver su propia agenda. -->
+    @if (isOwner()) {
+      <label class="agenda-filter">
+        <span>Empleado</span>
+        <select [value]="store.filters().employeeId ?? ''" (change)="filterByEmployee($any($event.target).value)" [disabled]="store.filterOptionsLoading()">
+          <option value="">Todos los empleados</option>
+          @for (employee of store.employees(); track $index) {
+            <option [value]="employee.employeeId">{{ employee.name || 'Empleado' }}</option>
+          }
+        </select>
+      </label>
 
-    <label class="agenda-filter">
-      <span>Servicio</span>
-      <select [value]="store.filters().serviceId ?? ''" (change)="filterByService($any($event.target).value)" [disabled]="store.filterOptionsLoading()">
-        <option value="">Todos los servicios</option>
-        @for (service of store.services(); track $index) {
-          <option [value]="service.id">{{ service.name }}</option>
-        }
-      </select>
-    </label>
+      <label class="agenda-filter">
+        <span>Servicio</span>
+        <select [value]="store.filters().serviceId ?? ''" (change)="filterByService($any($event.target).value)" [disabled]="store.filterOptionsLoading()">
+          <option value="">Todos los servicios</option>
+          @for (service of store.services(); track $index) {
+            <option [value]="service.id">{{ service.name }}</option>
+          }
+        </select>
+      </label>
+    }
 
     <label class="agenda-filter">
       <span>Estado</span>

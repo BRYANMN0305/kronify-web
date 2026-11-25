@@ -1,4 +1,4 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
@@ -33,7 +33,7 @@ export class ClientAppointmentsStore {
   private readonly recentState = signal<readonly RecentBusiness[]>([]);
   private readonly recentLoadingState = signal(false);
   private readonly recentErrorState = signal<string | null>(null);
-  private readonly recentUnavailableState = signal(false);
+  private readonly recentUnavailableState = signal(true);
   private readonly reviewedIdsState = signal<ReadonlySet<number>>(new Set<number>());
 
   readonly history = this.historyState.asReadonly();
@@ -72,7 +72,7 @@ export class ClientAppointmentsStore {
     this.busyIdState.set(null);
     this.recentState.set([]);
     this.recentErrorState.set(null);
-    this.recentUnavailableState.set(false);
+    this.recentUnavailableState.set(true);
     this.reviewedIdsState.set(new Set<number>());
   }
 
@@ -107,14 +107,12 @@ export class ClientAppointmentsStore {
         .map((item) => this.normalizeRecentBusiness(item))
         .filter((item): item is RecentBusiness => item !== null));
       this.recentUnavailableState.set(false);
-    } catch (error) {
-      if (error instanceof HttpErrorResponse && (error.status === 404 || error.status === 405 || error.status === 501)) {
-        this.recentState.set([]);
-        this.recentUnavailableState.set(true);
-      } else {
-        this.recentState.set([]);
-        this.recentErrorState.set('No se pudieron cargar tus negocios recientes.');
-      }
+    } catch {
+      // El backend desplegado no expone este endpoint (responde 500): la sección
+      // se oculta en lugar de mostrar un error que el cliente no puede resolver.
+      this.recentState.set([]);
+      this.recentErrorState.set(null);
+      this.recentUnavailableState.set(true);
     } finally {
       this.recentLoadingState.set(false);
     }

@@ -10,6 +10,7 @@ import type { DayAvailabilityResponse } from '../../../core/api/openapi/model/da
 import type { EmployeeResponse } from '../../../core/api/openapi/model/employeeResponse';
 import type { ServiceResponse } from '../../../core/api/openapi/model/serviceResponse';
 import { AuthStore, apiErrorMessage } from '../../../core/auth/auth.store';
+import { Permissions } from '../../../core/auth/permissions';
 import { SessionExpiredError } from '../../../core/api/jwt.interceptor';
 import { DatetimeService } from '../../../core/datetime/datetime.service';
 import type { Appointment, AppointmentStatus } from '../modelos/appointment.model';
@@ -37,6 +38,7 @@ export class AgendaStore {
   private readonly employeesApi = inject(EmployeeControllerService);
   private readonly publicApi = inject(PublicBusinessControllerService);
   private readonly auth = inject(AuthStore);
+  private readonly permissions = inject(Permissions);
   private readonly datetime = inject(DatetimeService);
   private readonly appointmentsState = signal<readonly Appointment[]>([]);
   private readonly loadingState = signal(false);
@@ -91,6 +93,9 @@ export class AgendaStore {
   /** Catálogo y equipo para los selectores de la barra de filtros. */
   async loadFilterOptions(): Promise<void> {
     if (!this.auth.isAuthenticated()) return;
+    // El backend reserva la lista del equipo y el catálogo al dueño del negocio.
+    // Un empleado solo consulta su propia agenda, así que no hay opciones que cargar.
+    if (!this.permissions.isOwner()) return;
     this.filterOptionsLoadingState.set(true);
     try {
       await Promise.all([this.fetchEmployees(), this.fetchServices()]);
@@ -132,7 +137,9 @@ export class AgendaStore {
     this.loadingState.set(true);
     this.errorState.set(null);
     try {
-      await this.ensureServices();
+      // El catálogo solo lo puede leer el dueño; el nombre y la duración ya vienen
+      // en cada cita, así que un empleado no necesita esta petición.
+      if (this.permissions.isOwner()) await this.ensureServices();
       const filters = this.filtersState();
       const appointments = await firstValueFrom(this.api.getAgenda(
         startDate,

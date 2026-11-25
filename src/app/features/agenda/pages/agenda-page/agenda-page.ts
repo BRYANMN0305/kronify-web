@@ -5,6 +5,7 @@ import type { Dayjs } from 'dayjs';
 import { BASE_PATH } from '../../../../core/api/openapi/variables';
 import type { AppointmentResponse } from '../../../../core/api/openapi/model/appointmentResponse';
 import { AuthStore } from '../../../../core/auth/auth.store';
+import { Permissions } from '../../../../core/auth/permissions';
 import { DatetimeService } from '../../../../core/datetime/datetime.service';
 import { AgendaStore } from '../../data/agenda.store';
 import type { AgendaFilterStatus } from '../../data/agenda.store';
@@ -99,9 +100,12 @@ export class AgendaPage implements OnInit, OnDestroy {
   protected readonly store = inject(AgendaStore);
   private readonly datetime = inject(DatetimeService);
   private readonly auth = inject(AuthStore);
+  private readonly permissions = inject(Permissions);
   private readonly zone = inject(NgZone);
   private readonly basePath = inject(BASE_PATH);
 
+  /** Solo el dueño puede consultar la agenda de todo el equipo. */
+  protected readonly isOwner = this.permissions.isOwner;
   protected readonly appointments = this.store.appointments;
   protected readonly loading = this.store.loading;
   protected readonly storeError = this.store.error;
