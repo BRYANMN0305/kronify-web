@@ -30,93 +30,56 @@
 
     <div class="public-content">
       <section class="public-card services-card" aria-labelledby="services-title">
-        <div class="public-tabs" role="tablist" aria-label="Información del negocio">
-          @for (tab of tabs; track tab.key) {
-            <button class="public-tab" type="button" role="tab" [class.is-active]="activeTab() === tab.key" [attr.aria-selected]="activeTab() === tab.key" (click)="activeTab.set(tab.key)">{{ tab.label }}</button>
+        <span class="public-eyebrow">SERVICIOS</span>
+        <div class="services-heading">
+          <h2 id="services-title">Elige lo que necesitas</h2>
+          <p>Reserva en línea en menos de un minuto.</p>
+        </div>
+        <div class="public-services">
+          @for (service of services(); track service.serviceId) {
+            <article class="public-service">
+              <div class="service-info">
+                <strong>{{ service.name }}</strong>
+                <p>{{ service.description || 'Servicio profesional' }}</p>
+                <span class="service-duration">◷ {{ service.durationMinutes }} min</span>
+              </div>
+              <div class="service-side">
+                <strong class="service-price">{{ service.price | currency:'COP':'symbol':'1.0-0':'es-CO' }}</strong>
+                <button type="button" class="btn-kronify service-book" (click)="openBooking(service.serviceId)">Reservar</button>
+              </div>
+            </article>
+          } @empty {
+            <p class="muted">Este negocio todavía no tiene servicios publicados.</p>
           }
         </div>
-
-        @if (activeTab() === 'servicios') {
-          <span class="public-eyebrow">SERVICIOS</span>
-          <div class="services-heading">
-            <h2 id="services-title">Elige lo que necesitas</h2>
-            <p>Reserva en línea en menos de un minuto.</p>
-          </div>
-          <div class="public-services">
-            @for (service of services(); track service.serviceId) {
-              <article class="public-service">
-                <div class="service-info">
-                  <strong>{{ service.name }}</strong>
-                  <p>{{ service.description || 'Servicio profesional' }}</p>
-                  <span class="service-duration">◷ {{ service.durationMinutes }} min</span>
-                </div>
-                <div class="service-side">
-                  <strong class="service-price">{{ service.price | currency:'COP':'symbol':'1.0-0':'es-CO' }}</strong>
-                  <button type="button" class="btn-kronify service-book" (click)="openBooking(service.serviceId)">Reservar</button>
-                </div>
-              </article>
-            } @empty {
-              <p class="muted">Este negocio todavía no tiene servicios publicados.</p>
-            }
-          </div>
-          <button class="btn-kronify services-cta" type="button" (click)="openBooking()">Agendar mi cita <span aria-hidden="true">→</span></button>
-        } @else if (activeTab() === 'equipo') {
-          <span class="public-eyebrow">EQUIPO</span>
-          <div class="services-heading">
-            <h2>Profesionales</h2>
-            <p>Quiénes te atenderán en tu próxima visita.</p>
-          </div>
-          <div class="public-team">
-            @for (employee of employees(); track employee.employeeId) {
-              <article class="public-employee">
-                <span class="employee-avatar" aria-hidden="true">{{ initials(employee.name) }}</span>
-                <div>
-                  <strong>{{ employee.name }}</strong>
-                  <p>{{ employeeServices(employee) }}</p>
-                </div>
-              </article>
-            } @empty {
-              <p class="muted">Este negocio todavía no ha publicado su equipo.</p>
-            }
-          </div>
-        } @else {
-          <span class="public-eyebrow">EXPERIENCIAS</span>
-          <div class="services-heading">
-            <h2>Reseñas de clientes</h2>
-            <p>Lo que opinan quienes ya reservaron.</p>
-          </div>
-          <div class="public-reviews">
-            @for (review of reviews(); track review.reviewId) {
-              <article class="public-review public-review--card">
-                <div><strong>{{ review.customerName || 'Cliente' }}</strong><span>{{ '★'.repeat(review.rating || 0) }}</span></div>
-                <p>{{ review.comment || 'Excelente servicio.' }}</p>
-                <time>{{ review.createdAt | date:'d MMM y':'':'es-CO' }}</time>
-              </article>
-            } @empty {
-              <p class="muted">Aún no hay reseñas publicadas.</p>
-            }
-          </div>
-        }
+        <button class="btn-kronify services-cta" type="button" (click)="openBooking()">Agendar mi cita <span aria-hidden="true">→</span></button>
       </section>
 
       <aside class="business-aside">
-        <section class="public-card side-card">
-          <span class="public-eyebrow">ENCUÉNTRANOS</span>
-          <h2>Horario de atención</h2>
-          <ul class="public-hours">
-            @for (group of hoursGroups(); track group.label) {
-              <li><span>{{ group.label }}</span><strong [class.closed]="!group.range">{{ group.range || 'Cerrado' }}</strong></li>
+        <section class="public-card side-card"><span class="public-eyebrow">ENCUÉNTRANOS</span><h2>Horario de atención</h2><ul class="public-hours">@for (day of weekdays; track day; let i = $index) { <li><span>{{ day }}</span><strong [class.closed]="!hoursFor(i)">{{ hoursFor(i) || 'Cerrado' }}</strong></li> }</ul><div class="aside-business-name">{{ business()!.name }}</div></section>
+        <section class="public-card side-card reviews-card" aria-labelledby="reviews-title">
+          <span class="public-eyebrow">OPINIONES</span>
+          <div class="reviews-heading">
+            <h2 id="reviews-title">Reseñas</h2>
+            @if (reviewableAppointments().length) {
+              <button class="review-open" type="button" (click)="openReview()">Escribir reseña</button>
             }
-          </ul>
-          <div class="aside-business-name">{{ business()!.name }}</div>
-        </section>
-        <section class="public-card side-card">
-          <span class="public-eyebrow">RESUMEN</span>
-          <h2>Este negocio</h2>
-          <div class="aside-stat"><strong>{{ services().length }}</strong><span>Servicios</span></div>
-          <div class="aside-stat"><strong>{{ employees().length }}</strong><span>Profesionales</span></div>
-          <div class="aside-stat"><strong>{{ reviews().length }}</strong><span>Reseñas</span></div>
-          <button class="btn-kronify aside-book" type="button" (click)="openBooking()">Reservar cita</button>
+          </div>
+          @if (reviewNotice()) { <p class="review-notice" role="status">{{ reviewNotice() }}</p> }
+          @for (review of reviews(); track review.reviewId) {
+            <article class="public-review">
+              <div><strong>{{ review.customerName || 'Cliente' }}</strong><span>{{ '★'.repeat(review.rating || 0) }}</span></div>
+              <p>{{ review.comment || 'Excelente servicio.' }}</p>
+              <time>{{ review.createdAt | date:'d MMM y':'':'es-CO' }}</time>
+            </article>
+          } @empty {
+            <p class="muted">Aún no hay reseñas publicadas.</p>
+          }
+          @if (!isAuthenticated()) {
+            <p class="muted review-hint"><a routerLink="/iniciar-sesion">Inicia sesión como cliente</a> para escribir una reseña.</p>
+          } @else if (isClient() && !reviewableAppointments().length && !reviewNotice()) {
+            <p class="muted review-hint">Podrás escribir una reseña cuando tengas una cita completada con este negocio.</p>
+          }
         </section>
       </aside>
     </div>
@@ -129,5 +92,13 @@
       [slug]="slug()"
       [initialServiceId]="preferredServiceId()"
       (closed)="closeBooking()" />
+  }
+
+  @if (reviewFormOpen()) {
+    <app-public-review-form
+      [businessName]="business()?.name || 'este negocio'"
+      [appointments]="reviewableAppointments()"
+      (closed)="closeReview()"
+      (created)="reviewCreated($event)" />
   }
 }

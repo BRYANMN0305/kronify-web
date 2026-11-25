@@ -3,7 +3,9 @@
 html,
 body {
   max-width: 100%;
-  overflow-x: hidden;
+  /* `clip` recorta el desborde horizontal sin crear un contenedor de scroll:
+     con `hidden` el body se vuelve scroller y rompe el sidebar sticky en el SPA. */
+  overflow-x: clip;
 }
 
 .app-main,

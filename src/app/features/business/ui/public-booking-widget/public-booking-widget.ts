@@ -218,6 +218,9 @@ export class PublicBookingWidget implements OnInit, OnDestroy {
     this.bookingBusy.set(true);
     this.bookingError.set(null);
     try {
+      // Un cliente autenticado envía su token: el backend asocia la cita a su
+      // cuenta y así aparece en /mis-citas y en su calendario personal.
+      const isClient = this.auth.profileType() === 'CLIENT';
       const appointment = await firstValueFrom(this.appointmentsApi.createAppointment1(
         {
           businessId: business.businessId,
@@ -231,7 +234,7 @@ export class PublicBookingWidget implements OnInit, OnDestroy {
         },
         'body',
         false,
-        { context: new HttpContext().set(SKIP_AUTH, true) },
+        isClient ? undefined : { context: new HttpContext().set(SKIP_AUTH, true) },
       ));
       this.bookingSuccess.set(appointment);
       announcePublicAppointmentCreated(appointment);

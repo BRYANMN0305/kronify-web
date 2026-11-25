@@ -5,6 +5,7 @@ import type { Dayjs } from 'dayjs';
 import { BASE_PATH } from '../../../../core/api/openapi/variables';
 import type { AppointmentResponse } from '../../../../core/api/openapi/model/appointmentResponse';
 import { AuthStore } from '../../../../core/auth/auth.store';
+import { Permissions } from '../../../../core/auth/permissions';
 import { DatetimeService } from '../../../../core/datetime/datetime.service';
 import { AgendaStore } from '../../data/agenda.store';
 import type { AgendaFilterStatus } from '../../data/agenda.store';
@@ -99,9 +100,12 @@ export class AgendaPage implements OnInit, OnDestroy {
   protected readonly store = inject(AgendaStore);
   private readonly datetime = inject(DatetimeService);
   private readonly auth = inject(AuthStore);
+  private readonly permissions = inject(Permissions);
   private readonly zone = inject(NgZone);
   private readonly basePath = inject(BASE_PATH);
 
+  /** Solo el dueño puede consultar la agenda de todo el equipo. */
+  protected readonly isOwner = this.permissions.isOwner;
   protected readonly appointments = this.store.appointments;
   protected readonly loading = this.store.loading;
   protected readonly storeError = this.store.error;
@@ -379,17 +383,23 @@ export class AgendaPage implements OnInit, OnDestroy {
     return appointment.status === 'Pendiente' || appointment.status === 'Confirmada';
   }
 
-  /** Acción principal de la cita en un clic: pendiente → confirmar; confirmada → completar. */
+  /** Acción principal de la cita: pendiente futura → confirmar; ya pasada → completar. */
   protected advanceLabel(appointment: Appointment): string | null {
     switch (appointment.status) {
-      case 'Pendiente': return 'Confirmar';
+      case 'Pendiente':
+        // Nunca se ofrece confirmar una cita cuya hora de inicio ya pasó;
+        // en su lugar se registra la asistencia real.
+        return this.datetime.hasPassed(appointment.startAt) ? 'Completar' : 'Confirmar';
       case 'Confirmada': return 'Completar';
       default: return null;
     }
   }
 
   protected advance(appointment: Appointment): void {
-    void this.store.updateStatus(appointment.id, appointment.status === 'Pendiente' ? 'Confirmada' : 'Completada');
+    const status = appointment.status === 'Pendiente' && !this.datetime.hasPassed(appointment.startAt)
+      ? 'Confirmada'
+      : 'Completada';
+    void this.store.updateStatus(appointment.id, status);
   }
 
   protected openAppointment(appointment: Appointment): void { this.selectedAppointment.set(appointment); }
@@ -397,8 +407,11 @@ export class AgendaPage implements OnInit, OnDestroy {
   protected updateSelectedAppointment(status: AppointmentStatus): void {
     const appointment = this.selectedAppointment();
     if (!appointment) return;
-    void this.store.updateStatus(appointment.id, status);
-    this.closeAppointment();
+    // El detalle se mantiene abierto si la operación no se aplicó, para que el
+    // usuario vea el motivo (por ejemplo, una cita que ya pasó) sin perder contexto.
+    void this.store.updateStatus(appointment.id, status).then((updated) => {
+      if (updated) this.closeAppointment();
+    });
   }
 
   // ── Cuadrícula semanal de tiempo ──────────────────────────────────────────

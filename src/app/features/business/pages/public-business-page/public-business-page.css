@@ -110,7 +110,7 @@
   align-items: center;
   gap: 7px;
   border: 1px solid #ffffff26;
-  border-radius: var(--radius-pill);
+  border-radius: 999px;
   background: #ffffff14;
   padding: 8px 14px;
   color: #fff;
@@ -197,7 +197,7 @@
   justify-content: space-between;
   gap: 16px;
   border: 1px solid #dbe6e9;
-  border-radius: var(--radius-lg);
+  border-radius: 15px;
   background: #fbfdfe;
   padding: 14px 16px;
   transition:
@@ -258,98 +258,6 @@
   line-height: 1;
 }
 
-/* ---- Pestañas, equipo y reseñas ---- */
-.public-tabs {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #dbe6e9;
-}
-.public-tab {
-  border: 0;
-  border-bottom: 2px solid transparent;
-  background: transparent;
-  padding: 10px 14px;
-  color: #5b7580;
-  font: 700 12px var(--font-ui);
-  cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
-}
-.public-tab:hover {
-  color: #0e7c90;
-}
-.public-tab.is-active {
-  border-bottom-color: #0e9db2;
-  color: #0e7c90;
-}
-.public-team {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 10px;
-}
-.public-employee {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border: 1px solid #dbe6e9;
-  border-radius: var(--radius-lg);
-  background: #fbfdfe;
-  padding: 14px 16px;
-}
-.employee-avatar {
-  display: grid;
-  width: 44px;
-  height: 44px;
-  flex: none;
-  place-items: center;
-  border-radius: 50%;
-  background: #e0f4f8;
-  color: #0e7c90;
-  font-size: 13px;
-  font-weight: 800;
-}
-.public-employee strong {
-  color: #0f2a33;
-  font-size: 14px;
-  font-weight: 700;
-}
-.public-employee p {
-  margin: 3px 0 0;
-  color: #5b7580;
-  font-size: 11px;
-  line-height: 1.45;
-}
-.public-reviews {
-  display: grid;
-  gap: 10px;
-}
-.public-review--card {
-  border: 1px solid #dbe6e9;
-  border-radius: var(--radius-lg);
-  background: #fbfdfe;
-  padding: 14px 16px;
-}
-.aside-stat {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  border-top: 1px solid #dbe6e9;
-  padding: 10px 0;
-  color: #5b7580;
-  font-size: 13px;
-}
-.aside-stat strong {
-  color: #0f2a33;
-  font-size: 17px;
-  font-weight: 700;
-}
-.aside-book {
-  width: 100%;
-  min-height: 44px;
-  margin-top: 14px;
-}
-
 /* ---- Horarios y reseñas (sin cambios de estructura) ---- */
 .side-card h2 {
   margin: 5px 0 15px;
@@ -379,7 +287,7 @@
 }
 .aside-business-name {
   margin-top: 10px;
-  border-radius: var(--radius-md);
+  border-radius: 10px;
   background: #e8f5f8;
   padding: 9px 11px;
   color: #0e7c90;
@@ -414,6 +322,47 @@
   color: #839699;
   font-size: 10px;
 }
+.reviews-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.reviews-heading h2 {
+  margin-bottom: 10px;
+}
+.review-open {
+  flex: none;
+  border: 1px solid #0e7c90;
+  border-radius: 999px;
+  background: #e8f5f8;
+  padding: 7px 12px;
+  color: #0e7c90;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.review-open:hover {
+  background: #0e7c90;
+  color: #fff;
+}
+.review-notice {
+  margin: 8px 0 4px;
+  border: 1px solid #bfe3d0;
+  border-radius: 10px;
+  background: #eefaf3;
+  padding: 9px 11px;
+  color: #1c6b45;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.review-hint {
+  margin-top: 8px;
+}
+.review-hint a {
+  color: #0e7c90;
+  font-weight: 600;
+}
 .public-footer {
   border-top: 1px solid #dbe6e9;
   padding: 20px;
@@ -445,12 +394,12 @@
   height: 48px;
   place-items: center;
   border: 1px solid #3b7884;
-  border-radius: var(--radius-lg);
+  border-radius: 15px;
   color: #43d8f2;
   font-weight: 700;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 860px) {
   .public-hero {
     padding: 42px 22px 84px;
   }
@@ -467,7 +416,7 @@
     align-items: start;
   }
 }
-@media (max-width: 640px) {
+@media (max-width: 600px) {
   .public-hero {
     padding: 34px 18px 76px;
   }
@@ -582,6 +531,23 @@
   .public-review p,
   .muted {
     color: #8fb0b9;
+  }
+  .review-open {
+    border-color: #2f6b78;
+    background: #12323c;
+    color: #5ee0f2;
+  }
+  .review-open:hover {
+    background: #0e7c90;
+    color: #fff;
+  }
+  .review-notice {
+    border-color: #2c5c48;
+    background: #123027;
+    color: #9fe3bf;
+  }
+  .review-hint a {
+    color: #5ee0f2;
   }
   .public-footer {
     border-color: #1f3d47;

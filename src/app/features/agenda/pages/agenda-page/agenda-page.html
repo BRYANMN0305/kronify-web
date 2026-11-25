@@ -22,25 +22,28 @@
   </header>
 
   <div class="agenda-filters" role="group" aria-label="Filtros de la agenda">
-    <label class="agenda-filter">
-      <span>Empleado</span>
-      <select [value]="store.filters().employeeId ?? ''" (change)="filterByEmployee($any($event.target).value)" [disabled]="store.filterOptionsLoading()">
-        <option value="">Todos los empleados</option>
-        @for (employee of store.employees(); track $index) {
-          <option [value]="employee.employeeId">{{ employee.name || 'Empleado' }}</option>
-        }
-      </select>
-    </label>
+    <!-- El dueño consulta a todo el equipo; un empleado solo puede ver su propia agenda. -->
+    @if (isOwner()) {
+      <label class="agenda-filter">
+        <span>Empleado</span>
+        <select [value]="store.filters().employeeId ?? ''" (change)="filterByEmployee($any($event.target).value)" [disabled]="store.filterOptionsLoading()">
+          <option value="">Todos los empleados</option>
+          @for (employee of store.employees(); track $index) {
+            <option [value]="employee.employeeId">{{ employee.name || 'Empleado' }}</option>
+          }
+        </select>
+      </label>
 
-    <label class="agenda-filter">
-      <span>Servicio</span>
-      <select [value]="store.filters().serviceId ?? ''" (change)="filterByService($any($event.target).value)" [disabled]="store.filterOptionsLoading()">
-        <option value="">Todos los servicios</option>
-        @for (service of store.services(); track $index) {
-          <option [value]="service.id">{{ service.name }}</option>
-        }
-      </select>
-    </label>
+      <label class="agenda-filter">
+        <span>Servicio</span>
+        <select [value]="store.filters().serviceId ?? ''" (change)="filterByService($any($event.target).value)" [disabled]="store.filterOptionsLoading()">
+          <option value="">Todos los servicios</option>
+          @for (service of store.services(); track $index) {
+            <option [value]="service.id">{{ service.name }}</option>
+          }
+        </select>
+      </label>
+    }
 
     <label class="agenda-filter">
       <span>Estado</span>
@@ -85,7 +88,10 @@
             <div class="timeline-hour"><strong>{{ hourLabel(hour) }}</strong></div>
             <div class="timeline-cells">
               @for (appointment of appointmentsAtHour(hour); track appointment.id) {
-                <article class="day-event" (click)="openAppointment(appointment)">
+                <article class="day-event" role="button" tabindex="0"
+                         (click)="openAppointment(appointment)"
+                         (keydown.enter)="openAppointment(appointment)"
+                         (keydown.space)="openAppointment(appointment); $event.preventDefault()">
                   <span class="day-event-stripe" [class]="'day-event-stripe ' + (appointment.status | appointmentStatusClass)" aria-hidden="true"></span>
                   <span class="day-event-avatar" aria-hidden="true">{{ appointmentInitials(appointment) }}</span>
                   <div class="day-event-body">

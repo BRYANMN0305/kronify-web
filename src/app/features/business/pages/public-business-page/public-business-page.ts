@@ -1,32 +1,31 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
+import { PublicAppointmentControllerService } from '../../../../core/api/openapi/api/publicAppointmentController.service';
 import { PublicBusinessControllerService } from '../../../../core/api/openapi/api/publicBusinessController.service';
+import type { AppointmentResponse } from '../../../../core/api/openapi/model/appointmentResponse';
 import type { PublicBusinessResponse } from '../../../../core/api/openapi/model/publicBusinessResponse';
-import type { PublicEmployeeResponse } from '../../../../core/api/openapi/model/publicEmployeeResponse';
 import type { PublicServiceResponse } from '../../../../core/api/openapi/model/publicServiceResponse';
 import type { ReviewResponse } from '../../../../core/api/openapi/model/reviewResponse';
+import { AuthStore } from '../../../../core/auth/auth.store';
 import { environment } from '../../../../../environments/environment';
 import { PublicBookingWidget } from '../../ui/public-booking-widget/public-booking-widget';
+import { PublicReviewForm } from '../../ui/public-review-form/public-review-form';
+import type { ReviewableAppointment } from '../../ui/public-review-form/public-review-form';
 
-type PublicTab = 'servicios' | 'equipo' | 'resenas';
-
-interface HoursGroup {
-  readonly label: string;
-  readonly range: string | null;
-}
-
-/** Presenta la ficha pública del negocio, sus servicios, equipo, horarios y reseñas. */
+/** Presenta la ficha pública del negocio, sus servicios, horarios y reseñas. */
 @Component({
   selector: 'app-public-business-page', standalone: true,
-  imports: [CurrencyPipe, DatePipe, PublicBookingWidget],
+  imports: [CurrencyPipe, DatePipe, RouterLink, PublicBookingWidget, PublicReviewForm],
   templateUrl: './public-business-page.html', styleUrl: './public-business-page.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PublicBusinessPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly api = inject(PublicBusinessControllerService);
+  private readonly appointmentsApi = inject(PublicAppointmentControllerService);
+  private readonly auth = inject(AuthStore);
   protected readonly business = signal<PublicBusinessResponse | null>(null);
   protected readonly slug = signal('');
   protected readonly reviews = signal<readonly ReviewResponse[]>([]);
@@ -35,22 +34,45 @@ export class PublicBusinessPage implements OnInit {
   protected readonly logoFailed = signal(false);
   protected readonly bookingOpen = signal(false);
   protected readonly preferredServiceId = signal<number | null>(null);
-  protected readonly activeTab = signal<PublicTab>('servicios');
   protected readonly weekdays = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-  protected readonly tabs: readonly { key: PublicTab; label: string }[] = [
-    { key: 'servicios', label: 'Servicios' },
-    { key: 'equipo', label: 'Equipo' },
-    { key: 'resenas', label: 'Reseñas' },
-  ];
+
+  /** Reseñas creadas en esta sesión, para no ofrecer dos veces la misma cita mientras se recarga la lista. */
+  private readonly reviewedLocally = signal<ReadonlySet<number>>(new Set<number>());
+  private readonly clientAppointments = signal<readonly AppointmentResponse[]>([]);
+  protected readonly reviewFormOpen = signal(false);
+  protected readonly reviewNotice = signal<string | null>(null);
+
+  protected readonly isAuthenticated = this.auth.isAuthenticated;
+  protected readonly isClient = computed(() => this.auth.profileType() === 'CLIENT');
 
   protected readonly logoUrl = computed(() => this.resolveLogoUrl(this.business()?.logoUrl));
   protected readonly initial = computed(() => (this.business()?.name?.trim().charAt(0) || 'K').toUpperCase());
   protected readonly services = computed<readonly PublicServiceResponse[]>(
     () => this.business()?.services ?? [],
   );
-  protected readonly employees = computed<readonly PublicEmployeeResponse[]>(
-    () => (this.business()?.employees ?? []).filter((employee) => !!employee.name),
-  );
+
+  /** Citas completadas con este negocio que aún no tienen reseña. */
+  protected readonly reviewableAppointments = computed<readonly ReviewableAppointment[]>(() => {
+    const businessId = this.business()?.businessId;
+    if (!this.isClient() || businessId == null) return [];
+    const reviewed = new Set<number>([
+      ...this.reviewedLocally(),
+      ...this.reviews()
+        .map((review) => review.appointmentId)
+        .filter((id): id is number => id != null),
+    ]);
+    return this.clientAppointments()
+      .filter((appointment) =>
+        appointment.businessId === businessId &&
+        appointment.status === 'COMPLETED' &&
+        appointment.appointmentId != null &&
+        !reviewed.has(appointment.appointmentId))
+      .map((appointment) => ({
+        id: appointment.appointmentId!,
+        serviceName: appointment.serviceName ?? 'Servicio',
+        startAt: appointment.startAt ?? '',
+      }));
+  });
 
   ngOnInit(): void {
     const slug = this.route.snapshot.paramMap.get('slug');
@@ -59,45 +81,9 @@ export class PublicBusinessPage implements OnInit {
     void this.load(slug);
   }
 
-  /** Agrupa días consecutivos con el mismo horario para no repetir siete filas iguales. */
-  protected readonly hoursGroups = computed<readonly HoursGroup[]>(() => {
-    const days = this.weekdays.map((_, index) => this.hoursFor(index));
-    const groups: HoursGroup[] = [];
-    let start = 0;
-    for (let index = 1; index <= days.length; index += 1) {
-      if (index < days.length && days[index] === days[start]) continue;
-      const label = start === index - 1
-        ? this.weekdays[start]
-        : `${this.weekdays[start]} a ${this.weekdays[index - 1]}`;
-      groups.push({ label, range: days[start] });
-      start = index;
-    }
-    return groups;
-  });
-
   protected hoursFor(index: number): string | null {
     const hours = this.business()?.openingHours?.find((item) => item.dayOfWeek === index + 1);
     return hours?.startTime && hours.endTime ? `${hours.startTime.slice(0, 5)} – ${hours.endTime.slice(0, 5)}` : null;
-  }
-
-  protected employeeServices(employee: PublicEmployeeResponse): string {
-    const ids = employee.serviceIds ?? [];
-    if (!ids.length) return 'Servicios del negocio';
-    const names = this.services()
-      .filter((service) => service.serviceId != null && ids.includes(service.serviceId))
-      .map((service) => service.name)
-      .filter((name): name is string => !!name);
-    return names.length ? names.join(', ') : 'Servicios del negocio';
-  }
-
-  protected initials(name?: string): string {
-    return (name ?? '')
-      .split(' ')
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part.charAt(0))
-      .join('')
-      .toUpperCase() || 'K';
   }
 
   protected openBooking(serviceId?: number): void {
@@ -107,6 +93,41 @@ export class PublicBusinessPage implements OnInit {
 
   protected closeBooking(): void {
     this.bookingOpen.set(false);
+  }
+
+  protected openReview(): void {
+    this.reviewNotice.set(null);
+    this.reviewFormOpen.set(true);
+  }
+
+  protected closeReview(): void {
+    this.reviewFormOpen.set(false);
+  }
+
+  protected reviewCreated(appointmentId: number): void {
+    this.reviewedLocally.update((ids) => new Set([...ids, appointmentId]));
+    this.reviewNotice.set('¡Gracias! Tu reseña ya está publicada en el perfil del negocio.');
+    void this.reloadReviews();
+  }
+
+  private async reloadReviews(): Promise<void> {
+    try {
+      const reviews = await firstValueFrom(this.api.getPublicReviews(this.slug()));
+      this.reviews.set((reviews ?? []).filter((review) => review.visible !== false));
+    } catch {
+      // Si falla la recarga se conservan las reseñas ya visibles.
+    }
+  }
+
+  /** Historial del cliente autenticado para saber qué citas puede reseñar. */
+  private async loadClientAppointments(): Promise<void> {
+    if (this.auth.profileType() !== 'CLIENT') return;
+    try {
+      const page = await firstValueFrom(this.appointmentsApi.getHistory({ page: 0, size: 100, sort: ['startAt,desc'] }));
+      this.clientAppointments.set(page.content ?? []);
+    } catch {
+      this.clientAppointments.set([]);
+    }
   }
 
   private resolveLogoUrl(value?: string | null): string | null {
@@ -125,6 +146,7 @@ export class PublicBusinessPage implements OnInit {
       ]);
       this.business.set(business);
       this.reviews.set((reviews ?? []).filter((review) => review.visible !== false));
+      void this.loadClientAppointments();
     } catch { this.error.set(true); }
     finally { this.loading.set(false); }
   }
