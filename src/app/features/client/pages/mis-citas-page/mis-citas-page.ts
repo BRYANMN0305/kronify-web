@@ -54,11 +54,6 @@ export class MisCitasPage implements OnInit {
     void this.store.loadRecentBusinesses();
   }
 
-  protected reload(): void {
-    void this.store.loadHistory(100, 'startAt,desc');
-    void this.store.loadRecentBusinesses();
-  }
-
   protected openDetail(appointment: ClientAppointment): void {
     this.selectedAppointment.set(appointment);
   }

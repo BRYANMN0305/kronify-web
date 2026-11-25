@@ -151,22 +151,32 @@ export class SchedulesPage implements OnInit {
         if (firstId != null) await this.loadEmployeeData(firstId).catch(() => problems.push('No se pudo cargar la jornada guardada del profesional.'));
       } else problems.push('No se pudo cargar la lista de profesionales.');
     } else {
+      // Se separa "no es empleado" de "falló la carga de su jornada": antes un
+      // fallo del endpoint de servicios mostraba el mensaje de empleado inexistente.
+      let me: EmployeeResponse | null = null;
       try {
-        const me = await firstValueFrom(this.employeeApi.getMyEmployee());
-        if (me.employeeId != null) {
-          this.employees.set([me]);
-          if (me.selfManagedSchedule) {
-            await this.loadEmployeeData(me.employeeId);
-          } else {
-            // Sin autogestión el backend no permite leer jornada ni bloqueos.
-            this.employeeId.set(me.employeeId);
-            this.canEditSchedule.set(false);
-            this.employeeHours.set(DAYS.map((_, i) => ({ dayOfWeek: i + 1, startTime: CLOSED, endTime: CLOSED })));
-            this.blocks.set([]);
-          }
-        }
+        me = await firstValueFrom(this.employeeApi.getMyEmployee());
       } catch {
         problems.push('No encontramos tu registro de empleado activo en este negocio.');
+      }
+
+      if (me?.employeeId != null) {
+        this.employees.set([me]);
+        this.employeeId.set(me.employeeId);
+        if (me.selfManagedSchedule) {
+          try {
+            await this.loadEmployeeData(me.employeeId);
+          } catch {
+            // Sin datos no se permite editar para no guardar una jornada incompleta.
+            this.canEditSchedule.set(false);
+            problems.push('No se pudo cargar tu jornada guardada. Inténtalo de nuevo en unos segundos.');
+          }
+        } else {
+          // Sin autogestión el backend no permite leer jornada ni bloqueos.
+          this.canEditSchedule.set(false);
+          this.employeeHours.set(DAYS.map((_, i) => ({ dayOfWeek: i + 1, startTime: CLOSED, endTime: CLOSED })));
+          this.blocks.set([]);
+        }
       }
     }
 
@@ -321,12 +331,18 @@ export class SchedulesPage implements OnInit {
   }
 
   private async loadEmployeeData(id: number): Promise<void> {
-    const [schedules, blocks, services] = await Promise.all([
+    // Fija el profesional antes de consultar para que la vista no muestre
+    // "Selecciona un profesional" mientras llegan sus datos.
+    this.employeeId.set(id);
+    const [schedules, blocks] = await Promise.all([
       firstValueFrom(this.employeeApi.listWeeklySchedules(id)),
       firstValueFrom(this.employeeApi.listScheduleBlocks(id)),
-      firstValueFrom(this.employeeApi.listEmployeeServices(id)),
     ]);
-    this.employeeId.set(id);
+    // GET .../services está restringido al dueño; un empleado autogestionado
+    // solo necesita su jornada y sus bloqueos, así que se omite.
+    const services = this.permissions.isOwner()
+      ? await firstValueFrom(this.employeeApi.listEmployeeServices(id))
+      : [];
     this.existing.set(schedules ?? []);
     this.employeeHours.set(DAYS.map((_, i) => {
       const dayOfWeek = i + 1;
